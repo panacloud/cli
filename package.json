@@ -14,6 +14,7 @@
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "await-exec": "^0.1.2",
+    "codemaker": "^1.34.0",
     "inquirer": "^8.1.2",
     "isomorphic-git": "^1.10.0",
     "log-symbols": "^5.0.0",
