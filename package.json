@@ -1,0 +1,91 @@
+{
+  "name": "@panacloud/cli",
+  "version": "1.0.0-alpha.7",
+  "description": "panacloud cli",
+  "author": "Muhammad Hasan @muh_hasan",
+  "bin": {
+    "panacloud": "bin/run"
+  },
+  "bugs": {
+    "url": "https://github.com/panacloud/cli/issues"
+  },
+  "dependencies": {
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^3",
+    "tslib": "^1"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@oclif/test": "^1",
+    "@types/chai": "^4",
+    "@types/mocha": "^5",
+    "@types/node": "^10",
+    "chai": "^4",
+    "eslint": "^5.13",
+    "eslint-config-oclif": "^3.1",
+    "eslint-config-oclif-typescript": "^0.1",
+    "globby": "^10",
+    "mocha": "^5",
+    "nyc": "^14",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8",
+    "typescript": "^3.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "keywords": [
+    "code generator",
+    "code generation",
+    "cli",
+    "oclif",
+    "panacloud",
+    "panacloud cli",
+    "cdk",
+    "aws"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "homepage": "https://github.com/panacloud/cli",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "panacloud",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panacloud/cli.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "branches": [
+      "master"
+    ]
+  },
+  "release": {
+    "branches": [
+      "master"
+    ]
+  },
+  "scripts": {
+    "postpack": "rimraf oclif.manifest.json",
+    "posttest": "eslint . --ext .ts --config .eslintrc",
+    "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif-dev readme && git add README.md"
+  },
+  "types": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  }
+}
