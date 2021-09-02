@@ -14,7 +14,7 @@ export class Appsync extends CodeMaker {
 
   public initializeAppsyncApi(name: string,authenticationType?: string) {
     this.apiName = name;
-    const ts = new TypeScriptWriter();
+    const ts = new TypeScriptWriter(maker);
     ts.writeVariableDeclaration(
       {
         name: `${this.apiName}_appsync`,
@@ -26,13 +26,12 @@ export class Appsync extends CodeMaker {
         })`);
         },
       },
-      "const",
-       maker
+      "const"
     );
   }
 
   public initializeAppsyncSchema(schema: string) {
-    const ts = new TypeScriptWriter();
+    const ts = new TypeScriptWriter(maker);
     const gqlSchema = "`" + schema + "`";
     ts.writeVariableDeclaration(
       {
@@ -45,8 +44,7 @@ export class Appsync extends CodeMaker {
           })`);
         },
       },
-      "const",
-       maker
+      "const"
     );
   }
 
@@ -57,7 +55,7 @@ export class Appsync extends CodeMaker {
   }
 
   public appsyncLambdaDataSource(dataSourceName: string,serviceRole: string,lambdaStyle:string,functionName?:string) {
-    const ts = new TypeScriptWriter();
+    const ts = new TypeScriptWriter(maker);
     let ds_initializerName = this.apiName + "dataSourceGraphql";
     let ds_variable = `ds_${dataSourceName}`;
     let ds_name = `${dataSourceName}_dataSource`;
@@ -84,8 +82,7 @@ export class Appsync extends CodeMaker {
          })`);
         },
       },
-      "const",
-       maker
+      "const"
     );
   }
 
@@ -94,7 +91,7 @@ export class Appsync extends CodeMaker {
     typeName: string,
     dataSourceName: string,
   ) {
-    const ts = new TypeScriptWriter();
+    const ts = new TypeScriptWriter(maker);
     ts.writeVariableDeclaration(
       {
         name: `${fieldName}_resolver`,
@@ -108,8 +105,7 @@ export class Appsync extends CodeMaker {
         })`);
         },
       },
-      "const",
-      maker
+      "const"
     );
   }
 
