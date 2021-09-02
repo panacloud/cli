@@ -7,7 +7,7 @@ export class Ec2 extends CodeMaker {
     apiName: string,
     subnetConfig?: string
   ) {
-    const ts = new TypeScriptWriter();
+    const ts = new TypeScriptWriter(maker);
     const config = subnetConfig
       ? `, {subnetConfiguration: [
       ${subnetConfig}
@@ -21,8 +21,7 @@ export class Ec2 extends CodeMaker {
           this.line(` new ec2.Vpc(this, "${apiName}Vpc" ${config} );`);
         },
       },
-      "const",
-       maker
+      "const"
     );
   }
 
@@ -30,7 +29,7 @@ export class Ec2 extends CodeMaker {
     apiName: string,
     vpcName: string,
   ) {
-    const ts = new TypeScriptWriter();
+    const ts = new TypeScriptWriter(maker);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_sg`,
@@ -45,8 +44,7 @@ export class Ec2 extends CodeMaker {
           `);
         },
       },
-      "const",
-      maker
+      "const"
     );
   }
 
