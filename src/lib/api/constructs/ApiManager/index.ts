@@ -5,13 +5,13 @@ let maker = new CodeMaker();
 export class apiManager {
 
   public apiManagerInitializer(apiName: string) {
-    const ts = new TypeScriptWriter();
+    const ts = new TypeScriptWriter(maker);
     ts.writeVariableDeclaration({
         name: "apiManager",
         typeName: "PanacloudManager",
         initializer:()=>{
           maker.line(`new PanacloudManager(this, "${apiName}APIManager")`);
         },
-    },"const",maker)
+    },"const")
   }
 }
