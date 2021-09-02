@@ -1,6 +1,7 @@
 import { Command, flags } from "@oclif/command";
 import { startSpinner, stopSpinner } from "../lib/spinner";
-import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
+import { basicApi,todoApi,defineYourOwnApi} from "../lib/api/functions";
+import { writeFileAsync, mkdirRecursiveAsync } from "../lib/fs";
 import { userInput } from "../lib/inquirer";
 import {
   checkEmptyDirectoy,
@@ -10,6 +11,8 @@ import { TEMPLATE, SAASTYPE } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
+// const git = require("isomorphic-git");
+// const http = require("isomorphic-git/http/node");
 const prettier = require("prettier");
 const globby = require("globby");
 const _ = require("lodash");
@@ -56,7 +59,27 @@ export default class Create extends Command {
           config.api.apiType
         );
       }
-    }
+    );
+
+    // const dir = path.join(process.cwd(), ".panacloud");
+
+    // // Cloning Codegenerator repo
+    // await git.clone({
+    //   fs,
+    //   http,
+    //   dir,
+    //   url: "https://github.com/panacloud/cloud-api-template",
+    //   singleBranch: true,
+    //   ref: "main",
+    // });
+
+    // // Installing Packages
+    // try {
+    //   await exec("cd .panacloud && npm install");
+    // } catch (error) {
+    //   stopSpinner(initializingCodegen, `Error: ${error.message}`, true);
+    //   this.exit(1);
+    // }
 
     stopSpinner(validating, "Everything's fine", false);
 

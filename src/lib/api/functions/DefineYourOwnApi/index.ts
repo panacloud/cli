@@ -1,13 +1,8 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import {
-  writeFileAsync,
-  copyFileAsync,
-  mkdirRecursiveAsync,
-  writeFileSync,
-} from "../../../fs";
+import { writeFileAsync,  copyFileAsync,  mkdirRecursiveAsync,  writeFileSync} from "../../../fs";
 import {  contextInfo } from "../../info";
 import { Config, APITYPE } from "../../../../utils/constants";
-import path = require("path");
+const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
 const convert = require("graphql-to-json-converter");
@@ -168,19 +163,19 @@ async function defineYourOwnApi(config: Config) {
 
   const installingModules = startSpinner("Installing Modules");
 
-  try {
-    await exec(`npm install`);
-  } catch (error) {
-    stopSpinner(installingModules, `Error: ${error}`, true);
-    process.exit(1);
-  }
+  // try {
+  //   await exec(`npm install`);
+  // } catch (error) {
+  //   stopSpinner(installingModules, `Error: ${error}`, true);
+  //   process.exit(1);
+  // }
 
-  try {
-    await exec(`cd lambdaLayer/nodejs && npm install`);
-  } catch (error) {
-    stopSpinner(installingModules, `Error: ${error}`, true);
-    process.exit(1);
-  }
+  // try {
+  //   await exec(`cd lambdaLayer/nodejs && npm install`);
+  // } catch (error) {
+  //   stopSpinner(installingModules, `Error: ${error}`, true);
+  //   process.exit(1);
+  // }
 
   stopSpinner(installingModules, "Modules installed", false);
 }

@@ -10,7 +10,7 @@ type ClassDefinition = {
 type VariableDefinition = {
     name: string;
     typeName: string,
-    initializer: () => string
+    initializer: () => void
 }
 
 type Element = {
@@ -26,6 +26,7 @@ export type Property = {
 }
 
 export class TypeScriptWriter {
+
   public writeImports(lib: string, components: string[], code: CodeMaker) {
     code.line(`import { ${components.join(", ")} } from "${lib}";`);
   }
