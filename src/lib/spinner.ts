@@ -1,5 +1,5 @@
-const logSymbols = require("log-symbols");
-const ora = require("ora");
+import {error,success} from 'log-symbols'
+const ora = require('ora');
 
 const startSpinner = (text: string) =>
   ora({
@@ -10,7 +10,7 @@ const stopSpinner = (spinner: any, text: string, error: boolean) => {
   if (!spinner) {
     return;
   }
-  const symbol = error ? logSymbols.error : logSymbols.success;
+  const symbol = error ? error : success;
   spinner.stopAndPersist({
     text,
     symbol,
