@@ -5,13 +5,13 @@ let maker = new CodeMaker();
 
 export class Dynamodb extends CodeMaker {
     public initializeDynamodb(apiName: string) {
-        const ts = new TypeScriptWriter();
+        const ts = new TypeScriptWriter(maker);
         ts.writeVariableDeclaration(
           {
             name: `${apiName}_table`,
             typeName: "dynamodb.Table",
             initializer: () => {
-              maker.line(` new dynamodb.Table(this, "${apiName}Table", {
+              this.line(` new dynamodb.Table(this, "${apiName}Table", {
               tableName: "${apiName}",
               billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
               partitionKey:{
@@ -21,8 +21,7 @@ export class Dynamodb extends CodeMaker {
             });`);
             },
           },
-          "const",
-          maker
+          "const"
         );
       }
 
@@ -33,11 +32,11 @@ export class Dynamodb extends CodeMaker {
         functionName?: string
       ) {
         if (lambdaStyle === LAMBDASTYLE.single) {
-          maker.line(
+          this.line(
             `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn);`
           );
         } else if (lambdaStyle === LAMBDASTYLE.multi) {
-          maker.line(
+          this.line(
             `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn_${functionName});`
           );
         }
@@ -52,18 +51,18 @@ export class Dynamodb extends CodeMaker {
         functionName?: string
       ) {
         if (lambdaStyle === LAMBDASTYLE.single || apiType === APITYPE.rest) {
-          maker.line(
+          this.line(
             `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn);`
           );
         } else if (lambdaStyle === LAMBDASTYLE.multi) {
-          maker.line(
+          this.line(
             `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn_${functionName});`
           );
         }
       }
     
       public initializeTestForDynamodb(TableName: string) {
-        maker.line(`expect(actual).to(
+        this.line(`expect(actual).to(
           countResourcesLike("AWS::DynamoDB::Table",1, {
             KeySchema: [
               {
