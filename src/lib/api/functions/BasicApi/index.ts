@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const _ = require("lodash");
 
-async function basicApi(config: Config) {
+async function basicApi(config: Config, templateDir: string) {
   const USER_DIRECTORY = _.snakeCase(path.basename(process.cwd()));
 
   const generatingCode = startSpinner("Generating CDK Code...");
