@@ -1,6 +1,6 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
 import { writeFileAsync,  copyFileAsync,  mkdirRecursiveAsync,  writeFileSync} from "../../../fs";
-import {  contextInfo } from "../../info";
+import { contextInfo } from "../../info";
 import { Config, APITYPE } from "../../../../utils/constants";
 const path = require("path");
 const fs = require("fs");
@@ -20,9 +20,7 @@ async function defineYourOwnApi(config: Config) {
 
   /* copy files from util of .panacloud to root directory */
   
-  // fs.readdirSync(
-  //   path.join(process.cwd(), `${PATH.utils}/cdk-template`)
-  // ).forEach((file: any) => {
+  // fs.readdirSync('').forEach((file: any) => {
   //   copyFileAsync(
   //     path.join(process.cwd(), `${PATH.utils}/cdk-template/${file}`),
   //     file,
@@ -140,22 +138,22 @@ async function defineYourOwnApi(config: Config) {
     }
   );
 
-  writeFileAsync(
-    `.panacloud/model.json`,
-    JSON.stringify({
-      ...jsonSchema,
-      USER_WORKING_DIRECTORY: USER_DIRECTORY,
-      api: {
-        ...config.api,
-      },
-    }),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // writeFileAsync(
+  //   `.panacloud/model.json`,
+  //   JSON.stringify({
+  //     ...jsonSchema,
+  //     USER_WORKING_DIRECTORY: USER_DIRECTORY,
+  //     api: {
+  //       ...config.api,
+  //     },
+  //   }),
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   // await start();
 
