@@ -1,6 +1,6 @@
 import { CodeMaker } from "codemaker";
 
-type ClassDefinition = {
+export type ClassDefinition = {
   name: string;
   export: boolean;
   extends?: string;
@@ -21,7 +21,7 @@ type Element = {
 export type Property = {
   name: string;
   typeName: string;
-  accessModifier: string;
+  accessModifier: 'public' | 'private' | 'protected';
   description?: string[];
 };
 
@@ -69,7 +69,6 @@ export class TypeScriptWriter {
   public writeInterfaceBlock(
     interfaceName: string,
     elements: Element[],
-    
   ) {
     this.code.openBlock(`interface ${interfaceName}`);
     elements.forEach(({ name, type }) => {
