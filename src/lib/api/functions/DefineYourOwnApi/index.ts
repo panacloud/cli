@@ -1,73 +1,76 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import { writeFileAsync,  copyFileAsync,  mkdirRecursiveAsync,  writeFileSync} from "../../../fs";
-import {  contextInfo } from "../../info";
+import {
+  writeFileAsync,
+  copyFileAsync,
+  mkdirRecursiveAsync,
+  writeFileSync,
+} from "../../../fs";
+import { contextInfo } from "../../info";
 import { Config, APITYPE } from "../../../../utils/constants";
+import { generator } from "../../generators";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
 const convert = require("graphql-to-json-converter");
 const exec = require("await-exec");
+const fse = require("fs-extra");
 const _ = require("lodash");
 
-async function defineYourOwnApi(config: Config) {
+async function defineYourOwnApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
 
   const { schemaPath, apiType } = config.api;
 
-  const USER_DIRECTORY = _.snakeCase(path.basename(process.cwd()));
+  const workingDir = _.snakeCase(path.basename(process.cwd()));
 
   const generatingCode = startSpinner("Generating CDK Code...");
 
-  /* copy files from util of .panacloud to root directory */
-  
-  // fs.readdirSync(
-  //   path.join(process.cwd(), `${PATH.utils}/cdk-template`)
-  // ).forEach((file: any) => {
-  //   copyFileAsync(
-  //     path.join(process.cwd(), `${PATH.utils}/cdk-template/${file}`),
-  //     file,
-  //     (err: string) => {
-  //       if (err) {
-  //         stopSpinner(generatingCode, `Error: ${err}`, true);
-  //         process.exit(1);
-  //       }
-  //     }
-  //   );
-  // });
+  /* copy files from global package dir to cwd */
+  fs.readdirSync(templateDir).forEach(async (file: any) => {
+    console.log(file);
+    if (file !== "package.json" && "cdk.json") {
+      console.log("eee", file);
+      await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
+        if (err) {
+          stopSpinner(generatingCode, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      });
+    }
+  });
 
-  // const stackPackageJson = JSON.parse(
-  //   fs.readFileSync(`${PATH.utils}/package-template/stack/package.json`)
-  // );
-  // const layerPackageJson = JSON.parse(
-  //   fs.readFileSync(`${PATH.utils}/package-template/lambdaLayer/package.json`)
-  // );
+  // Updating fileName
+  const stackPackageJson = JSON.parse(
+    fs.readFileSync(`${templateDir}/package.json`)
+  );
+  const cdkJson = JSON.parse(fs.readFileSync(`${templateDir}/cdk.json`));
 
-  // stackPackageJson.bin = `bin/${USER_DIRECTORY}.js`;
-  // stackPackageJson.name = USER_DIRECTORY;
+  stackPackageJson.bin = `bin/${workingDir}.js`;
+  stackPackageJson.name = workingDir;
 
-  // writeFileAsync(
-  //   `./package.json`,
-  //   JSON.stringify(stackPackageJson),
-  //   (err: string) => {
-  //     if (err) {
-  //       stopSpinner(generatingCode, `Error: ${err}`, true);
-  //       process.exit(1);
-  //     }
-  //   }
-  // );
+  cdkJson.app = `npx ts-node --prefer-ts-exts bin/${workingDir}.ts`;
 
-  // await mkdirRecursiveAsync(`lambdaLayer/nodejs`);
+  await fs.writeFileSync(
+    `./package.json`,
+    JSON.stringify(stackPackageJson),
+    (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    }
+  );
 
-  // writeFileAsync(
-  //   `./lambdaLayer/nodejs/package.json`,
-  //   JSON.stringify(layerPackageJson),
-  //   (err: string) => {
-  //     if (err) {
-  //       stopSpinner(generatingCode, `Error: ${err}`, true);
-  //       process.exit(1);
-  //     }
-  //   }
-  // );
+  await fs.writeFileSync(
+    `./cdk.json`,
+    JSON.stringify(cdkJson),
+    (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    }
+  );
 
   writeFileAsync(
     `./cdk.context.json`,
@@ -80,18 +83,7 @@ async function defineYourOwnApi(config: Config) {
     }
   );
 
-  // writeFileAsync(
-  //   `./cdk.json`,
-  //   JSON.stringify(cdkInfo(USER_DIRECTORY)),
-  //   (err: string) => {
-  //     if (err) {
-  //       stopSpinner(generatingCode, `Error: ${err}`, true);
-  //       process.exit(1);
-  //     }
-  //   }
-  // );
-
-  mkdirRecursiveAsync(`schema`);
+  await mkdirRecursiveAsync(`schema`);
 
   copyFileAsync(
     schemaPath,
@@ -127,55 +119,32 @@ async function defineYourOwnApi(config: Config) {
       ? convert(schema)
       : { openApiDef: JSON.parse(schema) };
 
-  copyFileAsync(
-    schemaPath,
-    `.panacloud/schema.${
-      apiType === APITYPE.graphql ? "graphql" : `${path.extname(schemaPath)}`
-    }`,
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  const model = {
+    ...jsonSchema,
+    ...config,
+    workingDir,
+  };
 
-  writeFileAsync(
-    `.panacloud/model.json`,
-    JSON.stringify({
-      ...jsonSchema,
-      USER_WORKING_DIRECTORY: USER_DIRECTORY,
-      api: {
-        ...config.api,
-      },
-    }),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
-
-  // await start();
+  // Codegenerator Function
+  generator(model);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
   const installingModules = startSpinner("Installing Modules");
 
-  // try {
-  //   await exec(`npm install`);
-  // } catch (error) {
-  //   stopSpinner(installingModules, `Error: ${error}`, true);
-  //   process.exit(1);
-  // }
+  try {
+    await exec(`npm install`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
+  }
 
-  // try {
-  //   await exec(`cd lambdaLayer/nodejs && npm install`);
-  // } catch (error) {
-  //   stopSpinner(installingModules, `Error: ${error}`, true);
-  //   process.exit(1);
-  // }
+  try {
+    await exec(`cd lambdaLayer/nodejs && npm install`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
+  }
 
   stopSpinner(installingModules, "Modules installed", false);
 }
