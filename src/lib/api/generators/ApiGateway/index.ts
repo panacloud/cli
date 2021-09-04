@@ -19,18 +19,11 @@ export class ApiGatewayConstruct {
     }
 
     async constructApiGatewayConstructFile() {
-        // const cdk = new Cdk();
-        // const lambda = new Lambda();
         const ts = new TypeScriptWriter(this.code);
         this.code.openFile(this.outputFile);
 
-        // const cdk = new Cdk(output);
-        // const imp = new Imports(output);
-
         const apigw = new ApiGateway();
-        
-        // imp.importsForStack(output);
-        // imp.importLambda(output);
+
         apigw.importApiGateway();
   
         const props = [
