@@ -1,5 +1,5 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import { writeFileAsync,  copyFileAsync,  mkdirRecursiveAsync,  writeFileSync} from "../../../fs";
+import { writeFileAsync,  copyFileAsync,  mkdirRecursiveAsync,  writeFileSync, copyDirSync} from "../../../fs";
 import { contextInfo } from "../../info";
 import { Config, APITYPE } from "../../../../utils/constants";
 const path = require("path");
@@ -8,7 +8,7 @@ const YAML = require("yamljs");
 const convert = require("graphql-to-json-converter");
 const exec = require("await-exec");
 const _ = require("lodash");
-
+// const template =  require('../../template')
 async function defineYourOwnApi(config: Config) {
   const { api_token, entityId } = config;
 
@@ -17,7 +17,15 @@ async function defineYourOwnApi(config: Config) {
   const USER_DIRECTORY = _.snakeCase(path.basename(process.cwd()));
 
   const generatingCode = startSpinner("Generating CDK Code...");
-
+  // console.log("resolve path ===>",path.resolve("../../template"))
+  // copyDirSync(path.resolve("../../template"), path.join("../../../../../",process.cwd()), function (err:any) {
+  //   if (err) {                 
+  //     console.error(err);      // add if you want to replace existing folder or file with same name
+  //   } else {
+  //     console.log("success!");
+  //   }
+  // });
+  
   /* copy files from util of .panacloud to root directory */
   
   // fs.readdirSync('').forEach((file: any) => {
@@ -67,16 +75,16 @@ async function defineYourOwnApi(config: Config) {
   //   }
   // );
 
-  writeFileAsync(
-    `./cdk.context.json`,
-    JSON.stringify(contextInfo(api_token, entityId)),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // writeFileAsync(
+  //   `./cdk.context.json`,
+  //   JSON.stringify(contextInfo(api_token, entityId)),
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   // writeFileAsync(
   //   `./cdk.json`,
@@ -120,23 +128,23 @@ async function defineYourOwnApi(config: Config) {
     schema = JSON.stringify(YAML.parse(schema));
   }
 
-  const jsonSchema =
-    apiType === APITYPE.graphql
-      ? convert(schema)
-      : { openApiDef: JSON.parse(schema) };
+  // const jsonSchema =
+  //   apiType === APITYPE.graphql
+  //     ? convert(schema)
+  //     : { openApiDef: JSON.parse(schema) };
 
-  copyFileAsync(
-    schemaPath,
-    `.panacloud/schema.${
-      apiType === APITYPE.graphql ? "graphql" : `${path.extname(schemaPath)}`
-    }`,
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // copyFileAsync(
+  //   schemaPath,
+  //   `.panacloud/schema.${
+  //     apiType === APITYPE.graphql ? "graphql" : `${path.extname(schemaPath)}`
+  //   }`,
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   // writeFileAsync(
   //   `.panacloud/model.json`,
@@ -159,7 +167,7 @@ async function defineYourOwnApi(config: Config) {
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
-  const installingModules = startSpinner("Installing Modules");
+  // const installingModules = startSpinner("Installing Modules");
 
   // try {
   //   await exec(`npm install`);
@@ -175,7 +183,7 @@ async function defineYourOwnApi(config: Config) {
   //   process.exit(1);
   // }
 
-  stopSpinner(installingModules, "Modules installed", false);
+  // stopSpinner(installingModules, "Modules installed", false);
 }
 
 export default defineYourOwnApi;

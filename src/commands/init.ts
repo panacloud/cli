@@ -5,6 +5,7 @@ import { writeFileAsync, mkdirRecursiveAsync } from "../lib/fs";
 import { userInput } from "../lib/inquirer";
 import { checkEmptyDirectoy, validateSchemaFile } from "../lib/api/errorHandling";
 import { TEMPLATE } from "../utils/constants";
+import { writeFileSync } from "fs";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -24,6 +25,8 @@ export default class Create extends Command {
 
   async run() {
     const { flags } = this.parse(Create);
+
+    // console.log(JSON.parse(fs.readFileSync(path.join(`${process.cwd()}`,'panacloudconfig.json'))))
 
     // Questions
     let usrInput = await userInput();
@@ -47,7 +50,7 @@ export default class Create extends Command {
     // hidefile.hideSync(".panacloud");
 
     // write usrInputs in panacloudconfig.json
-    writeFileAsync(
+    writeFileSync(
       `./panacloudconfig.json`,
       JSON.stringify({
         entityId: usrInput.entityId,
@@ -63,13 +66,14 @@ export default class Create extends Command {
           lambdaStyle: usrInput.lambda,
           database: usrInput.database,
         },
-      }),
-      (err: string) => {
-        if (err) {
-          stopSpinner(initializingCodegen, `Error: ${err}`, true);
-          this.exit(1);
-        }
-      }
+      })
+      // ,
+      // (err: string) => {
+      //   if (err) {
+      //     stopSpinner(initializingCodegen, `Error: ${err}`, true);
+      //     this.exit(1);
+      //   }
+      // }
     );
 
     // const dir = path.join(process.cwd(), ".panacloud");
@@ -99,7 +103,16 @@ export default class Create extends Command {
     );
 
     // Reading panacloudconfig.json
-    const config = JSON.parse(fs.readFileSync(`./panacloudconfig.json`));
+    const config = JSON.parse(fs.readFileSync(path.join(`${process.cwd()}`,'panacloudconfig.json')));
+
+    // if (config?.template === TEMPLATE.todoApi) {
+    //   console.log("todoApp")
+    // } else if (config.template === TEMPLATE.defineApi) {
+    //   console.log("defineApi")
+    // } else {
+    //   console.log("basicApi")
+    // }
+
 
     if (config?.template === TEMPLATE.todoApi) {
       await todoApi(config);
