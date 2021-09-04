@@ -134,7 +134,7 @@ export class NeptuneDBConstruct {
   }
 }
 
-export const neptuneConstruct = async (
+export const neptuneDBConstruct = async (
   props: StackBuilderProps
 ): Promise<void> => {
   const builder = new NeptuneDBConstruct(props);
