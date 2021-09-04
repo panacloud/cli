@@ -21,7 +21,7 @@ type Element = {
 export type Property = {
   name: string;
   typeName: string;
-  accessModifier: string;
+  accessModifier: 'public' | 'private' | 'protected';
   description?: string[];
 };
 
