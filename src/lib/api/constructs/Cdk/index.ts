@@ -38,13 +38,14 @@ export class Cdk {
     ts.writeInterfaceBlock(propsName, constructProps)
       this.code.line();
     }
+    
     const classDefinition: ClassDefinition = {
       name: `${_.upperFirst(_.camelCase(constructName))}`,
       extends: "Construct",
       export: true,
     };
 
-    ts.writeClassBlock(classDefinition, properties, contents)
+    ts.writeClassBlock(classDefinition,properties,propsName,contents)
   }
 
   public nodeAddDependency(sourceName: string, valueName: string) {
