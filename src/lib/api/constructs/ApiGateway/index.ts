@@ -1,21 +1,25 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker();
 
-export class ApiGateway extends CodeMaker {
+export class ApiGateway {
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
+
   public importApiGateway() {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_apigateway as apigw"]);
   }
 
   public initializeApiGateway(name: string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${name}`,
         typeName: "apigw.LambdaRestApi",
         initializer: () => {
-          this.line(`new apigw.LambdaRestApi(this,'${name}',{
+          this.code.line(`new apigw.LambdaRestApi(this,'${name}',{
                 handler: props!.${name}_lambdaFn,
                 defaultCorsPreflightOptions: {
                   allowOrigins: apigw.Cors.ALL_ORIGINS,

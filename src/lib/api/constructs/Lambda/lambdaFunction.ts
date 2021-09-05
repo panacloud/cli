@@ -1,19 +1,22 @@
 import { CodeMaker } from "codemaker";
 import { LAMBDASTYLE, APITYPE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker();
 
-export class LambdaFunction extends CodeMaker {
+export class LambdaFunction {
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
   public initializeLambdaFunction(
     lambdaStyle: string,
     apiType: APITYPE,
     content?: any
   ) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
 
     if (apiType === APITYPE.graphql) {
       if (lambdaStyle === LAMBDASTYLE.multi) {
-        this.line(`
+        this.code.line(`
       var AWS = require('aws-sdk');
       
       exports.handler = async(event:any) => {
@@ -22,41 +25,41 @@ export class LambdaFunction extends CodeMaker {
       }
       `);
       } else if (lambdaStyle === LAMBDASTYLE.single) {
-        this.line(`exports.handler = async (event:Event) => {`);
-        this.line(
+        this.code.line(`exports.handler = async (event:Event) => {`);
+        this.code.line(
           `const data = await axios.post('http://sandbox:8080', event)`
         );
-        this.line();
-        this.line(`switch (event.info.fieldName) {`);
-        this.line();
+        this.code.line();
+        this.code.line(`switch (event.info.fieldName) {`);
+        this.code.line();
         content();
-        this.line();
-        this.line(`}`);
-        this.line(`}`);
+        this.code.line();
+        this.code.line(`}`);
+        this.code.line(`}`);
       }
     } else {
       /* rest api */
-      this.line(`exports.handler = async (event: any) => {`);
-      this.line(`const data = await axios.post('http://sandbox:8080', event)`);
-      this.line(`try {`);
-      this.line();
-      this.line("const method = event.httpMethod;");
-      this.line(
+      this.code.line(`exports.handler = async (event: any) => {`);
+      this.code.line(`const data = await axios.post('http://sandbox:8080', event)`);
+      this.code.line(`try {`);
+      this.code.line();
+      this.code.line("const method = event.httpMethod;");
+      this.code.line(
         "const requestName = event.path.startsWith('/') ? event.path.substring(1) : event.path;"
       );
-      this.line("const body = JSON.parse(event.body);");
+      this.code.line("const body = JSON.parse(event.body);");
       content();
-      this.line();
-      this.line(`}`);
-      this.line("catch(err) {");
-      this.line("return err;");
-      this.line(`}`);
-      this.line(`}`);
+      this.code.line();
+      this.code.line(`}`);
+      this.code.line("catch(err) {");
+      this.code.line("return err;");
+      this.code.line(`}`);
+      this.code.line(`}`);
     }
   }
 
   public helloWorldFunction(name: string) {
-    this.line(`
+    this.code.line(`
     const AWS = require('aws-sdk');
     
     export const ${name} = async() => {

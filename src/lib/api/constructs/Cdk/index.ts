@@ -1,9 +1,5 @@
 import { CodeMaker } from "codemaker";
-import {
-  ClassDefinition,
-  Property,
-  TypeScriptWriter,
-} from "../../../../utils/typescriptWriter";
+import {ClassDefinition,Property,TypeScriptWriter} from "../../../../utils/typescriptWriter";
 const _ = require("lodash");
 
 interface consturctProps {

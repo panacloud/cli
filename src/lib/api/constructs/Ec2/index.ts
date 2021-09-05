@@ -1,13 +1,15 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker()
-export class Ec2 extends CodeMaker {
-
+export class Ec2 {
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
   public initializeVpc(
     apiName: string,
     subnetConfig?: string
   ) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     const config = subnetConfig
       ? `, {subnetConfiguration: [
       ${subnetConfig}
@@ -18,7 +20,7 @@ export class Ec2 extends CodeMaker {
         name: `${apiName}_vpc`,
         typeName: "",
         initializer: () => {
-          this.line(` new ec2.Vpc(this, "${apiName}Vpc" ${config} );`);
+          this.code.line(` new ec2.Vpc(this, "${apiName}Vpc" ${config} );`);
         },
       },
       "const"
@@ -29,13 +31,13 @@ export class Ec2 extends CodeMaker {
     apiName: string,
     vpcName: string,
   ) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_sg`,
         typeName: "",
         initializer: () => {
-          this.line(`new ec2.SecurityGroup(this, "${apiName}SecurityGroup", {
+          this.code.line(`new ec2.SecurityGroup(this, "${apiName}SecurityGroup", {
             vpc: ${vpcName},
             allowAllOutbound: true,
             description: "${apiName} security group",
@@ -52,7 +54,7 @@ export class Ec2 extends CodeMaker {
     apiName: string,
     securityGroupName: string
   ) {
-    this.line(
+    this.code.line(
       `${securityGroupName}.addIngressRule(${securityGroupName}, ec2.Port.tcp(8182), "${apiName}Rule");`
     );
   }

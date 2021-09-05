@@ -82,6 +82,11 @@ export class Imports {
     this.code.line(`var axios = require('axios')`);
   }
 
+  public importCdkDuration(){
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["Duration"]);
+  }
+
   public importForDynamodbConstruct() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports(`./${CONSTRUCTS.dynamodb}`, [CONSTRUCTS.dynamodb]);
