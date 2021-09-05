@@ -2,8 +2,7 @@ import { startSpinner, stopSpinner } from "../../../spinner";
 import {
   writeFileAsync,
   copyFileAsync,
-  mkdirRecursiveAsync,
-  writeFileSync,
+  mkdirRecursiveAsync
 } from "../../../fs";
 import { contextInfo } from "../../info";
 import { Config, APITYPE } from "../../../../utils/constants";

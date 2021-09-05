@@ -1,17 +1,21 @@
 import { CodeMaker } from "codemaker";
 import { APITYPE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker();
 
-export class DynamoDB extends CodeMaker {
+export class DynamoDB  {
+  code: CodeMaker;
+  constructor(_code: CodeMaker) {
+    this.code = _code;
+  }
+
   public initializeDynamodb(apiName: string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_table`,
         typeName: "dynamodb.Table",
         initializer: () => {
-          this.line(` new dynamodb.Table(this, "${apiName}Table", {
+          this.code.line(` new dynamodb.Table(this, "${apiName}Table", {
               tableName: "${apiName}",
               billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
               partitionKey:{
@@ -32,9 +36,9 @@ export class DynamoDB extends CodeMaker {
     functionName?: string
   ) {
     if (lambdaStyle === LAMBDASTYLE.single) {
-      this.line(`${tableName}.grantFullAccess(props!.${lambda}_lambdaFn);`);
+      this.code.line(`${tableName}.grantFullAccess(props!.${lambda}_lambdaFn);`);
     } else if (lambdaStyle === LAMBDASTYLE.multi) {
-      this.line(
+      this.code.line(
         `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn_${functionName});`
       );
     }
@@ -49,18 +53,18 @@ export class DynamoDB extends CodeMaker {
     functionName?: string
   ) {
     if (lambdaStyle === LAMBDASTYLE.single || apiType === APITYPE.rest) {
-      this.line(
+      this.code.line(
         `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn);`
       );
     } else if (lambdaStyle === LAMBDASTYLE.multi) {
-      this.line(
+      this.code.line(
         `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn_${functionName});`
       );
     }
   }
 
   public initializeTestForDynamodb(TableName: string) {
-    this.line(`expect(actual).to(
+    this.code.line(`expect(actual).to(
           countResourcesLike("AWS::DynamoDB::Table",1, {
             KeySchema: [
               {

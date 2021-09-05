@@ -1,16 +1,18 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker();
 
 export class apiManager {
-
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
   public apiManagerInitializer(apiName: string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration({
         name: "apiManager",
         typeName: "PanacloudManager",
         initializer:()=>{
-          maker.line(`new PanacloudManager(this, "${apiName}APIManager")`);
+          this.code.line(`new PanacloudManager(this, "${apiName}APIManager")`);
         },
     },"const")
   }
