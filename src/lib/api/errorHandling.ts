@@ -6,45 +6,20 @@ const path = require("path");
 export const checkEmptyDirectoy = (spinner: any) => {
   const fileCount = fs.readdirSync(process.cwd()).length;
   if (fileCount >= 1) {
-    if (fs.existsSync(`.panacloud`)) {
-      stopSpinner(
-        spinner,
-        "Error: Already initialized Panacloud Codegenerator",
-        true
-      );
-      process.exit(1);
-    } else {
-      fs.readdirSync(process.cwd()).forEach((file: string) => {
-        if (
-          path.extname(file) !== ".gql" &&
-          path.extname(file) !== ".graphql" &&
-          path.extname(file) !== ".json" &&
-          path.extname(file) !== ".yml" &&
-          path.extname(file) !== ".yaml"
-        ) {
-          stopSpinner(spinner, "Error: directory not empty", true);
-          process.exit(1);
-        }
-      });
-    }
+    fs.readdirSync(process.cwd()).forEach((file: string) => {
+      if (
+        path.extname(file) !== ".gql" &&
+        path.extname(file) !== ".graphql" &&
+        path.extname(file) !== ".json" &&
+        path.extname(file) !== ".yml" &&
+        path.extname(file) !== ".yaml"
+      ) {
+        stopSpinner(spinner, "Error: directory not empty", true);
+        process.exit(1);
+      }
+    });
   }
 };
-
-function isFileEmpty(fileName: string, ignoreWhitespace = true) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(fileName, (err: any, data: any) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      resolve(
-        (!ignoreWhitespace && data.length == 0) ||
-          (ignoreWhitespace && !!String(data).match(/^\s*$/))
-      );
-    });
-  });
-}
 
 export const validateSchemaFile = (
   file: string,

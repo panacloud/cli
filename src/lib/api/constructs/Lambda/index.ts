@@ -1,14 +1,18 @@
 import { CodeMaker } from "codemaker";
 import { LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker();
 
 interface Environment {
   name: string;
   value: string;
 }
 
-export class Lambda extends CodeMaker {
+export class Lambda {
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
+
   public initializeLambda(
     apiName: string,
     lambdaStyle: string,
@@ -19,7 +23,7 @@ export class Lambda extends CodeMaker {
     vpcSubnets?: string,
     roleName?: string
   ) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     let lambdaConstructName: string = `${apiName}Lambda`;
     let lambdaVariable: string = `${apiName}_lambdaFn`;
     let funcName: string = `${apiName}Lambda`;
@@ -56,7 +60,7 @@ export class Lambda extends CodeMaker {
         name: lambdaVariable,
         typeName: "lambda.Function",
         initializer: () => {
-          this.line(`new lambda.Function(this, "${funcName}", {
+          this.code.line(`new lambda.Function(this, "${funcName}", {
         functionName: "${funcName}",
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
@@ -75,13 +79,13 @@ export class Lambda extends CodeMaker {
   }
 
   public lambdaLayer(apiName: string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_lambdaLayer`,
         typeName: "lambda.LayerVersion",
         initializer: () => {
-          this.line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
+          this.code.line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
           code: lambda.Code.fromAsset('lambdaLayer'),
         })`);
         },
@@ -98,9 +102,9 @@ export class Lambda extends CodeMaker {
     functionName?: string
   ) {
     if (lambdaStyle === LAMBDASTYLE.single) {
-      this.line(`${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`);
+      this.code.line(`${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`);
     } else if (lambdaStyle === LAMBDASTYLE.multi) {
-      this.line(
+      this.code.line(
         `${lambda}_lambdaFn_${functionName}.addEnvironment("${envName}", ${value});`
       );
     }
@@ -110,7 +114,7 @@ export class Lambda extends CodeMaker {
     funcName: string,
     handlerName: string
   ) {
-    this.line(`expect(actual).to(
+    this.code.line(`expect(actual).to(
       haveResource("AWS::Lambda::Function", {
         FunctionName: "${funcName}",
         Handler: "${handlerName}.handler",
@@ -132,7 +136,7 @@ export class Lambda extends CodeMaker {
     funcName: string,
     handlerName: string
   ) {
-    this.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
+    this.code.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
     FunctionName: '${funcName}',
     Handler: '${handlerName}.handler',
     Runtime: 'nodejs12.x',
@@ -172,7 +176,7 @@ export class Lambda extends CodeMaker {
     funcName: string,
     handlerName: string
   ) {
-    this.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
+    this.code.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
     FunctionName: '${funcName}',
     Handler: '${handlerName}.handler',
     Runtime: 'nodejs12.x',

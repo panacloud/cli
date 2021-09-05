@@ -1,6 +1,6 @@
 import { CodeMaker } from "codemaker";
 
-type ClassDefinition = {
+export type ClassDefinition = {
   name: string;
   export: boolean;
   extends?: string;
@@ -10,7 +10,7 @@ type ClassDefinition = {
 type VariableDefinition = {
   name: string;
   typeName: string;
-  initializer: () => void;
+  initializer?: ((code: TypeScriptWriter) => void) | string
 };
 
 type Element = {
@@ -21,7 +21,7 @@ type Element = {
 export type Property = {
   name: string;
   typeName: string;
-  accessModifier: string;
+  accessModifier: 'public' | 'private' | 'protected';
   description?: string[];
 };
 
@@ -38,6 +38,7 @@ export class TypeScriptWriter {
   public writeClassBlock(
     classDefinition: ClassDefinition,
     properties?: Property[],
+    propsName?:string,
     contents?: any
   ) {
     this.code.openBlock(
@@ -50,26 +51,35 @@ export class TypeScriptWriter {
         `${property.accessModifier} ${property.name}: ${property.typeName};`
       );
     });
+    this.code.line(` 
+    constructor(scope: Construct, id: string, props?: ${propsName}) {
+        super(scope, id);
+    `);
     contents();
+    this.code.line(`}`);
     this.code.closeBlock();
   }
 
-  public writeVariableDeclaration(
-    definition: VariableDefinition,
-    kind: "const" | "let",
-    
-  ) {
-    this.code.line(
-      `${kind} ${definition.name}: ${
-        definition.typeName
-      } = ${definition.initializer()}`
-    );
-  }
+  writeVariableDeclaration(definition: VariableDefinition,kind: "const" | "let") {
+    this.code.line(`${kind} ${definition.name}`);
+    if (definition.typeName) {
+        this.code.line(`: ${definition.typeName}`);
+    }
+    if (definition.initializer) {
+        this.code.line(' = ');
+        if (typeof (definition.initializer) === 'string') {
+            this.code.line(definition.initializer);
+        }
+        else
+          definition.initializer(this);
+    }
+    this.code.line(';');
+    return this;
+}
 
   public writeInterfaceBlock(
     interfaceName: string,
     elements: Element[],
-    
   ) {
     this.code.openBlock(`interface ${interfaceName}`);
     elements.forEach(({ name, type }) => {
