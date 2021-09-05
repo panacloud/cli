@@ -31,15 +31,15 @@ export class AuroraDBConstruct {
     this.code.openFile(this.outputFile);
 
     const { apiName } = this.config.api;
-    const cdk = new Cdk();
-    const ec2 = new Ec2();
-    const aurora = new AuroraServerless();
-    const iam = new Iam();
-    const imp = new Imports();
+    const cdk = new Cdk(this.code);
+    const ec2 = new Ec2(this.code);
+    const aurora = new AuroraServerless(this.code);
+    const iam = new Iam(this.code);
+    const imp = new Imports(this.code);
 
     imp.importsForStack();
     imp.importIam();
-    ts.writeImports("aws-cdk-lib", ["Duration"]);
+    imp.importCdkDuration()
     imp.importRds();
     imp.importEc2();
     this.code.line();
@@ -77,7 +77,7 @@ export class AuroraDBConstruct {
         aurora.connectionsAllowFromAnyIpv4(`${apiName}_db`);
         this.code.line;
 
-        auroradbPropertiesInitializer(apiName);
+        auroradbPropertiesInitializer(apiName,this.code);
       },
       undefined,
       auroradbProperties

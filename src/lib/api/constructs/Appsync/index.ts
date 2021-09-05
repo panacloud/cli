@@ -1,26 +1,28 @@
 import { CodeMaker } from "codemaker";
 import { LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker()
 
 interface Props {
   name: string;
   type: string;
 }
 
-export class Appsync extends CodeMaker {
+export class Appsync {
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
 
   public apiName: string = "appsync_api";
-
   public initializeAppsyncApi(name: string,authenticationType?: string) {
     this.apiName = name;
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${this.apiName}_appsync`,
         typeName: "appsync.CfnGraphQLApi",
         initializer: () => {
-          this.line(`new appsync.CfnGraphQLApi(this,'${this.apiName}',{
+          this.code.line(`new appsync.CfnGraphQLApi(this,'${this.apiName}',{
           authenticationType:'API_KEY',
           name: '${this.apiName}',
         })`);
@@ -31,14 +33,14 @@ export class Appsync extends CodeMaker {
   }
 
   public initializeAppsyncSchema(schema: string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     const gqlSchema = "`" + schema + "`";
     ts.writeVariableDeclaration(
       {
         name: `${this.apiName}_schema`,
         typeName: "appsync.CfnGraphQLSchema",
         initializer: () => {
-          this.line(`new appsync.CfnGraphQLSchema(this,'${this.apiName}Schema',{
+          this.code.line(`new appsync.CfnGraphQLSchema(this,'${this.apiName}Schema',{
             apiId: ${this.apiName}_appsync.attrApiId,
             definition:${gqlSchema}
           })`);
@@ -49,13 +51,13 @@ export class Appsync extends CodeMaker {
   }
 
   public initializeApiKeyForAppsync(apiName: string) {
-    this.line(`new appsync.CfnApiKey(this,"apiKey",{
+    this.code.line(`new appsync.CfnApiKey(this,"apiKey",{
         apiId:${apiName}_appsync.attrApiId
     })`);
   }
 
   public appsyncLambdaDataSource(dataSourceName: string,serviceRole: string,lambdaStyle:string,functionName?:string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     let ds_initializerName = this.apiName + "dataSourceGraphql";
     let ds_variable = `ds_${dataSourceName}`;
     let ds_name = `${dataSourceName}_dataSource`;
@@ -73,7 +75,7 @@ export class Appsync extends CodeMaker {
         name: ds_variable,
         typeName: "appsync.CfnDataSource",
         initializer: () => {
-          this.line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
+          this.code.line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
           name: "${ds_name}",
           apiId: ${this.apiName}_appsync.attrApiId,
           type:"AWS_LAMBDA",
@@ -91,13 +93,13 @@ export class Appsync extends CodeMaker {
     typeName: string,
     dataSourceName: string,
   ) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${fieldName}_resolver`,
         typeName: "appsync.CfnResolver",
         initializer: () => {
-          this.line(`new appsync.CfnResolver(this,'${fieldName}_resolver',{
+          this.code.line(`new appsync.CfnResolver(this,'${fieldName}_resolver',{
             apiId: ${this.apiName}_appsync.attrApiId,
             typeName: "${typeName}",
             fieldName: "${fieldName}",
@@ -110,14 +112,14 @@ export class Appsync extends CodeMaker {
   }
 
   public appsyncApiTest() {
-    this.line(`expect(actual).to(
+    this.code.line(`expect(actual).to(
       countResourcesLike("AWS::AppSync::GraphQLApi",1, {
         AuthenticationType: "API_KEY",
         Name: "${this.apiName}",
       })
     );`);
-    this.line();
-    this.line(`expect(actual).to(
+    this.code.line();
+    this.code.line(`expect(actual).to(
       countResourcesLike("AWS::AppSync::GraphQLSchema",1, {
         ApiId: {
           "Fn::GetAtt": [
@@ -130,7 +132,7 @@ export class Appsync extends CodeMaker {
   }
 
   public appsyncApiKeyTest() {
-    this.line(`expect(actual).to(
+    this.code.line(`expect(actual).to(
       haveResource("AWS::AppSync::ApiKey", {
         ApiId: {
           "Fn::GetAtt": [stack.getLogicalId(appsync_api[0] as cdk.CfnElement), "ApiId"],
@@ -144,8 +146,8 @@ export class Appsync extends CodeMaker {
     dataSourceName: string,
     lambdaFuncIndex: number
   ) {
-    this.line();
-    this.line(`expect(actual).to(
+    this.code.line();
+    this.code.line(`expect(actual).to(
       countResourcesLike("AWS::AppSync::DataSource",1, {
           ApiId: {
             "Fn::GetAtt": [stack.getLogicalId(appsync_api[0] as cdk.CfnElement), "ApiId"],
@@ -177,7 +179,7 @@ export class Appsync extends CodeMaker {
     typeName: string,
     dataSourceName: string
   ) {
-    this.line(`expect(actual).to(
+    this.code.line(`expect(actual).to(
       countResourcesLike("AWS::AppSync::Resolver",1, {
           "ApiId": {
               "Fn::GetAtt": [
