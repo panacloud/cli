@@ -22,6 +22,7 @@ export type Property = {
   name: string;
   typeName: string;
   accessModifier: 'public' | 'private' | 'protected';
+  isReadonly: boolean;
   description?: string[];
 };
 
@@ -48,7 +49,7 @@ export class TypeScriptWriter {
     );
     properties?.forEach((property: Property) => {
       this.code.line(
-        `${property.accessModifier} ${property.name}: ${property.typeName};`
+        `${property.accessModifier} ${property.isReadonly? "readonly" : ""} ${property.name}: ${property.typeName};`
       );
     });
     this.code.line(` 

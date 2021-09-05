@@ -13,16 +13,19 @@ export const auroradbPropertiesHandler = (): Property[] => {
       name: "secretRef",
       typeName: "string",
       accessModifier: "public",
+      isReadonly: false
     },
     {
       name: "vpcRef",
       typeName: "ec2.Vpc",
       accessModifier: "public",
+      isReadonly: false
     },
     {
       name: "serviceRole",
       typeName: "iam.Role",
       accessModifier: "public",
+      isReadonly: false
     },
   ];
 };

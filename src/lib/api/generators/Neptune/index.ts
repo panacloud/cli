@@ -43,16 +43,19 @@ export class NeptuneDBConstruct {
         name: "VPCRef",
         typeName: "ec2.Vpc",
         accessModifier: "public",
+        isReadonly: false
       },
       {
         name: "SGRef",
         typeName: "ec2.SecurityGroup",
         accessModifier: "public",
+        isReadonly: false
       },
       {
         name: "neptuneReaderEndpoint",
         typeName: "string",
         accessModifier: "public",
+        isReadonly: false
       },
     ];
 

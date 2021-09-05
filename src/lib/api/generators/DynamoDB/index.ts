@@ -37,6 +37,7 @@ export class DyanmoDBConstruct {
         name: "table",
         typeName: "dynamodb.Table",
         accessModifier: "public",
+        isReadonly: false
       },
     ];
 
