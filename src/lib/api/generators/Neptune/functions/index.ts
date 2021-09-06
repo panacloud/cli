@@ -1,14 +1,13 @@
 import { TypeScriptWriter } from "../../../../../utils/typescriptWriter";
 import { CodeMaker } from "codemaker";
-let maker = new CodeMaker();
 
 export const neptunePropertiesInitializer = (
-  apiName: string
+  apiName: string , code:CodeMaker
 ) => {
-  const ts = new TypeScriptWriter(maker);
-  maker.line(`this.VPCRef = ${apiName}_vpc;`);
-  maker.line(`this.SGRef = ${apiName}_sg;`);
-  maker.line(
+  const ts = new TypeScriptWriter(code);
+  code.line(`this.VPCRef = ${apiName}_vpc;`);
+  code.line(`this.SGRef = ${apiName}_sg;`);
+  code.line(
     `this.neptuneReaderEndpoint = ${apiName}_neptuneCluster.attrReadEndpoint`
   );
 };

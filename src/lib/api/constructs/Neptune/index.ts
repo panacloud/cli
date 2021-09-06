@@ -1,20 +1,24 @@
 import { CodeMaker } from "codemaker";
+import { CONSTRUCTS } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker();
 
-export class Neptune extends CodeMaker {
+export class Neptune {
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
   public initializeNeptuneCluster(
     apiName: string,
     neptuneSubnetName: string,
     securityGroupName: string
   ) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_neptuneCluster`,
         typeName: "",
         initializer: () => {
-          this.line(` new neptune.CfnDBCluster(this, "${apiName}Cluster", {
+          this.code.line(` new neptune.CfnDBCluster(this, "${apiName}Cluster", {
             dbSubnetGroupName: ${neptuneSubnetName}.dbSubnetGroupName,
             dbClusterIdentifier: "${apiName}Cluster",
             vpcSecurityGroupIds: [${securityGroupName}.securityGroupId],
@@ -25,14 +29,25 @@ export class Neptune extends CodeMaker {
     );
   }
 
+  public neptunedbConstructInitializer(apiName:string,code:CodeMaker){
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeVariableDeclaration({
+      name:`${apiName}_neptunedb`,
+      typeName:CONSTRUCTS.neptuneDb,
+      initializer:()=>{
+        this.code.line(`new ${CONSTRUCTS.neptuneDb}(this,"${apiName}${CONSTRUCTS.neptuneDb}")`)
+      }},
+     "const")
+  }
+
   public initializeNeptuneSubnet(apiName: string, vpcName: string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_neptuneSubnet`,
         typeName: "",
         initializer: () => {
-          this.line(` new neptune.CfnDBSubnetGroup(
+          this.code.line(` new neptune.CfnDBSubnetGroup(
             this,
             "${apiName}neptuneSubnetGroup",
             {
@@ -53,13 +68,13 @@ export class Neptune extends CodeMaker {
     vpcName: string,
     neptuneClusterName: string
   ) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_neptuneInstance`,
         typeName: "",
         initializer: () => {
-          this.line(`new neptune.CfnDBInstance(this, "${apiName}instance", {
+          this.code.line(`new neptune.CfnDBInstance(this, "${apiName}instance", {
             dbInstanceClass: "db.t3.medium",
             dbClusterIdentifier: ${neptuneClusterName}.dbClusterIdentifier,
             availabilityZone: ${vpcName}.availabilityZones[0],
@@ -71,11 +86,11 @@ export class Neptune extends CodeMaker {
   }
 
   public addDependsOn(sourceName: string, depended: string) {
-    this.line(`${depended}.addDependsOn(${sourceName})`);
+    this.code.line(`${depended}.addDependsOn(${sourceName})`);
   }
 
   public initializeTesForEC2Vpc() {
-    this.line(
+    this.code.line(
       `expect(stack).toHaveResource('AWS::EC2::VPC', {
         CidrBlock: '10.0.0.0/16',
         EnableDnsHostnames: true,
@@ -91,7 +106,7 @@ export class Neptune extends CodeMaker {
     subnetNum: string,
     cidr: string
   ) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::Subnet', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::Subnet', {
       CidrBlock: '10.0.${cidr}.0/24',
       VpcId: {
         Ref: stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement),
@@ -123,7 +138,7 @@ export class Neptune extends CodeMaker {
   }
 
   public initiaizeTestForRouteTable(apiName: string, subnetNum: string) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::RouteTable', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::RouteTable', {
       VpcId: {
         Ref: stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement),
       },
@@ -140,7 +155,7 @@ export class Neptune extends CodeMaker {
     isolatedRouteTablesNum: number
   ) {
     this
-      .line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
+      .code.line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
       RouteTableId: stack.resolve(isolatedRouteTables[0].routeTableId),
       SubnetId: {
         Ref: stack.getLogicalId(
@@ -151,7 +166,7 @@ export class Neptune extends CodeMaker {
   }
 
   public initializeTestForSecurityGroup(apiName: string) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroup', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroup', {
     GroupDescription: '${apiName} security group',
     GroupName: '${apiName}SecurityGroup',
     SecurityGroupEgress: [
@@ -175,7 +190,7 @@ export class Neptune extends CodeMaker {
   }
 
   public initializeTestForSecurityGroupIngress(apiName: string) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroupIngress', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroupIngress', {
     IpProtocol: 'tcp',
     Description: '${apiName}Rule',
     FromPort: 8182,
@@ -196,7 +211,7 @@ export class Neptune extends CodeMaker {
   }
 
   public initializeTestForDBSubnetGroup(apiName: string) {
-    this.line(`  expect(stack).toHaveResource('AWS::Neptune::DBSubnetGroup', {
+    this.code.line(`  expect(stack).toHaveResource('AWS::Neptune::DBSubnetGroup', {
       DBSubnetGroupDescription: '${apiName} Subnet',
       SubnetIds: subnetRefArray,
       DBSubnetGroupName: '${apiName}_subnetgroup',
@@ -204,7 +219,7 @@ export class Neptune extends CodeMaker {
   }
 
   public initializeTestForDBCluster(apiName: string) {
-    this.line(`expect(stack).toHaveResource('AWS::Neptune::DBCluster', {
+    this.code.line(`expect(stack).toHaveResource('AWS::Neptune::DBCluster', {
       DBClusterIdentifier: '${apiName}Cluster',
       DBSubnetGroupName: '${apiName}_subnetgroup',
       VpcSecurityGroupIds: [
@@ -219,7 +234,7 @@ export class Neptune extends CodeMaker {
   }
 
   public initializeTestForDBInstance(apiName: string) {
-    this.line(`expect(stack).toHaveResource('AWS::Neptune::DBInstance', {
+    this.code.line(`expect(stack).toHaveResource('AWS::Neptune::DBInstance', {
     DBInstanceClass: 'db.t3.medium',
     AvailabilityZone: {
       'Fn::Select': [
@@ -234,6 +249,6 @@ export class Neptune extends CodeMaker {
   }
 
   public initializeTestForCountResources(service: string, count: number) {
-    this.line(`expect(stack).toCountResources('${service}', ${count});`);
+    this.code.line(`expect(stack).toCountResources('${service}', ${count});`);
   }
 }

@@ -1,4 +1,5 @@
 const fs = require("fs");
+const fse = require('fs-extra')
 const { promisify } = require("util");
 const makeDir = require("make-dir");
 
@@ -9,6 +10,7 @@ const copyFileAsync = promisify(fs.copyFile);
 const rmDirAsync = promisify(fs.rmdir);
 const accessAsync = promisify(fs.access);
 const writeFileSync = fs.writeFileSync;
+const copyDirSync = fse.copySync
 
 const fileExistsAsync = async (filePath: string) => {
   try {
@@ -25,6 +27,7 @@ export {
   readFileAsync,
   rmDirAsync,
   copyFileAsync,
+  copyDirSync,
   rmFileAsync,
   writeFileAsync,
   writeFileSync,

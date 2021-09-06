@@ -1,16 +1,20 @@
 import { CodeMaker } from "codemaker";
+import { CONSTRUCTS } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-let maker = new CodeMaker();
 
-export class AuroraServerless extends CodeMaker {
+export class AuroraServerless {
+  code: CodeMaker;
+  constructor(_code: CodeMaker){
+    this.code = _code
+  }
   public initializeAuroraCluster(apiName: string, vpcName: string) {
-    const ts = new TypeScriptWriter(maker);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_db`,
         typeName: "",
         initializer: () => {
-          this.line(`new rds.ServerlessCluster(this, "${apiName}DB", {
+          this.code.line(`new rds.ServerlessCluster(this, "${apiName}DB", {
             vpc: ${vpcName},
             engine: rds.DatabaseClusterEngine.auroraMysql({
               version: rds.AuroraMysqlEngineVersion.VER_5_7_12,
@@ -30,20 +34,31 @@ export class AuroraServerless extends CodeMaker {
   }
 
   public connectionsAllowFromAnyIpv4(sourceName: string) {
-    this.line(
+    this.code.line(
       `${sourceName}.connections.allowFromAnyIpv4(ec2.Port.tcp(3306));`
     );
   }
 
+  public auroradbConstructInitializer(apiName:string,code:CodeMaker){
+    const ts = new TypeScriptWriter(code)
+    ts.writeVariableDeclaration({
+      name:`${apiName}_auroradb`,
+      typeName:CONSTRUCTS.auroradb,
+      initializer:()=>{
+        this.code.line(`new ${CONSTRUCTS.auroradb}(this,"${CONSTRUCTS.auroradb}");`)
+      }
+    },"const")
+  }
+
   public route_tableIdentifier(state: string) {
-    this.line(`const ${state}RouteTables = [
+    this.code.line(`const ${state}RouteTables = [
     ${state}_subnets[0].routeTable,
     ${state}_subnets[1].routeTable,
   ];`);
   }
 
   public initializeTestForEC2Vpc() {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::VPC', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::VPC', {
       CidrBlock: '10.0.0.0/16',
       EnableDnsHostnames: true,
       EnableDnsSupport: true,
@@ -60,7 +75,7 @@ export class AuroraServerless extends CodeMaker {
     state: string,
     stateNum: string
   ) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::Subnet', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::Subnet', {
       CidrBlock: '${cidrBlock}',
       VpcId: {
         Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
@@ -96,7 +111,7 @@ export class AuroraServerless extends CodeMaker {
     state: string,
     stateNum: string
   ) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::RouteTable', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::RouteTable', {
       VpcId: {
         Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
       },
@@ -119,7 +134,7 @@ export class AuroraServerless extends CodeMaker {
     subnetState: number
   ) {
     this
-      .line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
+      .code.line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
       RouteTableId: stack.resolve(${routeTableState}[${routeTableNum}].${routeTable}${routeTableId}),
       SubnetId: {
         Ref: stack.getLogicalId(
@@ -130,7 +145,7 @@ export class AuroraServerless extends CodeMaker {
   }
 
   public initializeTestForSecurityGroup() {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroup', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroup', {
       GroupDescription: 'RDS security group',
       SecurityGroupEgress: [
         {
@@ -161,7 +176,7 @@ export class AuroraServerless extends CodeMaker {
     gatewatIdType: string,
     gatewayState: string
   ) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::Route', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::Route', {
       RouteTableId: stack.resolve(${routeTableState}[${routeTableNum}].routeTableId),
       DestinationCidrBlock: '0.0.0.0/0',
       ${gatewatIdType}: {
@@ -171,7 +186,7 @@ export class AuroraServerless extends CodeMaker {
   }
 
   public initializeTestForEIP(apiName: string, stateNum: string) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::EIP', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::EIP', {
       Domain: 'vpc',
       Tags: [
         {
@@ -188,7 +203,7 @@ export class AuroraServerless extends CodeMaker {
     eipNum: string,
     stateNum: string
   ) {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::NatGateway', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::NatGateway', {
       SubnetId: {
         Ref: stack.getLogicalId(
           public_subnets[${subentNum}].node.defaultChild as cdk.CfnElement
@@ -210,14 +225,14 @@ export class AuroraServerless extends CodeMaker {
   }
 
   public initializeTestForDBSubnetGroup(apiName: string) {
-    this.line(`expect(stack).toHaveResource('AWS::RDS::DBSubnetGroup', {
+    this.code.line(`expect(stack).toHaveResource('AWS::RDS::DBSubnetGroup', {
       DBSubnetGroupDescription: 'Subnets for ${apiName}DB database',
       SubnetIds: subnetRefArray,
     });`);
   }
 
   public ininitializeTestForRole() {
-    this.line(`expect(stack).toHaveResource('AWS::IAM::Role', {
+    this.code.line(`expect(stack).toHaveResource('AWS::IAM::Role', {
       AssumeRolePolicyDocument: {
         Statement: [
           {
@@ -234,7 +249,7 @@ export class AuroraServerless extends CodeMaker {
   }
 
   public initializeTestForVPCGatewayAttachment() {
-    this.line(`expect(stack).toHaveResource('AWS::EC2::VPCGatewayAttachment', {
+    this.code.line(`expect(stack).toHaveResource('AWS::EC2::VPCGatewayAttachment', {
       VpcId: {
         Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
       },
@@ -246,6 +261,6 @@ export class AuroraServerless extends CodeMaker {
   }
 
   public initializeTestForCountResources(service: string, count: number) {
-    this.line(`expect(stack).toCountResources('${service}', ${count});`);
+    this.code.line(`expect(stack).toCountResources('${service}', ${count});`);
   }
 }

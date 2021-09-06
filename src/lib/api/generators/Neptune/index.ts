@@ -27,10 +27,10 @@ export class NeptuneDBConstruct {
     this.code.openFile(this.outputFile);
 
     const { apiName } = this.config.api;
-    const cdk = new Cdk();
-    const ec2 = new Ec2();
-    const neptune = new Neptune();
-    const imp = new Imports();
+    const cdk = new Cdk(this.code);
+    const ec2 = new Ec2(this.code);
+    const neptune = new Neptune(this.code);
+    const imp = new Imports(this.code);
 
     imp.importsForStack();
     ts.writeImports("aws-cdk-lib", ["Tags"]);
@@ -43,16 +43,19 @@ export class NeptuneDBConstruct {
         name: "VPCRef",
         typeName: "ec2.Vpc",
         accessModifier: "public",
+        isReadonly: false
       },
       {
         name: "SGRef",
         typeName: "ec2.SecurityGroup",
         accessModifier: "public",
+        isReadonly: false
       },
       {
         name: "neptuneReaderEndpoint",
         typeName: "string",
         accessModifier: "public",
+        isReadonly: false
       },
     ];
 
@@ -124,7 +127,7 @@ export class NeptuneDBConstruct {
         );
         this.code.line();
 
-        neptunePropertiesInitializer(apiName);
+        neptunePropertiesInitializer(apiName,this.code);
       },
       undefined,
       propertiesForNeptuneDbConstruct

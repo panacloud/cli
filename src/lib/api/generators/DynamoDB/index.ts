@@ -4,10 +4,9 @@ import { CONSTRUCTS, Config } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { DynamoDB } from "../../constructs/DynamoDB";
-import { dynamodbAccessHandler } from "./functions";
 
 type StackBuilderProps = {
-  config: Config;
+  config: Config
 };
 
 export class DyanmoDBConstruct {
@@ -25,19 +24,20 @@ export class DyanmoDBConstruct {
     const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
     const { apiName } = this.config.api;
-    const cdk = new Cdk();
-    const imp = new Imports();
-    const dynamoDB = new DynamoDB();
-
+    const cdk = new Cdk(this.code);
+    const imp = new Imports(this.code);
+    const dynamoDB = new DynamoDB(this.code);
+    // imports for dynamodb constructs 
     imp.importsForStack();
     imp.importDynamodb();
     this.code.line();
 
-    const properties: Property[] = [
+    const properties: Property[] = [                                 // properties declaration for dynamoDb constructs
       {
         name: "table",
         typeName: "dynamodb.Table",
         accessModifier: "public",
+        isReadonly: false
       },
     ];
 
@@ -45,9 +45,9 @@ export class DyanmoDBConstruct {
       CONSTRUCTS.dynamodb,
       undefined,
       () => {
-        dynamoDB.initializeDynamodb(apiName);
+        dynamoDB.initializeDynamodb(apiName);                        // construct initializer for dynamoDb constructs
         this.code.line();
-        this.code.line(`this.table = ${apiName}_table`);
+        this.code.line(`this.table = ${apiName}_table`);            // properties initializer for dynamoDb constructs
         this.code.line();
       },
       undefined,
