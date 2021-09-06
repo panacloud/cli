@@ -1,4 +1,5 @@
 import { CodeMaker } from "codemaker";
+import { CONSTRUCTS } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class AuroraServerless {
@@ -36,6 +37,17 @@ export class AuroraServerless {
     this.code.line(
       `${sourceName}.connections.allowFromAnyIpv4(ec2.Port.tcp(3306));`
     );
+  }
+
+  public auroradbConstructInitializer(apiName:string,code:CodeMaker){
+    const ts = new TypeScriptWriter(code)
+    ts.writeVariableDeclaration({
+      name:`${apiName}_auroradb`,
+      typeName:CONSTRUCTS.auroradb,
+      initializer:()=>{
+        this.code.line(`new ${CONSTRUCTS.auroradb}(this,"${CONSTRUCTS.auroradb}");`)
+      }
+    },"const")
   }
 
   public route_tableIdentifier(state: string) {

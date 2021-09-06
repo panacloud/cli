@@ -102,7 +102,7 @@ export class Appsync {
     let ds_variable = `ds_${dataSourceName}`;
     let ds_name = `${dataSourceName}_dataSource`;
     let lambdaFunctionArn = `props!.${this.apiName}_lambdaFnArn`;
-
+    
     if (lambdaStyle === LAMBDASTYLE.multi) {
       ds_initializerName = this.apiName + "dataSourceGraphql" + functionName;
       ds_variable = `ds_${dataSourceName}_${functionName}`;
