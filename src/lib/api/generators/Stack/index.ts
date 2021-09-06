@@ -2,8 +2,13 @@ import { CodeMaker } from "codemaker";
 import { APITYPE, Config, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { apiManager } from "../../constructs/ApiManager";
+import { Appsync } from "../../constructs/Appsync";
+import { AuroraServerless } from "../../constructs/AuroraServerless";
 import { Cdk } from "../../constructs/Cdk";
-import { importHandlerForStack, LambdaAccessHandler, lambdaConstructPropsHandlerAuroradb, lambdaConstructPropsHandlerNeptunedb, lambdaPropsHandlerDynamodb, propsHandlerForApiGatewayConstruct, propsHandlerForAppsyncConstructDynamodb, propsHandlerForAppsyncConstructNeptunedb } from "./functions";
+import { DynamoDB } from "../../constructs/DynamoDB";
+import { Lambda } from "../../constructs/Lambda";
+import { Neptune } from "../../constructs/Neptune";
+import { importHandlerForStack, LambdaAccessHandler, propsHandlerForApiGatewayConstruct } from "./functions";
 const _ = require("lodash");
 
 type StackBuilderProps = {
@@ -36,6 +41,11 @@ export class CdkStack {
     const mutationsAndQueries = { ...mutations, ...queries };
     const cdk = new Cdk(this.code);
     const manager = new apiManager(this.code);
+    const dynamodb = new DynamoDB(this.code)
+    const neptune = new Neptune(this.code)
+    const aurora = new AuroraServerless(this.code)
+    const lambda = new Lambda(this.code)
+    const appsync = new Appsync(this.code)
     importHandlerForStack(database,apiType,this.code)
     this.code.line();
 
@@ -45,75 +55,23 @@ export class CdkStack {
             manager.apiManagerInitializer(apiName);
             this.code.line();
             if (database == DATABASE.dynamo) {
-              ts.writeVariableDeclaration(
-                {
-                  name: `${apiName}_table`,
-                  typeName: CONSTRUCTS.dynamodb,
-                  initializer: () => {
-                    this.code.line(
-                      `new ${CONSTRUCTS.dynamodb}(this,"${apiName}${CONSTRUCTS.dynamodb}")`
-                    );
-                  },
-                },
-                "const"
-              );
-              this.code.line();
+              dynamodb.dynmaodbConstructInitializer(apiName,this.code)
+              this.code.line(); 
             } else if (database == DATABASE.neptune) {
-              ts.writeVariableDeclaration({
-                name:`${apiName}_neptunedb`,
-                typeName:CONSTRUCTS.neptuneDb,
-                initializer:()=>{
-                  this.code.line(`new ${CONSTRUCTS.neptuneDb}(this,"${apiName}${CONSTRUCTS.neptuneDb}")`)
-                }},
-               "const")
+              neptune.neptunedbConstructInitializer(apiName,this.code)
               this.code.line();
             } else if (database == DATABASE.aurora) {
-              ts.writeVariableDeclaration({
-                name:`${apiName}_auroradb`,
-                typeName:CONSTRUCTS.auroradb,
-                initializer:()=>{
-                  this.code.line(`new ${CONSTRUCTS.auroradb}(this,"${CONSTRUCTS.auroradb}");`)
-                }
-              },"const")
+              aurora.auroradbConstructInitializer(apiName,this.code)
               this.code.line();
             }
-            ts.writeVariableDeclaration(
-              {
-                name: `${apiName}Lambda`,
-                typeName: CONSTRUCTS.lambda,
-                initializer: () => {
-                  this.code.line(
-                    `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}",{`
-                  );
-                  database === DATABASE.dynamo && lambdaPropsHandlerDynamodb(this.code, `${apiName}_table`);
-                  database === DATABASE.neptune && lambdaConstructPropsHandlerNeptunedb(this.code, apiName);
-                  database === DATABASE.aurora && lambdaConstructPropsHandlerAuroradb(this.code, apiName);
-                this.code.line("})");
-                },
-              },
-              "const"
-            );
-            database === DATABASE.dynamo && LambdaAccessHandler( this.code, apiName, lambdaStyle ,apiType, mutationsAndQueries)
+            if(lambdaStyle){
+              lambda.lambdaConstructInitializer(apiName,database,this.code)
+            }
+            database === DATABASE.dynamo && LambdaAccessHandler(this.code, apiName, lambdaStyle ,apiType, mutationsAndQueries)
             
             if (apiType === APITYPE.graphql) {
-              ts.writeVariableDeclaration(
-                {
-                  name: `${apiName}`,
-                  typeName: CONSTRUCTS.appsync,
-                  initializer: () => {
-                    this.code.line(
-                      `new ${CONSTRUCTS.appsync}(this,"${apiName}${CONSTRUCTS.appsync}",{`
-                    );
-                    database === DATABASE.dynamo && propsHandlerForAppsyncConstructDynamodb(this.code,apiName,lambdaStyle,mutationsAndQueries);
-                    database === DATABASE.neptune && propsHandlerForAppsyncConstructNeptunedb(this.code,apiName,lambdaStyle,mutationsAndQueries);
-                    database === DATABASE.aurora &&  propsHandlerForAppsyncConstructNeptunedb(this.code,apiName,lambdaStyle,mutationsAndQueries);
-                    this.code.line("})");
-                  },
-                },
-                "const"
-              );
+              appsync.appsyncConstructInitializer(apiName,lambdaStyle,database,mutationsAndQueries,this.code)
             }
-
             if (apiType === APITYPE.rest) {
               this.code.line(
                 `const ${apiName} = new ${CONSTRUCTS.apigateway}(this,"${apiName}${CONSTRUCTS.apigateway}",{`
@@ -123,7 +81,7 @@ export class CdkStack {
             }
         }
     )
-    
+
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);
   }
