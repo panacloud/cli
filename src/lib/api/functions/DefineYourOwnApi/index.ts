@@ -157,7 +157,12 @@ async function defineYourOwnApi(config: Config) {
     }
   );
 
+<<<<<<< Updated upstream
   // await start();
+=======
+  // Codegenerator Function
+  await generator(model);
+>>>>>>> Stashed changes
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

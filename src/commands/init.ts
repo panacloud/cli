@@ -3,8 +3,8 @@ import { startSpinner, stopSpinner } from "../lib/spinner";
 import { basicApi,todoApi,defineYourOwnApi} from "../lib/api/functions";
 import { writeFileAsync, mkdirRecursiveAsync } from "../lib/fs";
 import { userInput } from "../lib/inquirer";
-import { checkEmptyDirectoy, validateSchemaFile } from "../lib/api/errorHandling";
-import { TEMPLATE } from "../utils/constants";
+import {checkEmptyDirectoy,validateSchemaFile} from "../lib/api/errorHandling";
+import { TEMPLATE, SAASTYPE } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -17,7 +17,7 @@ const _ = require("lodash");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
-
+  
   static flags = {
     help: flags.help({ char: "h" }),
   };
@@ -25,6 +25,8 @@ export default class Create extends Command {
   async run() {
     const { flags } = this.parse(Create);
 
+    let templateDir;
+    
     // Questions
     let usrInput = await userInput();
 

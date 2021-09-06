@@ -51,6 +51,8 @@ export interface Config {
   saasType: SAASTYPE;
   template: TEMPLATE;
   api: API;
+  workingDir?:string;
+  type?:any
 }
 
 export interface API {
