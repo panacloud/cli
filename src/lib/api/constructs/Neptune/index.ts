@@ -1,4 +1,5 @@
 import { CodeMaker } from "codemaker";
+import { CONSTRUCTS } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class Neptune {
@@ -26,6 +27,17 @@ export class Neptune {
       },
       "const"
     );
+  }
+
+  public neptunedbConstructInitializer(apiName:string,code:CodeMaker){
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeVariableDeclaration({
+      name:`${apiName}_neptunedb`,
+      typeName:CONSTRUCTS.neptuneDb,
+      initializer:()=>{
+        this.code.line(`new ${CONSTRUCTS.neptuneDb}(this,"${apiName}${CONSTRUCTS.neptuneDb}")`)
+      }},
+     "const")
   }
 
   public initializeNeptuneSubnet(apiName: string, vpcName: string) {

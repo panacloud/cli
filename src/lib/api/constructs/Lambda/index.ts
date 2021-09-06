@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Environment {
@@ -92,6 +92,37 @@ export class Lambda {
       },
       "const"
     );
+  }
+
+  public lambdaConstructInitializer(apiName:string,database:string,code:CodeMaker){
+    const ts = new TypeScriptWriter(code)
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}Lambda`,
+        typeName: CONSTRUCTS.lambda,
+        initializer: () => {
+          this.code.line(
+            `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}",{`
+          );
+          if(database === DATABASE.dynamo){
+            code.line(`tableName:${apiName}_table.table.tableName`);
+          }
+          else if(database === DATABASE.neptune){
+            code.line(`SGRef:${apiName}_neptunedb.SGRef,`);
+            code.line(`VPCRef:${apiName}_neptunedb.VPCRef,`);
+            code.line(`neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`);
+          }
+          else if(database === DATABASE.aurora){
+            code.line(`secretRef:${apiName}_auroradb.secretRef,`);
+            code.line(`vpcRef:${apiName}_auroradb.vpcRef,`);
+            code.line(`serviceRole: ${apiName}_auroradb.serviceRole`);
+          }
+        this.code.line("})");
+        },
+      },
+      "const"
+    );
+    // database === DATABASE.dynamo && LambdaAccessHandler( this.code, apiName, lambdaStyle ,apiType, mutationsAndQueries)
   }
 
   public addEnvironment(

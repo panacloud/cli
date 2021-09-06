@@ -43,9 +43,9 @@ export class TypeScriptWriter {
     contents?: any
   ) {
     this.code.openBlock(
-      `${classDefinition.export ? "export" : null} class ${this.code.toCamelCase(
-        classDefinition.name
-      )} ${classDefinition.extends ? `extends ${classDefinition.extends}` : ""}`
+      `${classDefinition.export ? "export" : null} class ${
+        ` ${classDefinition.name}`
+      } ${classDefinition.extends ? `extends ${classDefinition.extends}` : ""}`
     );
     properties?.forEach((property: Property) => {
       this.code.line(
