@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -54,6 +54,46 @@ export class Appsync {
     this.code.line(`new appsync.CfnApiKey(this,"apiKey",{
         apiId:${apiName}_appsync.attrApiId
     })`);
+  }
+
+  public appsyncConstructInitializer(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries:any,code:CodeMaker){
+    const ts = new TypeScriptWriter(code)
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}`,
+        typeName: CONSTRUCTS.appsync,
+        initializer: () => {
+          this.code.line(`new ${CONSTRUCTS.appsync}(this,"${apiName}${CONSTRUCTS.appsync}",{`);
+          this.appsyncDatabasePropsHandler(apiName,lambdaStyle,database,mutationsAndQueries,code)
+          this.code.line("})");
+        },
+      },
+      "const"
+    );
+  }
+
+  public appsyncDatabasePropsHandler(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries: any,code: CodeMaker){
+    let apiLambda = apiName + "Lambda";
+    let lambdafunc = `${apiName}_lambdaFn`;
+    if(lambdaStyle===LAMBDASTYLE.single && database ===DATABASE.dynamo){
+      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);  
+    }
+    if(lambdaStyle===LAMBDASTYLE.multi && database ===DATABASE.dynamo){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
+      });
+    }
+    if(lambdaStyle===LAMBDASTYLE.single && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      lambdafunc = `${apiName}_lambdaFnArn`;
+      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);  
+    }
+    if(lambdaStyle === LAMBDASTYLE.multi && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
+      });
+    }
   }
 
   public appsyncLambdaDataSource(dataSourceName: string,serviceRole: string,lambdaStyle:string,functionName?:string) {
