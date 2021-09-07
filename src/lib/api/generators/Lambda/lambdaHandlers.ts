@@ -1,7 +1,7 @@
 import { CodeMaker } from "codemaker";
 import { APITYPE, Config, LAMBDASTYLE } from "../../../../utils/constants";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
-const SwaggerParser = require("@apidevtools/swagger-parser");
+// const SwaggerParser = require("@apidevtools/swagger-parser");
 
 type StackBuilderProps = {
   config: Config;
@@ -26,22 +26,20 @@ class LambdaHandlers {
       if (lambdaStyle === LAMBDASTYLE.single) {
         if (type?.Query) {
           Object.keys(type.Query).forEach(async(key) => {
-            this.outputFile = key
+            this.outputFile = `${key}.ts`
             this.code.openFile(this.outputFile)
             const lambda = new LambdaFunction(this.code);
-            lambda.helloWorldFunction(key);
-            this.outputDir = key 
+            lambda.helloWorldFunction(key); 
             this.code.closeFile(this.outputFile);
             await this.code.save(this.outputDir);
         });
         }
         if (type?.Mutation) {
           Object.keys(type.Mutation).forEach(async(key) => {
-            this.outputFile = key
+            this.outputFile = `${key}.ts`
             this.code.openFile(this.outputFile)
             const lambda = new LambdaFunction(this.code);
             lambda.helloWorldFunction(key);
-            this.outputDir = key 
             this.code.closeFile(this.outputFile);
             await this.code.save(this.outputDir);
           });

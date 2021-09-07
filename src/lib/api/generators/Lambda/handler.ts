@@ -2,7 +2,7 @@ import { CodeMaker } from "codemaker";
 import { APITYPE, Config, LAMBDASTYLE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
-const SwaggerParser = require("@apidevtools/swagger-parser");
+// const SwaggerParser = require("@apidevtools/swagger-parser");
 
 type StackBuilderProps = {
   config: Config;
@@ -29,10 +29,10 @@ class Handlers {
             const lambda = new LambdaFunction(this.code);
             const imp = new Imports(this.code);        
           for (var key in type.Query) {
-            imp.importIndividualLambdaFunction(key, `./${key}`);
+            imp.importIndividualLambdaFunction(key, `${key}`);
           }
           for (var key in type.Mutation) {
-            imp.importIndividualLambdaFunction( key, `./${key}`);
+            imp.importIndividualLambdaFunction( key, `${key}`);
           }
 
           imp.importAxios();
@@ -61,10 +61,10 @@ class Handlers {
           this.code.closeFile(this.outputFile);
           await this.code.save(this.outputDir);
     }
-     if (lambdaStyle === LAMBDASTYLE.multi){
+     else if (lambdaStyle === LAMBDASTYLE.multi){
       if (type.Mutation){
         Object.keys(type.Mutation).forEach(async(key) => {
-            this.outputFile = key +".ts"
+            this.outputFile = "index.ts"
             this.code.openFile(this.outputFile)
               const imp = new Imports(this.code);
               const lambda = new LambdaFunction(this.code);
@@ -78,8 +78,8 @@ class Handlers {
       }
       if (type.Query) {
         Object.keys(type.Query).forEach(async(key) => {
-            this.outputFile = key + ".ts"
-            this.code.open(this.outputFile)
+            this.outputFile = "index.ts"
+            this.code.openFile(this.outputFile)
               const lambda = new LambdaFunction(this.code);
               const imp = new Imports(this.code);
               imp.importAxios();
