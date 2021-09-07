@@ -10,6 +10,7 @@
     "url": "https://github.com/panacloud/cli/issues"
   },
   "dependencies": {
+    "@apidevtools/swagger-parser": "^10.0.3",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
