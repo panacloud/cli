@@ -48,7 +48,7 @@ class LambdaHandlers {
         }
       }
     } else {
-      SwaggerParser.validate("./nexmo.json", (err: any, api: any) => {
+      SwaggerParser.validate(this.config.api.schemaPath, (err: any, api: any) => {
         if (err) {
           console.log(err);
         } else {
