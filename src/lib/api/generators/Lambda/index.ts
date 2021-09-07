@@ -11,7 +11,7 @@ type StackBuilderProps = {
     schema: any
 };
 
-class AppsyncConstruct {
+class lambdaConstruct {
     outputFile: string = `index.ts`;
     outputDir: string = `lib/${CONSTRUCTS.lambda}`;
     config: Config;
@@ -25,8 +25,8 @@ class AppsyncConstruct {
 
     async LambdaConstructFile() {
       const {api:{apiName,lambdaStyle, apiType, database}} = this.config
-    let mutations = {};
-    let queries = {};
+      let mutations = {};
+      let queries = {};
     if (apiType === APITYPE.graphql) {
       mutations = this.jsonSchema.Mutation ? this.jsonSchema.Mutation : {};
       queries = this.jsonSchema.Query ? this.jsonSchema.Query : {};
@@ -36,7 +36,7 @@ class AppsyncConstruct {
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
     let lambdaProperties: Property[] | undefined;
-
+    this.code.openFile(this.outputFile)
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
 
@@ -88,7 +88,7 @@ class AppsyncConstruct {
       () => {
         if (database === DATABASE.dynamo) {
           lambdaHandlerForDynamodb(
-              this.code,
+            this.code,
             apiName,
             apiType,
             lambdaStyle,
@@ -128,7 +128,7 @@ class AppsyncConstruct {
 export const LambdaConstruct = async (
     props: StackBuilderProps
   ): Promise<void> => {
-    const builder = new AppsyncConstruct(props);
+    const builder = new lambdaConstruct(props);
     await builder.LambdaConstructFile();
   };
   
