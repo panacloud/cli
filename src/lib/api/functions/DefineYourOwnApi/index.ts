@@ -127,8 +127,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   // Codegenerator Function
   await generator(model);
-  // Codegenerator Function
-  generator(model);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
