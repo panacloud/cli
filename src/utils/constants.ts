@@ -43,11 +43,16 @@ export enum LANGUAGE {
   typescript = "TypeScript",
 }
 
+export interface ApiModel {
+  api: API,
+  workingDir: string
+}
+
 export interface Config {
   entityId: string;
   api_token: string;
   saasType: SAASTYPE;
-  api?: API;
+  api: API;
 }
 
 export interface API {

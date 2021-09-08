@@ -2,10 +2,10 @@ import { startSpinner, stopSpinner } from "../../../spinner";
 import {
   writeFileAsync,
   copyFileAsync,
-  mkdirRecursiveAsync
+  mkdirRecursiveAsync,
 } from "../../../fs";
 import { contextInfo } from "../../info";
-import { Config, APITYPE } from "../../../../utils/constants";
+import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 const path = require("path");
 const fs = require("fs");
@@ -18,7 +18,9 @@ const _ = require("lodash");
 async function defineYourOwnApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
 
-  const { schemaPath, apiType } = config.api;
+  const {
+    api: { schemaPath, apiType },
+  } = config;
 
   const workingDir = _.snakeCase(path.basename(process.cwd()));
 
@@ -115,20 +117,19 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   const jsonSchema =
     apiType === APITYPE.graphql
-      ? convert(schema)
-      : { openApiDef: JSON.parse(schema) };
+      ? { schema: convert(schema) }
+      : { schema: JSON.parse(schema) };
 
-  const model = {
-    ...jsonSchema,
-    ...config,
-    workingDir,
+  const model: ApiModel = {
+    api: {
+      ...config.api,
+      schema: schema,
+    },
+    workingDir: workingDir,
   };
-
 
   // Codegenerator Function
   await generator(model);
-  // Codegenerator Function
-  generator(model);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
