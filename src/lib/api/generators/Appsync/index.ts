@@ -1,9 +1,5 @@
 import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import {
-  CONSTRUCTS,
-  LAMBDASTYLE,
-  ApiModel,
-} from "../../../../utils/constants";
+import { CONSTRUCTS, LAMBDASTYLE, Config, ApiModel } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -31,10 +27,8 @@ class AppsyncConstruct {
     const {
       api: { apiName, lambdaStyle, schema },
     } = this.config;
-
     const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
-
     const appsync = new Appsync(this.code);
     const cdk = new Cdk(this.code);
     const iam = new Iam(this.code);
@@ -43,10 +37,9 @@ class AppsyncConstruct {
     const schemaGql = readFileSync(
       path.join(path.resolve("."), `/schema/schema.gql`)
     ).toString("utf8");
-    const mutations = schema.Mutation ? schema.Mutation : {};
-    const queries = schema.Query ? schema.Query : {};
+    const mutations = schema.type.Mutation ? schema.type.Mutation : {};
+    const queries = schema.type.Query ? schema.type.Query : {};
     const mutationsAndQueries = { ...mutations, ...queries };
-
     imp.importsForStack();
     imp.importAppsync();
     imp.importIam();
@@ -89,7 +82,7 @@ class AppsyncConstruct {
           mutationsAndQueries
         );
         this.code.line();
-        appsyncResolverhandler(apiName, lambdaStyle, this.code, schema);
+        appsyncResolverhandler(apiName, lambdaStyle, this.code, schema.type);
       },
       ConstructProps
     );

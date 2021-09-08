@@ -40,7 +40,7 @@ export class Cdk {
     }
 
     const classDefinition: ClassDefinition = {
-      name: `${_.upperFirst(_.camelCase(constructName))}`,
+      name: constructName,
       extends: "Construct",
       export: true,
     };

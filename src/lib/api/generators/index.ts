@@ -4,6 +4,9 @@ import { AppsyncApiConstruct } from "./Appsync";
 import { auroraDBConstruct } from "./AuroraServerless";
 import { CdkAppClass } from "./bin";
 import { dynamoDBConstruct } from "./DynamoDB";
+import { LambdaConstruct } from "./Lambda";
+import { handlers } from "./Lambda/handler";
+import { lambdaHandlers } from "./Lambda/lambdaHandlers";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 
@@ -31,4 +34,11 @@ export const generator = async (config: ApiModel) => {
   } else {
     dynamoDBConstruct({ config });
   }
+
+  // lambda Construct
+  LambdaConstruct({ config });
+
+  // handlers
+  handlers({ config });
+  lambdaHandlers({ config });
 };

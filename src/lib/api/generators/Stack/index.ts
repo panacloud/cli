@@ -37,19 +37,15 @@ export class CdkStack {
 
   async CdkStackFile() {
     const ts = new TypeScriptWriter(this.code);
-
     this.outputFile = `${this.config.workingDir}-stack.ts`;
     this.code.openFile(this.outputFile);
-
-    const { apiName, database, lambdaStyle, apiType, schema } = this.config.api;
+    const { apiName, database, lambdaStyle, apiType , schema } = this.config.api;
     let mutations = {};
     let queries = {};
-
     if (apiType === APITYPE.graphql) {
       mutations = schema.type.Mutation ? schema.type.Mutation : {};
       queries = schema.type.Query ? schema.type.Query : {};
     }
-
     const mutationsAndQueries = { ...mutations, ...queries };
     const cdk = new Cdk(this.code);
     const manager = new apiManager(this.code);
@@ -58,7 +54,6 @@ export class CdkStack {
     const aurora = new AuroraServerless(this.code);
     const lambda = new Lambda(this.code);
     const appsync = new Appsync(this.code);
-
     importHandlerForStack(database, apiType, this.code);
     this.code.line();
 
