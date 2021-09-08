@@ -64,25 +64,22 @@ type StackBuilderProps = {
           if (database === DATABASE.dynamo) {
             iam.constructorIdentifier(CONSTRUCTS.dynamodb)
             iam.LambdaConstructIdentifierForDbb()
-            iam.AppsyncConstructIdentifier(CONSTRUCTS.dynamodb)
           } else if(database === DATABASE.neptune) {
             iam.constructorIdentifier(CONSTRUCTS.neptuneDb);
             iam.LambdaConstructIdentifierForNeptunedb()
-            iam.AppsyncConstructIdentifier(CONSTRUCTS.neptuneDb)
           } else if (database === DATABASE.aurora) {
             iam.constructorIdentifier(CONSTRUCTS.auroradb);
             iam.LambdaConstructIdentifierForAuroradb()
-            iam.AppsyncConstructIdentifier(CONSTRUCTS.auroradb)
-
           }
+          iam.appsyncDatabasePropsHandler(apiName, lambdaStyle, database, mutationsAndQueries, this.code );
           this.code.line();
-          iam.appsyncApiIdentifier();
-          this.code.line();
+          iam.appsyncApiTestIdentifier()
+          this.code.line()
           appsync.appsyncApiTest();
           this.code.line();
           appsync.appsyncApiKeyTest();
           this.code.line();
-          iam.appsyncRoleIdentifier();
+          iam.appsyncRoleTestIdentifier()
           this.code.line();
           iam.appsyncServiceRoleTest();
           this.code.line();

@@ -33,6 +33,7 @@ export class NeptuneDBConstructTest {
     const imp = new Imports(this.code);
     const iam = new Iam(this.code);
 
+    imp.ImportsForTest()
     imp.importForNeptuneConstructInTest();
     this.code.line();
 

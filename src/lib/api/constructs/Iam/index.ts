@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS } from "../../../../utils/constants";
+import { DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class Iam {
@@ -57,27 +57,25 @@ export class Iam {
   }
 
   public appsyncServiceRoleTest() {
-    this.code.line(`expect(actual).to(
-          haveResource("AWS::IAM::Role", {
-            AssumeRolePolicyDocument: {
-              Statement: [
-                {
-                  Action: "sts:AssumeRole",
-                  Effect: "Allow",
-                  Principal: {
-                    Service: "appsync.amazonaws.com",
-                  },
-                },
-              ],
-              Version: "2012-10-17",
+    this.code.line(`expect(stack).toHaveResource("AWS::IAM::Role", {
+      AssumeRolePolicyDocument: {
+        Statement: [
+          {
+            Action: "sts:AssumeRole",
+            Effect: "Allow",
+            Principal: {
+              Service: "appsync.amazonaws.com",
             },
-          })
-        );`);
+          },
+        ],
+        Version: "2012-10-17",
+      },
+    })
+`);
   }
 
   public appsyncRolePolicyTest() {
-    this.code.line(`  expect(actual).to(
-          haveResource("AWS::IAM::Policy", {
+    this.code.line(`expect(stack).toHaveResource("AWS::IAM::Policy", {
             PolicyDocument: {
               Statement: [
                 {
@@ -93,14 +91,12 @@ export class Iam {
                 Ref: stack.getLogicalId(role[0].node.defaultChild as cdk.CfnElement),
               },
             ],
-          })
-        );`);
+          })`);
     this.code.line();
   }
 
   public lambdaServiceRoleTest() {
-    this.code.line(`expect(actual).to(
-          haveResource("AWS::IAM::Role", {
+    this.code.line(`expect(stack).toHaveResource("AWS::IAM::Role", {
             AssumeRolePolicyDocument: {
               Statement: [
                 {
@@ -113,8 +109,7 @@ export class Iam {
               ],
               Version: "2012-10-17",
             },
-          })
-        );`);
+          });`);
   }
 
   public lambdaServiceRolePolicyTestForDynodb(policyCount: number) {
@@ -177,6 +172,12 @@ export class Iam {
         );`);
   }
 
+  public lambdaConsturctTestIdentifier() {
+    this.code.line(`const Lambda_consturct = LambdaConstruct_stack.node.children.filter(
+          (elem) => elem instanceof LambdaConstruct
+        );`);
+  }
+
   public lambdaIdentifier() {
     this.code
       .line(`const lambda_func = Lambda_consturct[0].node.children.filter(
@@ -192,6 +193,13 @@ export class Iam {
 
   public appsyncApiIdentifier() {
     this.code
+      .line(`const appsync_api = Appsync_consturct[0].node.children.filter(
+          (elem) => elem instanceof cdk.aws_appsync.CfnGraphQLApi
+        );`);
+  }
+
+  public appsyncApiTestIdentifier() {
+    this.code
       .line(`const appsync_api = AppsyncConstruct_stack.node.children.filter(
           (elem) => elem instanceof cdk.aws_appsync.CfnGraphQLApi
         );`);
@@ -200,6 +208,13 @@ export class Iam {
   public appsyncRoleIdentifier() {
     this.code
       .line(`const role = Appsync_consturct[0].node.children.filter((elem) => {
+          return elem instanceof cdk.aws_iam.Role;
+        });`);
+  }
+
+  public appsyncRoleTestIdentifier() {
+    this.code
+      .line(`const role = AppsyncConstruct_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_iam.Role;
         });`);
   }
@@ -265,18 +280,29 @@ export class Iam {
     `);
   }
 
-  public AppsyncConstructIdentifier(construct: string) {
-    if (construct === CONSTRUCTS.neptuneDb || CONSTRUCTS.auroradb) {
-      this.code
-        .line(`const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest", {
-        myApi_lambdaFnArn: LambdaConstruct_stack.myApi_lambdaFnArn,
-      });`);
-    } else if (construct === CONSTRUCTS.dynamodb) {
-      this.code
-        .line(`const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest",{ myApi_lambdaFnArn: LambdaConstruct_stack.myApi_lambdaFn.functionArn });
-    })
-    `);
+  public appsyncDatabasePropsHandler(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries: any,code: CodeMaker){
+    let lambdafunc = `${apiName}_lambdaFn`;
+    this.code.line(`const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest", {`)
+    if(lambdaStyle===LAMBDASTYLE.single && database ===DATABASE.dynamo){
+      code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}.functionArn`);  
     }
+    if(lambdaStyle===LAMBDASTYLE.multi && database ===DATABASE.dynamo){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn,`);
+      });
+    }
+    if(lambdaStyle===LAMBDASTYLE.single && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      lambdafunc = `${apiName}_lambdaFnArn`;
+      code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}`);  
+    }
+    if(lambdaStyle === LAMBDASTYLE.multi && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}Arn,`);
+      });
+    }
+    this.code.line(`})`)
   }
 
   public LambdaConstructIdentifierForNeptunedb() {

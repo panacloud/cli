@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, LAMBDASTYLE } from "../../../../utils/constants";
+import { APITYPE, CONSTRUCTS, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class DynamoDB  {
@@ -42,6 +42,22 @@ export class DynamoDB  {
         `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn_${functionName});`
       );
     }
+  }
+
+  public dynmaodbConstructInitializer(apiName:string,code:CodeMaker){
+    const ts = new TypeScriptWriter(code)
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}_table`,
+        typeName: CONSTRUCTS.dynamodb,
+        initializer: () => {
+          this.code.line(
+            `new ${CONSTRUCTS.dynamodb}(this,"${apiName}${CONSTRUCTS.dynamodb}")`
+          );
+        },
+      },
+      "const"
+    );
   }
 
   public dbConstructLambdaAccess(

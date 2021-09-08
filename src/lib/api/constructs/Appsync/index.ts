@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -57,18 +57,53 @@ export class Appsync {
     })`);
   }
 
-  public appsyncLambdaDataSource(
-    dataSourceName: string,
-    serviceRole: string,
-    lambdaStyle: string,
-    functionName?: string
-  ) {
+  public appsyncConstructInitializer(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries:any,code:CodeMaker){
+    const ts = new TypeScriptWriter(code)
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}`,
+        typeName: CONSTRUCTS.appsync,
+        initializer: () => {
+          this.code.line(`new ${CONSTRUCTS.appsync}(this,"${apiName}${CONSTRUCTS.appsync}",{`);
+          this.appsyncDatabasePropsHandler(apiName,lambdaStyle,database,mutationsAndQueries,code)
+          this.code.line("})");
+        },
+      },
+      "const"
+    );
+  }
+
+  public appsyncDatabasePropsHandler(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries: any,code: CodeMaker){
+    let apiLambda = apiName + "Lambda";
+    let lambdafunc = `${apiName}_lambdaFn`;
+    if(lambdaStyle===LAMBDASTYLE.single && database ===DATABASE.dynamo){
+      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);  
+    }
+    if(lambdaStyle===LAMBDASTYLE.multi && database ===DATABASE.dynamo){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
+      });
+    }
+    if(lambdaStyle===LAMBDASTYLE.single && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      lambdafunc = `${apiName}_lambdaFnArn`;
+      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);  
+    }
+    if(lambdaStyle === LAMBDASTYLE.multi && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
+      });
+    }
+  }
+
+  public appsyncLambdaDataSource(dataSourceName: string,serviceRole: string,lambdaStyle:string,functionName?:string) {
     const ts = new TypeScriptWriter(this.code);
     let ds_initializerName = this.apiName + "dataSourceGraphql";
     let ds_variable = `ds_${dataSourceName}`;
     let ds_name = `${dataSourceName}_dataSource`;
     let lambdaFunctionArn = `props!.${this.apiName}_lambdaFnArn`;
-
+    
     if (lambdaStyle === LAMBDASTYLE.multi) {
       ds_initializerName = this.apiName + "dataSourceGraphql" + functionName;
       ds_variable = `ds_${dataSourceName}_${functionName}`;

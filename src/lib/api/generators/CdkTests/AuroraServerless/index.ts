@@ -31,7 +31,7 @@ export class AuroraServerlessDBConstructTest {
     const auroradb = new AuroraServerless(this.code);
     const imp = new Imports(this.code);
     const iam = new Iam(this.code);
-
+    imp.ImportsForTest()
     imp.importForAuroraDbConstructInTest();
     this.code.line();
     cdk.initializeTest(

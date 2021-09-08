@@ -124,6 +124,9 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     workingDir,
   };
 
+
+  // Codegenerator Function
+  await generator(model);
   // Codegenerator Function
   generator(model);
 

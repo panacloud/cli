@@ -18,7 +18,7 @@ export class Cdk {
       extends: "Stack",
       export: true,
     };
-    ts.writeClassBlock(classDefinition)
+    ts.writeClassBlock(classDefinition,undefined,"StackProps",contents)
   }
 
   public initializeConstruct(

@@ -16,7 +16,7 @@ const _ = require("lodash");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
-
+  
   static flags = {
     help: flags.help({ char: "h" }),
   };
@@ -25,7 +25,6 @@ export default class Create extends Command {
     const { flags } = this.parse(Create);
 
     let templateDir;
-
     // Questions
     let usrInput = await userInput();
 

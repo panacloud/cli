@@ -22,6 +22,7 @@ export type Property = {
   name: string;
   typeName: string;
   accessModifier: 'public' | 'private' | 'protected';
+  isReadonly: boolean;
   description?: string[];
 };
 
@@ -42,13 +43,13 @@ export class TypeScriptWriter {
     contents?: any
   ) {
     this.code.openBlock(
-      `${classDefinition.export ? "export" : null} class ${this.code.toCamelCase(
-        classDefinition.name
-      )} ${classDefinition.extends ? `extends ${classDefinition.extends}` : ""}`
+      `${classDefinition.export ? "export" : null} class ${
+        ` ${classDefinition.name}`
+      } ${classDefinition.extends ? `extends ${classDefinition.extends}` : ""}`
     );
     properties?.forEach((property: Property) => {
       this.code.line(
-        `${property.accessModifier} ${property.name}: ${property.typeName};`
+        `${property.accessModifier} ${property.isReadonly? "readonly" : ""} ${property.name}: ${property.typeName};`
       );
     });
     this.code.line(` 
