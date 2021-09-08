@@ -114,22 +114,21 @@ export class Lambda {
     funcName: string,
     handlerName: string
   ) {
-    this.code.line(`expect(actual).to(
-      haveResource("AWS::Lambda::Function", {
-        FunctionName: "${funcName}",
-        Handler: "${handlerName}.handler",
-        Runtime: "nodejs12.x",
-        Environment: {
-          Variables: {
-            TableName: {
-              Ref: stack.getLogicalId(
-                db_table[0].node.defaultChild as cdk.CfnElement
-              ),
-            },
+    this.code.line(`expect(stack).toHaveResource("AWS::Lambda::Function", {
+      FunctionName: "${funcName}",
+      Handler: "${handlerName}.handler",
+      Runtime: "nodejs12.x",
+      Environment: {
+        Variables: {
+          TableName: {
+            Ref: stack.getLogicalId(
+              db_table[0].node.defaultChild as cdk.CfnElement
+            ),
           },
         },
-      })
-    );`);
+      },
+    })
+`);
   }
 
   public initializeTestForLambdaWithNeptune(

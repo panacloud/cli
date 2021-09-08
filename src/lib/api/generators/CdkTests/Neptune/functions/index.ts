@@ -1,30 +1,28 @@
 import { TypeScriptWriter } from "../../../../../../utils/typescriptWriter";
 import { CodeMaker } from 'codemaker';
-let maker = new CodeMaker();
 
-
-export const subnetFunction = () => {
-  const ts = new TypeScriptWriter(maker);
-  maker.line(
+export const subnetFunction = (_code: CodeMaker) => {
+  const ts = new TypeScriptWriter(_code);
+  _code.line(
     `const subnets = VpcNeptuneConstruct_stack.VPCRef.isolatedSubnets;`
   );
-  maker.line(`const subnetRefArray = [];`);
-  maker.line(`for (let subnet of subnets) {`);
-  maker.line(`subnetRefArray.push({`);
-  maker.line(
+  _code.line(`const subnetRefArray = [];`);
+  _code.line(`for (let subnet of subnets) {`);
+  _code.line(`subnetRefArray.push({`);
+  _code.line(
     `Ref: stack.getLogicalId(subnet.node.defaultChild as cdk.CfnElement),`
   );
-  maker.line(`});`);
-  maker.line(`}`);
+  _code.line(`});`);
+  _code.line(`}`);
 };
 
-export const isolatedFunction = () => {
-  const ts = new TypeScriptWriter(maker);
-  maker.line(
+export const isolatedFunction = (_code: CodeMaker) => {
+  const ts = new TypeScriptWriter(_code);
+  _code.line(
     `const isolated_subnets = VpcNeptuneConstruct_stack.VPCRef.isolatedSubnets;`
   );
-  maker.line(`const isolatedRouteTables = [`);
-  maker.line(`isolated_subnets[0].routeTable,`);
-  maker.line(`isolated_subnets[1].routeTable,`);
-  maker.line(`]`);
+  _code.line(`const isolatedRouteTables = [`);
+  _code.line(`isolated_subnets[0].routeTable,`);
+  _code.line(`isolated_subnets[1].routeTable,`);
+  _code.line(`]`);
 };

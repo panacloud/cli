@@ -133,22 +133,19 @@ export class Imports {
   }
 
   public ImportsForTest(
-    workingDir: string,
-    pattern: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-    if (pattern === "pattern_v1") {
-      ts.writeImports("aws-cdk-lib", ["cdk"]);
-      ts.writeImports("@aws-cdk/assert", [
-        "countResources",
-        "haveResource",
-        "expect",
-        "countResourcesLike",
-      ]);
-      ts.writeImports(`../lib/${workingDir}-stack`, _.upperFirst(_.camelCase(workingDir)))
-    } else if (pattern === "pattern_v2") {
+    // if (pattern === "pattern_v1") {
+    //   ts.writeImports("aws-cdk-lib", ["cdk"]);
+    //   ts.writeImports("@aws-cdk/assert", [
+    //     "countResources",
+    //     "haveResource",
+    //     "expect",
+    //     "countResourcesLike",
+    //   ]);
+    //   ts.writeImports(`../lib/${workingDir}-stack`, _.upperFirst(_.camelCase(workingDir)))
+    // } else 
       ts.writeImports("aws-cdk-lib", ["cdk"]);
       this.code.line(`import "@aws-cdk/assert/jest"`);
-    }
   }
 }

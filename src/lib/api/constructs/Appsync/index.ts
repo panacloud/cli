@@ -9,12 +9,12 @@ interface Props {
 
 export class Appsync {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
-
+  
   public apiName: string = "appsync_api";
-  public initializeAppsyncApi(name: string,authenticationType?: string) {
+  public initializeAppsyncApi(name: string, authenticationType?: string) {
     this.apiName = name;
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
@@ -40,7 +40,8 @@ export class Appsync {
         name: `${this.apiName}_schema`,
         typeName: "appsync.CfnGraphQLSchema",
         initializer: () => {
-          this.code.line(`new appsync.CfnGraphQLSchema(this,'${this.apiName}Schema',{
+          this.code
+            .line(`new appsync.CfnGraphQLSchema(this,'${this.apiName}Schema',{
             apiId: ${this.apiName}_appsync.attrApiId,
             definition:${gqlSchema}
           })`);
@@ -56,7 +57,12 @@ export class Appsync {
     })`);
   }
 
-  public appsyncLambdaDataSource(dataSourceName: string,serviceRole: string,lambdaStyle:string,functionName?:string) {
+  public appsyncLambdaDataSource(
+    dataSourceName: string,
+    serviceRole: string,
+    lambdaStyle: string,
+    functionName?: string
+  ) {
     const ts = new TypeScriptWriter(this.code);
     let ds_initializerName = this.apiName + "dataSourceGraphql";
     let ds_variable = `ds_${dataSourceName}`;
@@ -75,7 +81,8 @@ export class Appsync {
         name: ds_variable,
         typeName: "appsync.CfnDataSource",
         initializer: () => {
-          this.code.line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
+          this.code
+            .line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
           name: "${ds_name}",
           apiId: ${this.apiName}_appsync.attrApiId,
           type:"AWS_LAMBDA",
@@ -112,33 +119,32 @@ export class Appsync {
   }
 
   public appsyncApiTest() {
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::GraphQLApi",1, {
-        AuthenticationType: "API_KEY",
-        Name: "${this.apiName}",
-      })
-    );`);
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::GraphQLApi", {
+      AuthenticationType: "API_KEY",
+      Name: "${this.apiName}",
+    })`);
     this.code.line();
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::GraphQLSchema",1, {
-        ApiId: {
-          "Fn::GetAtt": [
-            stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
-             "ApiId"
-          ],
-        },
-      })
-    );`);
+    this.code
+      .line(`expect(stack).toHaveResource("AWS::AppSync::GraphQLSchema", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+    })
+`);
   }
 
   public appsyncApiKeyTest() {
-    this.code.line(`expect(actual).to(
-      haveResource("AWS::AppSync::ApiKey", {
-        ApiId: {
-          "Fn::GetAtt": [stack.getLogicalId(appsync_api[0] as cdk.CfnElement), "ApiId"],
-        },
-      })
-    );
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::ApiKey", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+    })
   `);
   }
 
@@ -147,31 +153,33 @@ export class Appsync {
     lambdaFuncIndex: number
   ) {
     this.code.line();
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::DataSource",1, {
-          ApiId: {
-            "Fn::GetAtt": [stack.getLogicalId(appsync_api[0] as cdk.CfnElement), "ApiId"],
-          },
-          Name: "${dataSourceName}",
-          Type: "AWS_LAMBDA",
-          LambdaConfig: {
-            LambdaFunctionArn: {
-              "Fn::GetAtt": [
-                stack.getLogicalId(
-                  lambda_func[${lambdaFuncIndex}].node.defaultChild as cdk.CfnElement
-                ),
-                "Arn",
-              ],
-            },
-          },
-          ServiceRoleArn: {
-            "Fn::GetAtt": [
-              stack.getLogicalId(role[0].node.defaultChild as cdk.CfnElement),
-              "Arn",
-            ],
-          },
-        })
-      );`);
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::DataSource", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+      Name: "${dataSourceName}",
+      Type: "AWS_LAMBDA",
+      LambdaConfig: {
+        LambdaFunctionArn: {
+          "Fn::GetAtt": [
+            stack.getLogicalId(
+              lambda_func[${lambdaFuncIndex}].node.defaultChild as cdk.CfnElement
+            ),
+            "Arn",
+          ],
+        },
+      },
+      ServiceRoleArn: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(role[0].node.defaultChild as cdk.CfnElement),
+          "Arn",
+        ],
+      },
+    })
+`);
   }
 
   public appsyncResolverTest(
@@ -179,18 +187,17 @@ export class Appsync {
     typeName: string,
     dataSourceName: string
   ) {
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::Resolver",1, {
-          "ApiId": {
-              "Fn::GetAtt": [
-                stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
-                "ApiId"
-              ]
-            },
-            "FieldName": "${fieldName}",
-            "TypeName": "${typeName}",    
-            "DataSourceName": "${dataSourceName}"
-        })
-    );`);
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::Resolver", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+      FieldName: "${fieldName}",
+      TypeName: "${typeName}",
+      DataSourceName: "${dataSourceName}",
+    })
+`);
   }
 }

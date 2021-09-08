@@ -1,16 +1,15 @@
 import { TypeScriptWriter } from "../../../../../../utils/typescriptWriter";
 import { CodeMaker } from 'codemaker';
-let maker = new CodeMaker();
 
 
-export const subnetAuroraFunction = () => {
-  const ts = new TypeScriptWriter(maker);
-  maker.line(`const subnetRefArray = [];`);
-  maker.line(`for (let subnet of private_subnets) {`);
-  maker.line(`subnetRefArray.push({`);
-  maker.line(
+export const subnetAuroraFunction = (_code: CodeMaker) => {
+  const ts = new TypeScriptWriter(_code);
+  _code.line(`const subnetRefArray = [];`);
+  _code.line(`for (let subnet of private_subnets) {`);
+  _code.line(`subnetRefArray.push({`);
+  _code.line(
     `Ref: stack.getLogicalId(subnet.node.defaultChild as cdk.CfnElement),`
   );
-  maker.line(`});`);
-  maker.line(`};`);
+  _code.line(`});`);
+  _code.line(`};`);
 };

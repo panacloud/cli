@@ -27,16 +27,15 @@ export class AuroraServerlessDBConstructTest {
     this.code.openFile(this.outputFile);
 
     const { apiName } = this.config.api;
-    const cdk = new Cdk();
-    const auroradb = new AuroraServerless();
-    const imp = new Imports();
-    const iam = new Iam();
+    const cdk = new Cdk(this.code);
+    const auroradb = new AuroraServerless(this.code);
+    const imp = new Imports(this.code);
+    const iam = new Iam(this.code);
 
-    imp.ImportsForTest(this.outputDir, "pattern2");
     imp.importForAuroraDbConstructInTest();
     this.code.line();
     cdk.initializeTest(
-      "Auroradb Construct Tests",
+      "Auroradb Constructs Test",
       () => {
         this.code.line();
         iam.constructorIdentifier(CONSTRUCTS.auroradb);
@@ -62,41 +61,13 @@ export class AuroraServerlessDBConstructTest {
         this.code.line();
         auroradb.initializeTestForEC2Vpc();
         this.code.line();
-        auroradb.initializeTestForSubnet(
-          apiName,
-          "10.0.0.0/18",
-          0,
-          true,
-          "Public",
-          "1"
-        );
+        auroradb.initializeTestForSubnet(apiName, "10.0.0.0/18", 0, true, "Public", "1");
         this.code.line();
-        auroradb.initializeTestForSubnet(
-          apiName,
-          "10.0.64.0/18",
-          1,
-          true,
-          "Public",
-          "2"
-        );
+        auroradb.initializeTestForSubnet(apiName, "10.0.64.0/18", 1, true, "Public", "2");
         this.code.line();
-        auroradb.initializeTestForSubnet(
-          apiName,
-          "10.0.128.0/18",
-          0,
-          false,
-          "Private",
-          "1"
-        );
+        auroradb.initializeTestForSubnet(apiName, "10.0.128.0/18", 0, false, "Private", "1");
         this.code.line();
-        auroradb.initializeTestForSubnet(
-          apiName,
-          "10.0.192.0/18",
-          1,
-          false,
-          "Private",
-          "2"
-        );
+        auroradb.initializeTestForSubnet(apiName,"10.0.192.0/18",1,false,"Private","2");
         this.code.line();
         auroradb.initializeTestForRouteTable(apiName, "Public", "1");
         this.code.line();
@@ -115,23 +86,15 @@ export class AuroraServerlessDBConstructTest {
           0
         );
         this.code.line();
-        auroradb.initializeTestForSubnetRouteTableAssociation(
-          "publicRouteTables",
+        auroradb.initializeTestForSubnetRouteTableAssociation("publicRouteTables",
           1,
           "routeTableId",
-          "",
-          "public_subnets",
+          ""
+          ,"public_subnets",
           1
         );
         this.code.line();
-        auroradb.initializeTestForSubnetRouteTableAssociation(
-          "private_subnets",
-          0,
-          "routeTable",
-          ".routeTableId",
-          "private_subnets",
-          0
-        );
+        auroradb.initializeTestForSubnetRouteTableAssociation("private_subnets",0,"routeTable",".routeTableId","private_subnets",0);
         this.code.line();
         auroradb.initializeTestForSubnetRouteTableAssociation(
           "private_subnets",
@@ -180,7 +143,7 @@ export class AuroraServerlessDBConstructTest {
         this.code.line();
         auroradb.initializeTestForNatGateway(apiName, 1, "2", "2");
         this.code.line();
-        subnetAuroraFunction();
+        subnetAuroraFunction(this.code);
         this.code.line();
         auroradb.initializeTestForDBSubnetGroup(apiName);
         this.code.line();
@@ -199,9 +162,9 @@ export class AuroraServerlessDBConstructTest {
         auroradb.initializeTestForCountResources("AWS::EC2::NatGateway", 2);
         auroradb.initializeTestForCountResources("AWS::RDS::DBSubnetGroup", 1);
       },
-      this.outputDir,
-      "patter_v2"
     );
+    this.code.closeFile(this.outputFile);
+    await this.code.save(this.outputDir); 
   }
 }
 

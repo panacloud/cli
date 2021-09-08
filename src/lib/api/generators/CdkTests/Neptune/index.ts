@@ -25,29 +25,27 @@ export class NeptuneDBConstructTest {
   async construcNeptuneDBConstructTestFile() {
     const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
-
+    console.log("config ---->", this.config)
     const { apiName } = this.config.api;
-    const cdk = new Cdk();
-    const neptune = new Neptune();
-    const imp = new Imports();
-    const iam = new Iam();
+    
+    const cdk = new Cdk(this.code);
+    const neptune = new Neptune(this.code);
+    const imp = new Imports(this.code);
+    const iam = new Iam(this.code);
 
-    imp.ImportsForTest(this.outputDir, "pattern_v2");
     imp.importForNeptuneConstructInTest();
-    imp.importForLambdaConstructInTest();
     this.code.line();
 
     cdk.initializeTest(
-      "Neptune Construct Tests",
+      "Neptune Constructs Test",
       () => {
-        this.code.line();
         iam.constructorIdentifier(CONSTRUCTS.neptuneDb);
         this.code.line(
           `const constructs = VpcNeptuneConstruct_stack.node.children;`
         );
         this.code.line(`expect(constructs).toHaveLength(5);`);
         this.code.line();
-        isolatedFunction();
+        isolatedFunction(this.code);
         this.code.line();
         neptune.initializeTesForEC2Vpc();
         this.code.line();
@@ -65,7 +63,7 @@ export class NeptuneDBConstructTest {
         neptune.initializeTestForSecurityGroup(apiName);
         this.code.line();
         neptune.initializeTestForSecurityGroupIngress(apiName);
-        subnetFunction();
+        subnetFunction(this.code);
         this.code.line();
         neptune.initializeTestForDBSubnetGroup(apiName);
         this.code.line();
@@ -88,9 +86,9 @@ export class NeptuneDBConstructTest {
         neptune.initializeTestForCountResources("AWS::Neptune::DBCluster", 1);
         neptune.initializeTestForCountResources("AWS::Neptune::DBInstance", 1);
       },
-      this.outputDir,
-      "pattern_v2"
     );
+    this.code.closeFile(this.outputFile);
+    await this.code.save(this.outputDir);
   }
 }
 
