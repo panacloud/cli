@@ -1,3 +1,5 @@
-export const generator = (model: any) => {
-  console.log(model);
+import { ApiModel } from "../../../utils/constants";
+
+export const generator = (model: ApiModel) => {
+  console.log(model.api.schema);
 };

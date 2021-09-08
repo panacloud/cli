@@ -28,9 +28,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   /* copy files from global package dir to cwd */
   fs.readdirSync(templateDir).forEach(async (file: any) => {
-    console.log(file);
     if (file !== "package.json" && "cdk.json") {
-      console.log("eee", file);
       await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
         if (err) {
           stopSpinner(generatingCode, `Error: ${err}`, true);
@@ -112,13 +110,10 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     path.extname(schemaPath) === ".yml" ||
     path.extname(schemaPath) === ".yaml"
   ) {
-    schema = JSON.stringify(YAML.parse(schema));
+    schema = YAML.parse(schema);
+  } else {
+    schema = convert(schema);
   }
-
-  const jsonSchema =
-    apiType === APITYPE.graphql
-      ? { schema: convert(schema) }
-      : { schema: JSON.parse(schema) };
 
   const model: ApiModel = {
     api: {
