@@ -55,6 +55,7 @@ export class LambdaConstructTest {
 
     if (database === DATABASE.dynamo) {
       imp.importForDynamodbConstructInTest();
+      imp.importForLambdaConstructInTest()
     } else if (database === DATABASE.neptune) {
       imp.importForNeptuneConstructInTest();
       imp.importForLambdaConstructInTest();
@@ -67,21 +68,21 @@ export class LambdaConstructTest {
       cdk.initializeTest(`Lambda Attach With ${database === DATABASE.dynamo ? "Dynamodb" : database === DATABASE.neptune ? "Neptunedb" : database === DATABASE.aurora ? "Aurorodb" : null} Constructs Test`, () => {
         this.code.line();
         if (database === DATABASE.dynamo) {
+          iam.DynamoDBConsturctIdentifier()
+          iam.LambdaConstructIdentifierForDbb();
           if (
             apiType === APITYPE.rest ||
             (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql)
           ) {
             let funcName = `${apiName}Lambda`;
-            iam.dynamodbConsturctIdentifier();
             this.code.line();
-            iam.DynodbTableIdentifier();
+            iam.DynodbTableTestIdentifier();
             this.code.line();
             lambda.initializeTestForLambdaWithDynamoDB(funcName, "main");
             this.code.line();
           } else if (lambdaStyle === LAMBDASTYLE.multi) {
-            iam.dynamodbConsturctIdentifier();
             this.code.line();
-            iam.DynodbTableIdentifier();
+            iam.DynodbTableTestIdentifier();
             this.code.line();
             Object.keys(mutationsAndQueries).forEach((key) => {
               let funcName = `${apiName}Lambda${key}`;

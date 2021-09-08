@@ -166,6 +166,10 @@ export class Iam {
           });`);
   }
 
+  public DynamoDBConsturctIdentifier() {
+    this.code.line(`const DynamodbConstruct_stack = new DynamodbConstruct_stack(stack,"DynamodbConstructTest");`);
+  }
+
   public lambdaConsturctIdentifier() {
     this.code.line(`const Lambda_consturct = stack.node.children.filter(
           (elem) => elem instanceof LambdaConstruct
@@ -222,6 +226,13 @@ export class Iam {
   public DynodbTableIdentifier() {
     this.code
       .line(`const db_table = dbConstruct[0].node.children.filter((elem) => {
+          return elem instanceof cdk.aws_dynamodb.Table;
+        });`);
+  }
+
+  public DynodbTableTestIdentifier() {
+    this.code
+      .line(`const db_table = DynamodbConstruct_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_dynamodb.Table;
         });`);
   }
@@ -284,7 +295,7 @@ export class Iam {
     let lambdafunc = `${apiName}_lambdaFn`;
     this.code.line(`const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest", {`)
     if(lambdaStyle===LAMBDASTYLE.single && database ===DATABASE.dynamo){
-      code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}.functionArn`);  
+      code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn`);  
     }
     if(lambdaStyle===LAMBDASTYLE.multi && database ===DATABASE.dynamo){
       Object.keys(mutationsAndQueries).forEach((key) => {
