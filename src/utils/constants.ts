@@ -9,10 +9,10 @@ export enum LAMBDASTYLE {
 }
 
 export enum DATABASE {
-  dynamo = "DynamoDB (NoSQL)",
-  neptune = "Neptune (Graph)",
-  aurora = "Aurora Serverless (Relational)",
-  document = "DocumentDB (NoSQL MongoDB)",
+  dynamoDB = "DynamoDB (NoSQL)",
+  neptuneDB = "Neptune (Graph)",
+  auroraDB = "Aurora Serverless (Relational)",
+  documentDB = "DocumentDB (NoSQL MongoDB)",
 }
 
 export enum SAASTYPE {
@@ -22,10 +22,10 @@ export enum SAASTYPE {
 
 export enum CONSTRUCTS {
   appsync = "AppsyncConstruct",
-  dynamodb = "DynamodbConstruct",
+  dynamoDB = "DynamoDBConstruct",
   lambda = "LambdaConstruct",
-  neptuneDb = "VpcNeptuneConstruct",
-  auroradb = "AuroraDbConstruct",
+  neptuneDB = "VpcNeptuneConstruct",
+  auroraDB = "AuroraDBConstruct",
   apigateway = "ApiGatewayConstruct",
 }
 
@@ -46,18 +46,17 @@ export enum LANGUAGE {
 export interface Config {
   entityId: string;
   api_token: string;
-  cloudProvider: CLOUDPROVIDER;
-  language: LANGUAGE;
   saasType: SAASTYPE;
-  template: TEMPLATE;
-  api: API;
-  workingDir?:string;
-  type?:any
+  api?: API;
 }
 
 export interface API {
+  template: TEMPLATE;
+  language: LANGUAGE;
+  cloudprovider: CLOUDPROVIDER;
   apiName: string;
   schemaPath: string;
+  schema?: any;
   apiType: APITYPE;
   lambdaStyle: LAMBDASTYLE;
   database: DATABASE;
