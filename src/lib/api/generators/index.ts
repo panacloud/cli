@@ -1,5 +1,10 @@
-import { ApiModel } from "../../../utils/constants";
+import { ApiModel, APITYPE } from "../../../utils/constants";
+import { AppsyncApiConstruct } from "./Appsync";
 
-export const generator = (model: ApiModel) => {
-  console.log(model.api.schema);
+export const generator = async (config: ApiModel) => {
+  console.log(config);
+
+  if (config.api.apiType === APITYPE.graphql) {
+    AppsyncApiConstruct({ config });
+  }
 };
