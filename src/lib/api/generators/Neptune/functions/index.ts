@@ -2,7 +2,8 @@ import { TypeScriptWriter } from "../../../../../utils/typescriptWriter";
 import { CodeMaker } from "codemaker";
 
 export const neptunePropertiesInitializer = (
-  apiName: string , code:CodeMaker
+  apiName: string,
+  code: CodeMaker
 ) => {
   const ts = new TypeScriptWriter(code);
   code.line(`this.VPCRef = ${apiName}_vpc;`);

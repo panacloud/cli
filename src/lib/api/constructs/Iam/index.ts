@@ -1,10 +1,10 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
-export class Iam  {
+export class Iam {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
   public serviceRoleForLambda(apiName: string, managedPolicies?: string[]) {
     const ts = new TypeScriptWriter(this.code);
@@ -48,7 +48,8 @@ export class Iam  {
   }
 
   public attachLambdaPolicyToRole(roleName: string) {
-    this.code.line(`${roleName}_serviceRole.addToPolicy(new iam.PolicyStatement({
+    this.code
+      .line(`${roleName}_serviceRole.addToPolicy(new iam.PolicyStatement({
                 resources: ['*'],
                 actions: ['lambda:InvokeFunction'],
               }));`);
@@ -157,7 +158,8 @@ export class Iam  {
   }
 
   public roleIdentifierFromLambda() {
-    this.code.line(`const lambda_role = lambda_func[0].node.children.filter((elem) => {
+    this.code
+      .line(`const lambda_role = lambda_func[0].node.children.filter((elem) => {
           return elem instanceof cdk.aws_iam.Role;
         });`);
   }
@@ -175,7 +177,8 @@ export class Iam  {
   }
 
   public lambdaIdentifier() {
-    this.code.line(`const lambda_func = Lambda_consturct[0].node.children.filter(
+    this.code
+      .line(`const lambda_func = Lambda_consturct[0].node.children.filter(
           (elem) => elem instanceof cdk.aws_lambda.Function
         );`);
   }
@@ -187,55 +190,64 @@ export class Iam  {
   }
 
   public appsyncApiIdentifier() {
-    this.code.line(`const appsync_api = Appsync_consturct[0].node.children.filter(
+    this.code
+      .line(`const appsync_api = Appsync_consturct[0].node.children.filter(
           (elem) => elem instanceof cdk.aws_appsync.CfnGraphQLApi
         );`);
   }
 
   public appsyncRoleIdentifier() {
-    this.code.line(`const role = Appsync_consturct[0].node.children.filter((elem) => {
+    this.code
+      .line(`const role = Appsync_consturct[0].node.children.filter((elem) => {
           return elem instanceof cdk.aws_iam.Role;
         });`);
   }
 
   public DynodbTableIdentifier() {
-    this.code.line(`const db_table = dbConstruct[0].node.children.filter((elem) => {
+    this.code
+      .line(`const db_table = dbConstruct[0].node.children.filter((elem) => {
           return elem instanceof cdk.aws_dynamodb.Table;
         });`);
   }
 
   public natgatewayIdentifier(natGatewayNum: string, subnetNum: number) {
-    this.code.line(`const natGateway${natGatewayNum} = public_subnets[${subnetNum}].node.children.filter((elem) => {
+    this.code
+      .line(`const natGateway${natGatewayNum} = public_subnets[${subnetNum}].node.children.filter((elem) => {
           return elem instanceof cdk.aws_ec2.CfnNatGateway;
         });`);
   }
 
   public eipIdentifier(epiNum: string, subnetNum: number) {
-    this.code.line(`const eip${epiNum} = public_subnets[${subnetNum}].node.children.filter((elem) => {
+    this.code
+      .line(`const eip${epiNum} = public_subnets[${subnetNum}].node.children.filter((elem) => {
           return elem instanceof cdk.aws_ec2.CfnEIP;
         });`);
   }
 
   public internetGatewayIdentifier() {
-    this.code.line(`const internetGateway = AuroraDbConstruct_stack.vpcRef.node.children.filter((elem) => {
+    this.code
+      .line(`const internetGateway = AuroraDbConstruct_stack.vpcRef.node.children.filter((elem) => {
           return elem instanceof cdk.aws_ec2.CfnInternetGateway;
         });`);
   }
 
   public serverlessClusterIdentifier() {
-    this.code.line(`const ServerlessCluster = AuroraDbConstruct_stack.node.children.filter((elem) => {
+    this.code
+      .line(`const ServerlessCluster = AuroraDbConstruct_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_rds.ServerlessCluster;
         }); `);
   }
 
   public secretIdentifier() {
-    this.code.line(`const secret = ServerlessCluster[0].node.children.filter((elem) => {
+    this.code
+      .line(`const secret = ServerlessCluster[0].node.children.filter((elem) => {
           return elem instanceof cdk.aws_secretsmanager.Secret;
         });`);
   }
 
   public secretAttachment() {
-    this.code.line(`const secretAttachment = secret[0].node.children.filter((elem) => {
+    this.code
+      .line(`const secretAttachment = secret[0].node.children.filter((elem) => {
           return elem instanceof cdk.aws_secretsmanager.SecretTargetAttachment;
         });`);
   }

@@ -1,5 +1,9 @@
 import { CodeMaker } from "codemaker";
-import {ClassDefinition,Property,TypeScriptWriter} from "../../../../utils/typescriptWriter";
+import {
+  ClassDefinition,
+  Property,
+  TypeScriptWriter,
+} from "../../../../utils/typescriptWriter";
 const _ = require("lodash");
 
 interface consturctProps {
@@ -8,8 +12,8 @@ interface consturctProps {
 }
 export class Cdk {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
   public initializeStack(name: string, contents: any) {
     const ts = new TypeScriptWriter(this.code);
@@ -18,7 +22,7 @@ export class Cdk {
       extends: "Stack",
       export: true,
     };
-    ts.writeClassBlock(classDefinition,undefined,"StackProps",contents)
+    ts.writeClassBlock(classDefinition, undefined, "StackProps", contents);
   }
 
   public initializeConstruct(
@@ -31,17 +35,17 @@ export class Cdk {
     const ts = new TypeScriptWriter(this.code);
     this.code.line;
     if (constructProps) {
-    ts.writeInterfaceBlock(propsName, constructProps)
+      ts.writeInterfaceBlock(propsName, constructProps);
       this.code.line();
     }
-    
+
     const classDefinition: ClassDefinition = {
       name: `${_.upperFirst(_.camelCase(constructName))}`,
       extends: "Construct",
       export: true,
     };
 
-    ts.writeClassBlock(classDefinition,properties,propsName,contents)
+    ts.writeClassBlock(classDefinition, properties, propsName, contents);
   }
 
   public nodeAddDependency(sourceName: string, valueName: string) {
