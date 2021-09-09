@@ -82,24 +82,22 @@ export class DynamoDB {
   }
 
   public initializeTestForDynamodb(TableName: string) {
-    this.code.line(`expect(actual).to(
-          countResourcesLike("AWS::DynamoDB::Table",1, {
-            KeySchema: [
-              {
-                AttributeName: "id",
-                KeyType: "HASH",
-              },
-            ],
-            AttributeDefinitions: [
-              {
-                AttributeName: "id",
-                AttributeType: "S",
-              },
-            ],
-            BillingMode: "PAY_PER_REQUEST",
-            TableName: "${TableName}",
-          })
-        );
-      `);
+    this.code.line(`expect(stack).toHaveResource("AWS::DynamoDB::Table",{
+      KeySchema: [
+        {
+          AttributeName: "id",
+          KeyType: "HASH",
+        },
+      ],
+      AttributeDefinitions: [
+        {
+          AttributeName: "id",
+          AttributeType: "S",
+        },
+      ],
+      BillingMode: "PAY_PER_REQUEST",
+      TableName: "${TableName}",
+    })
+  `);
   }
 }

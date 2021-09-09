@@ -10,7 +10,7 @@ import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
 import { AuroraServerless } from "../../constructs/AuroraServerless";
 import { Cdk } from "../../constructs/Cdk";
-import { DynamoDB } from "../../constructs/DynamoDB";
+import { DynamoDB } from "../../constructs/Dynamodb";
 import { Lambda } from "../../constructs/Lambda";
 import { Neptune } from "../../constructs/Neptune";
 import {

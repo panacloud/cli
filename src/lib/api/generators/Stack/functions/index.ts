@@ -2,7 +2,7 @@ import { CodeMaker } from "codemaker";
 import { APITYPE, DATABASE, LAMBDASTYLE } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
-import { DynamoDB } from "../../../constructs/DynamoDB";
+import { DynamoDB } from "../../../constructs/Dynamodb";
 
 export const importHandlerForStack = (
   database: string,

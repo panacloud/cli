@@ -1,4 +1,5 @@
 import { CodeMaker } from "codemaker";
+import { DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class Iam {
@@ -56,27 +57,25 @@ export class Iam {
   }
 
   public appsyncServiceRoleTest() {
-    this.code.line(`expect(actual).to(
-          haveResource("AWS::IAM::Role", {
-            AssumeRolePolicyDocument: {
-              Statement: [
-                {
-                  Action: "sts:AssumeRole",
-                  Effect: "Allow",
-                  Principal: {
-                    Service: "appsync.amazonaws.com",
-                  },
-                },
-              ],
-              Version: "2012-10-17",
+    this.code.line(`expect(stack).toHaveResource("AWS::IAM::Role", {
+      AssumeRolePolicyDocument: {
+        Statement: [
+          {
+            Action: "sts:AssumeRole",
+            Effect: "Allow",
+            Principal: {
+              Service: "appsync.amazonaws.com",
             },
-          })
-        );`);
+          },
+        ],
+        Version: "2012-10-17",
+      },
+    })
+`);
   }
 
   public appsyncRolePolicyTest() {
-    this.code.line(`  expect(actual).to(
-          haveResource("AWS::IAM::Policy", {
+    this.code.line(`expect(stack).toHaveResource("AWS::IAM::Policy", {
             PolicyDocument: {
               Statement: [
                 {
@@ -92,14 +91,12 @@ export class Iam {
                 Ref: stack.getLogicalId(role[0].node.defaultChild as cdk.CfnElement),
               },
             ],
-          })
-        );`);
+          })`);
     this.code.line();
   }
 
   public lambdaServiceRoleTest() {
-    this.code.line(`expect(actual).to(
-          haveResource("AWS::IAM::Role", {
+    this.code.line(`expect(stack).toHaveResource("AWS::IAM::Role", {
             AssumeRolePolicyDocument: {
               Statement: [
                 {
@@ -112,8 +109,7 @@ export class Iam {
               ],
               Version: "2012-10-17",
             },
-          })
-        );`);
+          });`);
   }
 
   public lambdaServiceRolePolicyTestForDynodb(policyCount: number) {
@@ -170,8 +166,18 @@ export class Iam {
           });`);
   }
 
+  public DynamoDBConsturctIdentifier() {
+    this.code.line(`const DynamodbConstruct_stack = new DynamodbConstruct(stack,"DynamodbConstructTest");`);
+  }
+
   public lambdaConsturctIdentifier() {
     this.code.line(`const Lambda_consturct = stack.node.children.filter(
+          (elem) => elem instanceof LambdaConstruct
+        );`);
+  }
+
+  public lambdaConsturctTestIdentifier() {
+    this.code.line(`const Lambda_consturct = LambdaConstruct_stack.node.children.filter(
           (elem) => elem instanceof LambdaConstruct
         );`);
   }
@@ -196,6 +202,13 @@ export class Iam {
         );`);
   }
 
+  public appsyncApiTestIdentifier() {
+    this.code
+      .line(`const appsync_api = AppsyncConstruct_stack.node.children.filter(
+          (elem) => elem instanceof cdk.aws_appsync.CfnGraphQLApi
+        );`);
+  }
+
   public appsyncRoleIdentifier() {
     this.code
       .line(`const role = Appsync_consturct[0].node.children.filter((elem) => {
@@ -203,9 +216,23 @@ export class Iam {
         });`);
   }
 
+  public appsyncRoleTestIdentifier() {
+    this.code
+      .line(`const role = AppsyncConstruct_stack.node.children.filter((elem) => {
+          return elem instanceof cdk.aws_iam.Role;
+        });`);
+  }
+
   public DynodbTableIdentifier() {
     this.code
       .line(`const db_table = dbConstruct[0].node.children.filter((elem) => {
+          return elem instanceof cdk.aws_dynamodb.Table;
+        });`);
+  }
+
+  public DynodbTableTestIdentifier() {
+    this.code
+      .line(`const db_table = DynamodbConstruct_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_dynamodb.Table;
         });`);
   }
@@ -256,5 +283,59 @@ export class Iam {
     this.code.line(
       `const ${constructor}_stack = new ${constructor}(stack, "${constructor}Test");`
     );
+  }
+
+  public LambdaConstructIdentifierForDbb() {
+    this.code
+      .line(` const LambdaConstruct_stack = new LambdaConstruct(stack, "LambdaConstructTest", { tableName: DynamodbConstruct_stack.table.tableName})
+    `);
+  }
+
+  public appsyncDatabasePropsHandler(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries: any,code: CodeMaker){
+    let lambdafunc = `${apiName}_lambdaFn`;
+    this.code.line(`const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest", {`)
+    if(lambdaStyle===LAMBDASTYLE.single && database ===DATABASE.dynamo){
+      code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn`);  
+    }
+    if(lambdaStyle===LAMBDASTYLE.multi && database ===DATABASE.dynamo){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn,`);
+      });
+    }
+    if(lambdaStyle===LAMBDASTYLE.single && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      lambdafunc = `${apiName}_lambdaFnArn`;
+      code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}`);  
+    }
+    if(lambdaStyle === LAMBDASTYLE.multi && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}Arn,`);
+      });
+    }
+    this.code.line(`})`)
+  }
+
+  public LambdaConstructIdentifierForNeptunedb() {
+    this.code.line(`const LambdaConstruct_stack = new LambdaConstruct(
+      stack,
+      "LambdaConstructTest",
+      {
+        VPCRef: VpcNeptuneConstruct_stack.VPCRef,
+        SGRef: VpcNeptuneConstruct_stack.SGRef,
+        neptuneReaderEndpoint: VpcNeptuneConstruct_stack.neptuneReaderEndpoint,
+      }
+    );
+    `);
+  }
+
+  public LambdaConstructIdentifierForAuroradb() {
+    this.code
+      .line(`const LambdaConstruct_stack = new LambdaConstruct(stack, 'LambdaConstructTest', {
+    vpcRef: AuroraDbConstruct_stack.vpcRef,
+    secretRef: AuroraDbConstruct_stack.secretRef,
+    serviceRole: AuroraDbConstruct_stack.serviceRole,
+    });
+  `);
   }
 }

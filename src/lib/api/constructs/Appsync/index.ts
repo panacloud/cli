@@ -12,7 +12,7 @@ export class Appsync {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-
+  
   public apiName: string = "appsync_api";
   public initializeAppsyncApi(name: string, authenticationType?: string) {
     this.apiName = name;
@@ -185,33 +185,32 @@ export class Appsync {
   }
 
   public appsyncApiTest() {
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::GraphQLApi",1, {
-        AuthenticationType: "API_KEY",
-        Name: "${this.apiName}",
-      })
-    );`);
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::GraphQLApi", {
+      AuthenticationType: "API_KEY",
+      Name: "${this.apiName}",
+    })`);
     this.code.line();
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::GraphQLSchema",1, {
-        ApiId: {
-          "Fn::GetAtt": [
-            stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
-             "ApiId"
-          ],
-        },
-      })
-    );`);
+    this.code
+      .line(`expect(stack).toHaveResource("AWS::AppSync::GraphQLSchema", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+    })
+`);
   }
 
   public appsyncApiKeyTest() {
-    this.code.line(`expect(actual).to(
-      haveResource("AWS::AppSync::ApiKey", {
-        ApiId: {
-          "Fn::GetAtt": [stack.getLogicalId(appsync_api[0] as cdk.CfnElement), "ApiId"],
-        },
-      })
-    );
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::ApiKey", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+    })
   `);
   }
 
@@ -220,31 +219,33 @@ export class Appsync {
     lambdaFuncIndex: number
   ) {
     this.code.line();
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::DataSource",1, {
-          ApiId: {
-            "Fn::GetAtt": [stack.getLogicalId(appsync_api[0] as cdk.CfnElement), "ApiId"],
-          },
-          Name: "${dataSourceName}",
-          Type: "AWS_LAMBDA",
-          LambdaConfig: {
-            LambdaFunctionArn: {
-              "Fn::GetAtt": [
-                stack.getLogicalId(
-                  lambda_func[${lambdaFuncIndex}].node.defaultChild as cdk.CfnElement
-                ),
-                "Arn",
-              ],
-            },
-          },
-          ServiceRoleArn: {
-            "Fn::GetAtt": [
-              stack.getLogicalId(role[0].node.defaultChild as cdk.CfnElement),
-              "Arn",
-            ],
-          },
-        })
-      );`);
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::DataSource", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+      Name: "${dataSourceName}",
+      Type: "AWS_LAMBDA",
+      LambdaConfig: {
+        LambdaFunctionArn: {
+          "Fn::GetAtt": [
+            stack.getLogicalId(
+              lambda_func[${lambdaFuncIndex}].node.defaultChild as cdk.CfnElement
+            ),
+            "Arn",
+          ],
+        },
+      },
+      ServiceRoleArn: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(role[0].node.defaultChild as cdk.CfnElement),
+          "Arn",
+        ],
+      },
+    })
+`);
   }
 
   public appsyncResolverTest(
@@ -252,18 +253,17 @@ export class Appsync {
     typeName: string,
     dataSourceName: string
   ) {
-    this.code.line(`expect(actual).to(
-      countResourcesLike("AWS::AppSync::Resolver",1, {
-          "ApiId": {
-              "Fn::GetAtt": [
-                stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
-                "ApiId"
-              ]
-            },
-            "FieldName": "${fieldName}",
-            "TypeName": "${typeName}",    
-            "DataSourceName": "${dataSourceName}"
-        })
-    );`);
+    this.code.line(`expect(stack).toHaveResource("AWS::AppSync::Resolver", {
+      ApiId: {
+        "Fn::GetAtt": [
+          stack.getLogicalId(appsync_api[0] as cdk.CfnElement),
+          "ApiId",
+        ],
+      },
+      FieldName: "${fieldName}",
+      TypeName: "${typeName}",
+      DataSourceName: "${dataSourceName}",
+    })
+`);
   }
 }

@@ -59,30 +59,14 @@ export class Cdk {
   public initializeTest(
     description: string,
     contents: any,
-    workingDir: string,
-    pattern: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-    if (pattern === "pattern_v1") {
-      this.code.openBlock(`test("${description}", () => {`);
-      this.code.line(`const app = new cdk.App()`);
-      this.code.line(
-        `const stack = new ${_.upperFirst(
-          _.camelCase(workingDir)
-        )}.${_.upperFirst(_.camelCase(workingDir))}Stack(app, "MyTestStack");`
-      );
-      this.code.line(
-        `const actual = app.synth().getStackArtifact(stack.artifactId).template;`
-      );
-      this.code.line();
-      contents();
-      this.code.closeBlock(`})`);
-    } else if (pattern === "pattern_v2") {
-      this.code.openBlock(`test("${description}", () => {`);
+      this.code.openBlock(`test("${description}", () => `);
       this.code.line(`const stack = new cdk.Stack();`);
       this.code.line();
       contents();
       this.code.closeBlock(`})`);
-    }
+      this.code.line(`)`)
+    // }
   }
 }
