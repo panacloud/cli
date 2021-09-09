@@ -162,12 +162,14 @@ export class Iam {
 
   public dynamodbConsturctIdentifier() {
     this.code.line(`const dbConstruct = stack.node.children.filter(elem => {
-            return elem instanceof DynamodbConstruct;
+            return elem instanceof DynamoDBConstruct;
           });`);
   }
 
   public DynamoDBConsturctIdentifier() {
-    this.code.line(`const DynamodbConstruct_stack = new DynamodbConstruct(stack,"DynamodbConstructTest");`);
+    this.code.line(
+      `const DynamoDBConstruct_stack = new DynamoDBConstruct(stack,"DynamoDBConstructTest");`
+    );
   }
 
   public lambdaConsturctIdentifier() {
@@ -177,7 +179,8 @@ export class Iam {
   }
 
   public lambdaConsturctTestIdentifier() {
-    this.code.line(`const Lambda_consturct = LambdaConstruct_stack.node.children.filter(
+    this.code
+      .line(`const Lambda_consturct = LambdaConstruct_stack.node.children.filter(
           (elem) => elem instanceof LambdaConstruct
         );`);
   }
@@ -291,29 +294,47 @@ export class Iam {
     `);
   }
 
-  public appsyncDatabasePropsHandler(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries: any,code: CodeMaker){
+  public appsyncDatabasePropsHandler(
+    apiName: string,
+    lambdaStyle: string,
+    database: string,
+    mutationsAndQueries: any,
+    code: CodeMaker
+  ) {
     let lambdafunc = `${apiName}_lambdaFn`;
-    this.code.line(`const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest", {`)
-    if(lambdaStyle===LAMBDASTYLE.single && database ===DATABASE.dynamo){
-      code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn`);  
+    this.code.line(
+      `const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest", {`
+    );
+    if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
+      code.line(
+        `${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn`
+      );
     }
-    if(lambdaStyle===LAMBDASTYLE.multi && database ===DATABASE.dynamo){
+    if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
       Object.keys(mutationsAndQueries).forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn,`);
+        code.line(
+          `${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn,`
+        );
       });
     }
-    if(lambdaStyle===LAMBDASTYLE.single && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+    if (
+      lambdaStyle === LAMBDASTYLE.single &&
+      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
+    ) {
       lambdafunc = `${apiName}_lambdaFnArn`;
-      code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}`);  
+      code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}`);
     }
-    if(lambdaStyle === LAMBDASTYLE.multi && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+    if (
+      lambdaStyle === LAMBDASTYLE.multi &&
+      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
+    ) {
       Object.keys(mutationsAndQueries).forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}Arn,`);
       });
     }
-    this.code.line(`})`)
+    this.code.line(`})`);
   }
 
   public LambdaConstructIdentifierForNeptunedb() {
