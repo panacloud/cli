@@ -169,7 +169,7 @@ export class AuroraServerless {
         },
       ],
       VpcId: {
-        Ref: stack.getLogicalId(${CONSTRUCTS.auroraDB}.vpcRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.auroraDB}_stack.vpcRef.node.defaultChild as cdk.CfnElement),
       },
     });
   `);
