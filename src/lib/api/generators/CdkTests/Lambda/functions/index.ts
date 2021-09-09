@@ -1,24 +1,25 @@
 import { TypeScriptWriter } from "../../../../../../utils/typescriptWriter";
 import { CodeMaker } from "codemaker";
+import { CONSTRUCTS } from "../../../../../../utils/constants";
 
 export const lambdaWithNeptuneFunction = (_code: CodeMaker) => {
   const ts = new TypeScriptWriter(_code);
   _code.line(
-    `const isolated_subnets = VpcNeptuneConstruct_stack.VPCRef.isolatedSubnets;`
+    `const isolated_subnets = ${CONSTRUCTS.neptuneDB}_stack.VPCRef.isolatedSubnets;`
   );
   _code.line();
   _code.line(
-    `const LambdaConstruct_stack = new LambdaConstruct(stack, 'LambdaConstructTest', {`
+    `const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, '${CONSTRUCTS.lambda}Test', {`
   );
-  _code.line(`VPCRef: VpcNeptuneConstruct_stack.VPCRef,`);
-  _code.line(`SGRef: VpcNeptuneConstruct_stack.SGRef,`);
+  _code.line(`VPCRef: ${CONSTRUCTS.neptuneDB}_stack.VPCRef,`);
+  _code.line(`SGRef: ${CONSTRUCTS.neptuneDB}_stack.SGRef,`);
   _code.line(
-    `neptuneReaderEndpoint: VpcNeptuneConstruct_stack.neptuneReaderEndpoint,`
+    `neptuneReaderEndpoint: ${CONSTRUCTS.neptuneDB}_stack.neptuneReaderEndpoint,`
   );
   _code.line(`});`);
   _code.line();
   _code.line(
-    `const cfn_cluster = VpcNeptuneConstruct_stack.node.children.filter(`
+    `const cfn_cluster = ${CONSTRUCTS.neptuneDB}_stack.node.children.filter(`
   );
   _code.line(`(elem) => elem instanceof cdk.aws_neptune.CfnDBCluster`);
   _code.line(`);`);
@@ -27,10 +28,10 @@ export const lambdaWithNeptuneFunction = (_code: CodeMaker) => {
 export const lambdaWithAuroraFunction = (_code: CodeMaker) => {
   const ts = new TypeScriptWriter(_code);
   _code.line(
-    `const LambdaConstruct_stack = new LambdaConstruct(stack, 'LambdaConstructTest', {`
+    `const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, '${CONSTRUCTS.lambda}Test', {`
   );
-  _code.line(`vpcRef: AuroraDbConstruct_stack.vpcRef,`);
-  _code.line(`secretRef: AuroraDbConstruct_stack.secretRef,`);
-  _code.line(`serviceRole: AuroraDbConstruct_stack.serviceRole,`);
+  _code.line(`vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,`);
+  _code.line(`secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,`);
+  _code.line(`serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole,`);
   _code.line(`});`);
 };
