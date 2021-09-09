@@ -3,7 +3,7 @@ import { TypeScriptWriter, Property } from "../../../../utils/typescriptWriter";
 import { CONSTRUCTS, Config } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
-import { DynamoDB } from "../../constructs/DynamoDB";
+import { DynamoDB } from "../../constructs/Dynamodb";
 
 type StackBuilderProps = {
   config: Config

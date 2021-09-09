@@ -28,7 +28,7 @@ export class Lambda {
     let lambdaVariable: string = `${apiName}_lambdaFn`;
     let funcName: string = `${apiName}Lambda`;
     let handlerName: string = "main.handler";
-    let handlerAsset: string = "lambda-fns";
+    let handlerAsset: string = "lambda";
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`
@@ -46,7 +46,7 @@ export class Lambda {
       lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
       funcName = `${apiName}Lambda${functionName}`;
       handlerName = `${functionName}.handler`;
-      handlerAsset = `lambda-fns/${functionName}`;
+      handlerAsset = `lambda/${functionName}`;
     }
 
     if (lambdaStyle === LAMBDASTYLE.multi) {
@@ -145,22 +145,21 @@ export class Lambda {
     funcName: string,
     handlerName: string
   ) {
-    this.code.line(`expect(actual).to(
-      haveResource("AWS::Lambda::Function", {
-        FunctionName: "${funcName}",
-        Handler: "${handlerName}.handler",
-        Runtime: "nodejs12.x",
-        Environment: {
-          Variables: {
-            TableName: {
-              Ref: stack.getLogicalId(
-                db_table[0].node.defaultChild as cdk.CfnElement
-              ),
-            },
+    this.code.line(`expect(stack).toHaveResource("AWS::Lambda::Function", {
+      FunctionName: "${funcName}",
+      Handler: "${handlerName}.handler",
+      Runtime: "nodejs12.x",
+      Environment: {
+        Variables: {
+          TableName: {
+            Ref: stack.getLogicalId(
+              db_table[0].node.defaultChild as cdk.CfnElement
+            ),
           },
         },
-      })
-    );`);
+      },
+    })
+`);
   }
 
   public initializeTestForLambdaWithNeptune(
