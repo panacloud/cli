@@ -25,7 +25,7 @@ export default class Create extends Command {
     const { flags } = this.parse(Create);
 
     let templateDir;
-    
+
     // Questions
     let usrInput = await userInput();
 
