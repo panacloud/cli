@@ -83,7 +83,7 @@ export class AuroraServerless {
     this.code.line(`expect(stack).toHaveResource('AWS::EC2::Subnet', {
       CidrBlock: '${cidrBlock}',
       VpcId: {
-        Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.auroraDB}_stack.vpcRef.node.defaultChild as cdk.CfnElement),
       },
       AvailabilityZone: {
         'Fn::Select': [
@@ -118,7 +118,7 @@ export class AuroraServerless {
   ) {
     this.code.line(`expect(stack).toHaveResource('AWS::EC2::RouteTable', {
       VpcId: {
-        Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.auroraDB}_stack.vpcRef.node.defaultChild as cdk.CfnElement),
       },
       Tags: [
         {
@@ -169,7 +169,7 @@ export class AuroraServerless {
         },
       ],
       VpcId: {
-        Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.auroraDB}.vpcRef.node.defaultChild as cdk.CfnElement),
       },
     });
   `);

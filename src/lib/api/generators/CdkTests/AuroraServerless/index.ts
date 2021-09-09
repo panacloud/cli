@@ -38,12 +38,12 @@ export class AuroraServerlessDBConstructTest {
       this.code.line();
       iam.constructorIdentifier(CONSTRUCTS.auroraDB);
       this.code.line(
-        `const public_subnets = AuroraDbConstruct_stack.vpcRef.publicSubnets;`
+        `const public_subnets = ${CONSTRUCTS.auroraDB}_stack.vpcRef.publicSubnets;`
       );
       auroradb.route_tableIdentifier("public");
       this.code.line();
       this.code.line(
-        `const private_subnets = AuroraDbConstruct_stack.vpcRef.privateSubnets;`
+        `const private_subnets = ${CONSTRUCTS.auroraDB}_stack.vpcRef.privateSubnets;`
       );
       auroradb.route_tableIdentifier("private");
       this.code.line();

@@ -28,7 +28,7 @@ export const lambdaWithNeptuneFunction = (_code: CodeMaker) => {
 export const lambdaWithAuroraFunction = (_code: CodeMaker) => {
   const ts = new TypeScriptWriter(_code);
   _code.line(
-    `const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, '${CONSTRUCTS.lambda}Test', {`
+    `const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, 'LambdaConstructTest', {`
   );
   _code.line(`vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,`);
   _code.line(`secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,`);
