@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class Iam {
@@ -162,13 +162,13 @@ export class Iam {
 
   public dynamodbConsturctIdentifier() {
     this.code.line(`const dbConstruct = stack.node.children.filter(elem => {
-            return elem instanceof DynamoDBConstruct;
+            return elem instanceof ${CONSTRUCTS.dynamoDB};
           });`);
   }
 
   public DynamoDBConsturctIdentifier() {
     this.code.line(
-      `const DynamoDBConstruct_stack = new DynamoDBConstruct(stack,"DynamoDBConstructTest");`
+      `const ${CONSTRUCTS.dynamoDB}_stack = new ${CONSTRUCTS.dynamoDB}(stack,"${CONSTRUCTS.dynamoDB}Test");`
     );
   }
 
@@ -235,7 +235,7 @@ export class Iam {
 
   public DynodbTableTestIdentifier() {
     this.code
-      .line(`const db_table = DynamodbConstruct_stack.node.children.filter((elem) => {
+      .line(`const db_table = ${CONSTRUCTS.dynamoDB}_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_dynamodb.Table;
         });`);
   }
@@ -256,14 +256,14 @@ export class Iam {
 
   public internetGatewayIdentifier() {
     this.code
-      .line(`const internetGateway = AuroraDbConstruct_stack.vpcRef.node.children.filter((elem) => {
+      .line(`const internetGateway = ${CONSTRUCTS.auroraDB}_stack.vpcRef.node.children.filter((elem) => {
           return elem instanceof cdk.aws_ec2.CfnInternetGateway;
         });`);
   }
 
   public serverlessClusterIdentifier() {
     this.code
-      .line(`const ServerlessCluster = AuroraDbConstruct_stack.node.children.filter((elem) => {
+      .line(`const ServerlessCluster = ${CONSTRUCTS.auroraDB}_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_rds.ServerlessCluster;
         }); `);
   }
@@ -290,7 +290,7 @@ export class Iam {
 
   public LambdaConstructIdentifierForDbb() {
     this.code
-      .line(` const LambdaConstruct_stack = new LambdaConstruct(stack, "LambdaConstructTest", { tableName: DynamodbConstruct_stack.table.tableName})
+      .line(` const ${CONSTRUCTS.lambda}_stack = new LambdaConstruct(stack, "LambdaConstructTest", { tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName})
     `);
   }
 
@@ -303,18 +303,18 @@ export class Iam {
   ) {
     let lambdafunc = `${apiName}_lambdaFn`;
     this.code.line(
-      `const AppsyncConstruct_stack = new AppsyncConstruct(stack, "AppsyncConstructTest", {`
+      `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "AppsyncConstructTest", {`
     );
     if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
       code.line(
-        `${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn`
+        `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn`
       );
     }
-    if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
+    else if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
       Object.keys(mutationsAndQueries).forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(
-          `${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}.functionArn,`
+          `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn,`
         );
       });
     }
@@ -325,7 +325,7 @@ export class Iam {
       lambdafunc = `${apiName}_lambdaFnArn`;
       code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}`);
     }
-    if (
+    else if (
       lambdaStyle === LAMBDASTYLE.multi &&
       (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
     ) {
@@ -338,13 +338,13 @@ export class Iam {
   }
 
   public LambdaConstructIdentifierForNeptunedb() {
-    this.code.line(`const LambdaConstruct_stack = new LambdaConstruct(
+    this.code.line(`const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(
       stack,
       "LambdaConstructTest",
       {
-        VPCRef: VpcNeptuneConstruct_stack.VPCRef,
-        SGRef: VpcNeptuneConstruct_stack.SGRef,
-        neptuneReaderEndpoint: VpcNeptuneConstruct_stack.neptuneReaderEndpoint,
+        VPCRef: ${CONSTRUCTS.neptuneDB}_stack.VPCRef,
+        SGRef: ${CONSTRUCTS.neptuneDB}_stack.SGRef,
+        neptuneReaderEndpoint: ${CONSTRUCTS.neptuneDB}_stack.neptuneReaderEndpoint,
       }
     );
     `);
@@ -353,9 +353,9 @@ export class Iam {
   public LambdaConstructIdentifierForAuroradb() {
     this.code
       .line(`const LambdaConstruct_stack = new LambdaConstruct(stack, 'LambdaConstructTest', {
-    vpcRef: AuroraDbConstruct_stack.vpcRef,
-    secretRef: AuroraDbConstruct_stack.secretRef,
-    serviceRole: AuroraDbConstruct_stack.serviceRole,
+    vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,
+    secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,
+    serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole,
     });
   `);
   }
