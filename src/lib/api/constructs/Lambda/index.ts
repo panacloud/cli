@@ -28,7 +28,7 @@ export class Lambda {
     let lambdaVariable: string = `${apiName}_lambdaFn`;
     let funcName: string = `${apiName}Lambda`;
     let handlerName: string = "main.handler";
-    let handlerAsset: string = "lambda-fns";
+    let handlerAsset: string = "lambda";
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`
@@ -46,7 +46,7 @@ export class Lambda {
       lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
       funcName = `${apiName}Lambda${functionName}`;
       handlerName = `${functionName}.handler`;
-      handlerAsset = `lambda-fns/${functionName}`;
+      handlerAsset = `lambda/${functionName}`;
     }
 
     if (lambdaStyle === LAMBDASTYLE.multi) {

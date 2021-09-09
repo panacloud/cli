@@ -167,7 +167,7 @@ export class Iam {
   }
 
   public DynamoDBConsturctIdentifier() {
-    this.code.line(`const DynamodbConstruct_stack = new DynamodbConstruct_stack(stack,"DynamodbConstructTest");`);
+    this.code.line(`const DynamodbConstruct_stack = new DynamodbConstruct(stack,"DynamodbConstructTest");`);
   }
 
   public lambdaConsturctIdentifier() {
