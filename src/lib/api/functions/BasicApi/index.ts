@@ -1,54 +1,49 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import { writeFileAsync, copyFileAsync, mkdirRecursiveAsync } from "../../../fs";
+import {
+  writeFileAsync,
+  copyFileAsync,
+  mkdirRecursiveAsync,
+} from "../../../fs";
 import { contextInfo } from "../../info";
 import { Config } from "../../../../utils/constants";
 const exec = require("await-exec");
 const path = require("path");
 const fs = require("fs");
+const fse = require("fs-extra");
 const _ = require("lodash");
 
 async function basicApi(config: Config, templateDir: string) {
-  const USER_DIRECTORY = _.snakeCase(path.basename(process.cwd()));
+  const { api_token, entityId } = config;
 
+  const workingDir = _.snakeCase(path.basename(process.cwd()));
   const generatingCode = startSpinner("Generating CDK Code...");
 
-  /* copy files from util of codebuild to root directory */
-  // fs.readdirSync(
-  //   path.join(process.cwd(), `${PATH.utils}/cdk-template`)
-  // ).forEach((file: any) => {
-  //   copyFileAsync(
-  //     path.join(process.cwd(), `${PATH.utils}/cdk-template/${file}`),
-  //     file,
-  //     (err: string) => {
-  //       if (err) {
-  //         stopSpinner(generatingCode, `Error: ${err}`, true);
-  //         process.exit(1);
-  //       }
-  //     }
-  //   );
-  // });
+  /* copy files from global package dir to cwd */
+  fs.readdirSync(templateDir).forEach(async (file: any) => {
+    if (file !== "package.json" && "cdk.json") {
+      await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
+        if (err) {
+          stopSpinner(generatingCode, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      });
+    }
+  });
 
-  // const stackPackageJson = JSON.parse(
-  //   fs.readFileSync(`${PATH.utils}/package-template/stack/package.json`)
-  // );
+  // Updating fileName
+  const stackPackageJson = JSON.parse(
+    fs.readFileSync(`${templateDir}/package.json`)
+  );
+  const cdkJson = JSON.parse(fs.readFileSync(`${templateDir}/cdk.json`));
 
-  // stackPackageJson.bin = `bin/${USER_DIRECTORY}.js`;
-  // stackPackageJson.name = USER_DIRECTORY;
+  stackPackageJson.bin = `bin/${workingDir}.js`;
+  stackPackageJson.name = workingDir;
 
-  // writeFileAsync(
-  //   `./package.json`,
-  //   JSON.stringify(stackPackageJson),
-  //   (err: string) => {
-  //     if (err) {
-  //       stopSpinner(generatingCode, `Error: ${err}`, true);
-  //       process.exit(1);
-  //     }
-  //   }
-  // );
+  cdkJson.app = `npx ts-node --prefer-ts-exts bin/${workingDir}.ts`;
 
-  writeFileAsync(
-    `./cdk.context.json`,
-    JSON.stringify(contextInfo(config.api_token, config.entityId)),
+  await fs.writeFileSync(
+    `./package.json`,
+    JSON.stringify(stackPackageJson),
     (err: string) => {
       if (err) {
         stopSpinner(generatingCode, `Error: ${err}`, true);
@@ -57,16 +52,27 @@ async function basicApi(config: Config, templateDir: string) {
     }
   );
 
-  // writeFileAsync(
-  //   `./cdk.json`,
-  //   JSON.stringify(cdkInfo(USER_DIRECTORY)),
-  //   (err: string) => {
-  //     if (err) {
-  //       stopSpinner(generatingCode, `Error: ${err}`, true);
-  //       process.exit(1);
-  //     }
-  //   }
-  // );
+  await fs.writeFileSync(
+    `./cdk.json`,
+    JSON.stringify(cdkJson),
+    (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    }
+  );
+
+  writeFileAsync(
+    `./cdk.context.json`,
+    JSON.stringify(contextInfo(api_token, entityId)),
+    (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    }
+  );
 
   mkdirRecursiveAsync(`lib`);
   mkdirRecursiveAsync(`bin`);

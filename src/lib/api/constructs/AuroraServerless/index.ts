@@ -4,8 +4,8 @@ import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class AuroraServerless {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
   public initializeAuroraCluster(apiName: string, vpcName: string) {
     const ts = new TypeScriptWriter(this.code);
@@ -39,15 +39,20 @@ export class AuroraServerless {
     );
   }
 
-  public auroradbConstructInitializer(apiName:string,code:CodeMaker){
-    const ts = new TypeScriptWriter(code)
-    ts.writeVariableDeclaration({
-      name:`${apiName}_auroradb`,
-      typeName:CONSTRUCTS.auroradb,
-      initializer:()=>{
-        this.code.line(`new ${CONSTRUCTS.auroradb}(this,"${CONSTRUCTS.auroradb}");`)
-      }
-    },"const")
+  public auroradbConstructInitializer(apiName: string, code: CodeMaker) {
+    const ts = new TypeScriptWriter(code);
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}_auroradb`,
+        typeName: CONSTRUCTS.auroraDB,
+        initializer: () => {
+          this.code.line(
+            `new ${CONSTRUCTS.auroraDB}(this,"${CONSTRUCTS.auroraDB}");`
+          );
+        },
+      },
+      "const"
+    );
   }
 
   public route_tableIdentifier(state: string) {
@@ -133,8 +138,8 @@ export class AuroraServerless {
     subnet: string,
     subnetState: number
   ) {
-    this
-      .code.line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
+    this.code
+      .line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
       RouteTableId: stack.resolve(${routeTableState}[${routeTableNum}].${routeTable}${routeTableId}),
       SubnetId: {
         Ref: stack.getLogicalId(
@@ -249,7 +254,8 @@ export class AuroraServerless {
   }
 
   public initializeTestForVPCGatewayAttachment() {
-    this.code.line(`expect(stack).toHaveResource('AWS::EC2::VPCGatewayAttachment', {
+    this.code
+      .line(`expect(stack).toHaveResource('AWS::EC2::VPCGatewayAttachment', {
       VpcId: {
         Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
       },

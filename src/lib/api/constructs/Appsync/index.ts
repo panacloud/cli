@@ -57,15 +57,29 @@ export class Appsync {
     })`);
   }
 
-  public appsyncConstructInitializer(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries:any,code:CodeMaker){
-    const ts = new TypeScriptWriter(code)
+  public appsyncConstructInitializer(
+    apiName: string,
+    lambdaStyle: string,
+    database: string,
+    mutationsAndQueries: any,
+    code: CodeMaker
+  ) {
+    const ts = new TypeScriptWriter(code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}`,
         typeName: CONSTRUCTS.appsync,
         initializer: () => {
-          this.code.line(`new ${CONSTRUCTS.appsync}(this,"${apiName}${CONSTRUCTS.appsync}",{`);
-          this.appsyncDatabasePropsHandler(apiName,lambdaStyle,database,mutationsAndQueries,code)
+          this.code.line(
+            `new ${CONSTRUCTS.appsync}(this,"${apiName}${CONSTRUCTS.appsync}",{`
+          );
+          this.appsyncDatabasePropsHandler(
+            apiName,
+            lambdaStyle,
+            database,
+            mutationsAndQueries,
+            code
+          );
           this.code.line("})");
         },
       },
@@ -73,23 +87,35 @@ export class Appsync {
     );
   }
 
-  public appsyncDatabasePropsHandler(apiName:string,lambdaStyle:string,database:string,mutationsAndQueries: any,code: CodeMaker){
+  public appsyncDatabasePropsHandler(
+    apiName: string,
+    lambdaStyle: string,
+    database: string,
+    mutationsAndQueries: any,
+    code: CodeMaker
+  ) {
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
-    if(lambdaStyle===LAMBDASTYLE.single && database ===DATABASE.dynamo){
-      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);  
+    if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
+      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
     }
-    if(lambdaStyle===LAMBDASTYLE.multi && database ===DATABASE.dynamo){
+    if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
       Object.keys(mutationsAndQueries).forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
       });
     }
-    if(lambdaStyle===LAMBDASTYLE.single && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+    if (
+      lambdaStyle === LAMBDASTYLE.single &&
+      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
+    ) {
       lambdafunc = `${apiName}_lambdaFnArn`;
-      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);  
+      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
     }
-    if(lambdaStyle === LAMBDASTYLE.multi && (database ===DATABASE.neptune || database === DATABASE.aurora)){
+    if (
+      lambdaStyle === LAMBDASTYLE.multi &&
+      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
+    ) {
       Object.keys(mutationsAndQueries).forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
@@ -97,13 +123,18 @@ export class Appsync {
     }
   }
 
-  public appsyncLambdaDataSource(dataSourceName: string,serviceRole: string,lambdaStyle:string,functionName?:string) {
+  public appsyncLambdaDataSource(
+    dataSourceName: string,
+    serviceRole: string,
+    lambdaStyle: string,
+    functionName?: string
+  ) {
     const ts = new TypeScriptWriter(this.code);
     let ds_initializerName = this.apiName + "dataSourceGraphql";
     let ds_variable = `ds_${dataSourceName}`;
     let ds_name = `${dataSourceName}_dataSource`;
     let lambdaFunctionArn = `props!.${this.apiName}_lambdaFnArn`;
-    
+
     if (lambdaStyle === LAMBDASTYLE.multi) {
       ds_initializerName = this.apiName + "dataSourceGraphql" + functionName;
       ds_variable = `ds_${dataSourceName}_${functionName}`;
@@ -133,7 +164,7 @@ export class Appsync {
   public appsyncLambdaResolver(
     fieldName: string,
     typeName: string,
-    dataSourceName: string,
+    dataSourceName: string
   ) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(

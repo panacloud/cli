@@ -1,18 +1,18 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter, Property } from "../../../../utils/typescriptWriter";
-import { CONSTRUCTS, Config } from "../../../../utils/constants";
+import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { DynamoDB } from "../../constructs/Dynamodb";
 
 type StackBuilderProps = {
-  config: Config
+  config: ApiModel;
 };
 
 export class DyanmoDBConstruct {
   outputFile: string = `index.ts`;
-  outputDir: string = `lib/${CONSTRUCTS.dynamodb}`;
-  config: Config;
+  outputDir: string = `lib/${CONSTRUCTS.dynamoDB}`;
+  config: ApiModel;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
@@ -27,27 +27,28 @@ export class DyanmoDBConstruct {
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
     const dynamoDB = new DynamoDB(this.code);
-    // imports for dynamodb constructs 
+    // imports for dynamodb constructs
     imp.importsForStack();
     imp.importDynamodb();
     this.code.line();
 
-    const properties: Property[] = [                                 // properties declaration for dynamoDb constructs
+    const properties: Property[] = [
+      // properties declaration for dynamoDb constructs
       {
         name: "table",
         typeName: "dynamodb.Table",
         accessModifier: "public",
-        isReadonly: false
+        isReadonly: false,
       },
     ];
 
     cdk.initializeConstruct(
-      CONSTRUCTS.dynamodb,
+      CONSTRUCTS.dynamoDB,
       undefined,
       () => {
-        dynamoDB.initializeDynamodb(apiName);                        // construct initializer for dynamoDb constructs
+        dynamoDB.initializeDynamodb(apiName); // construct initializer for dynamoDb constructs
         this.code.line();
-        this.code.line(`this.table = ${apiName}_table`);            // properties initializer for dynamoDb constructs
+        this.code.line(`this.table = ${apiName}_table`); // properties initializer for dynamoDb constructs
         this.code.line();
       },
       undefined,

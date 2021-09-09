@@ -6,7 +6,7 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE } from "../utils/constants";
+import { TEMPLATE, SAASTYPE, Config } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -16,7 +16,7 @@ const _ = require("lodash");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
-  
+
   static flags = {
     help: flags.help({ char: "h" }),
   };
@@ -25,18 +25,19 @@ export default class Create extends Command {
     const { flags } = this.parse(Create);
 
     let templateDir;
+
     // Questions
     let usrInput = await userInput();
 
     // Config to generate code.
-    const config = {
+    const config: Config = {
       entityId: usrInput.entityId,
       api_token: usrInput.api_token,
-      cloudProvider: usrInput.cloud_provider,
-      language: usrInput.language,
       saasType: usrInput.saas_type,
-      template: usrInput.template,
       api: {
+        template: usrInput.template,
+        language: usrInput.language,
+        cloudprovider: usrInput.cloud_provider,
         apiName: _.camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
@@ -51,23 +52,25 @@ export default class Create extends Command {
     if (config.saasType === SAASTYPE.api) {
       templateDir = path.resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      if (config.template === TEMPLATE.defineApi) {
+      if (config.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
-          config.api.schemaPath,
+          config.api?.schemaPath,
           validating,
-          config.api.apiType
+          config.api?.apiType
         );
       }
     }
 
     stopSpinner(validating, "Everything's fine", false);
 
-    if (config?.template === TEMPLATE.todoApi) {
-      await todoApi(config);
-    } else if (config.template === TEMPLATE.defineApi) {
-      await defineYourOwnApi(config , templateDir);
-    } else {
-      await basicApi(config , templateDir);
+    if (config.saasType === SAASTYPE.api) {
+      if (config?.api?.template === TEMPLATE.todoApi) {
+        await todoApi(config);
+      } else if (config.api?.template === TEMPLATE.defineApi) {
+        await defineYourOwnApi(config, templateDir);
+      } else {
+        await basicApi(config, templateDir);
+      }
     }
 
     // Formatting files.

@@ -9,8 +9,8 @@ interface Environment {
 
 export class Lambda {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
 
   public initializeLambda(
@@ -85,7 +85,8 @@ export class Lambda {
         name: `${apiName}_lambdaLayer`,
         typeName: "lambda.LayerVersion",
         initializer: () => {
-          this.code.line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
+          this.code
+            .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
           code: lambda.Code.fromAsset('lambdaLayer'),
         })`);
         },
@@ -94,8 +95,12 @@ export class Lambda {
     );
   }
 
-  public lambdaConstructInitializer(apiName:string,database:string,code:CodeMaker){
-    const ts = new TypeScriptWriter(code)
+  public lambdaConstructInitializer(
+    apiName: string,
+    database: string,
+    code: CodeMaker
+  ) {
+    const ts = new TypeScriptWriter(code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}Lambda`,
@@ -104,25 +109,24 @@ export class Lambda {
           this.code.line(
             `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}",{`
           );
-          if(database === DATABASE.dynamo){
+          if (database === DATABASE.dynamoDB) {
             code.line(`tableName:${apiName}_table.table.tableName`);
-          }
-          else if(database === DATABASE.neptune){
+          } else if (database === DATABASE.neptuneDB) {
             code.line(`SGRef:${apiName}_neptunedb.SGRef,`);
             code.line(`VPCRef:${apiName}_neptunedb.VPCRef,`);
-            code.line(`neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`);
-          }
-          else if(database === DATABASE.aurora){
+            code.line(
+              `neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`
+            );
+          } else if (database === DATABASE.auroraDB) {
             code.line(`secretRef:${apiName}_auroradb.secretRef,`);
             code.line(`vpcRef:${apiName}_auroradb.vpcRef,`);
             code.line(`serviceRole: ${apiName}_auroradb.serviceRole`);
           }
-        this.code.line("})");
+          this.code.line("})");
         },
       },
       "const"
     );
-    // database === DATABASE.dynamo && LambdaAccessHandler( this.code, apiName, lambdaStyle ,apiType, mutationsAndQueries)
   }
 
   public addEnvironment(
@@ -133,7 +137,9 @@ export class Lambda {
     functionName?: string
   ) {
     if (lambdaStyle === LAMBDASTYLE.single) {
-      this.code.line(`${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`);
+      this.code.line(
+        `${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`
+      );
     } else if (lambdaStyle === LAMBDASTYLE.multi) {
       this.code.line(
         `${lambda}_lambdaFn_${functionName}.addEnvironment("${envName}", ${value});`

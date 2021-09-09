@@ -1,42 +1,54 @@
-
-import { CONSTRUCTS,Config, APITYPE, DATABASE } from "../../../../utils/constants";
+import {
+  CONSTRUCTS,
+  APITYPE,
+  DATABASE,
+  ApiModel,
+} from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { CodeMaker } from "codemaker";
 import { Property } from "../../../../utils/typescriptWriter";
-import { lambdaHandlerForAuroradb, lambdaHandlerForDynamodb, lambdaHandlerForNeptunedb, lambdaProperiesHandlerForAuroraDb, lambdaProperiesHandlerForDynoDb, lambdaProperiesHandlerForNeptuneDb, lambdaPropsHandlerForAuroradb, lambdaPropsHandlerForNeptunedb } from "./functions";
+import {
+  lambdaHandlerForAuroradb,
+  lambdaHandlerForDynamodb,
+  lambdaHandlerForNeptunedb,
+  lambdaProperiesHandlerForAuroraDb,
+  lambdaProperiesHandlerForDynoDb,
+  lambdaProperiesHandlerForNeptuneDb,
+  lambdaPropsHandlerForAuroradb,
+  lambdaPropsHandlerForNeptunedb,
+} from "./functions";
 
 type StackBuilderProps = {
-    config: Config;
-    schema: any
+  config: ApiModel;
 };
 
 class lambdaConstruct {
-    outputFile: string = `index.ts`;
-    outputDir: string = `lib/${CONSTRUCTS.lambda}`;
-    config: Config;
-    jsonSchema: any
-    code: CodeMaker;
-    constructor(props: StackBuilderProps) {
-      this.config = props.config;
-      this.code = new CodeMaker();
-      this.jsonSchema = props.schema
-    }
+  outputFile: string = `index.ts`;
+  outputDir: string = `lib/${CONSTRUCTS.lambda}`;
+  config: ApiModel;
+  code: CodeMaker;
+  constructor(props: StackBuilderProps) {
+    this.config = props.config;
+    this.code = new CodeMaker();
+  }
 
-    async LambdaConstructFile() {
-      const {api:{apiName,lambdaStyle, apiType, database}} = this.config
-      let mutations = {};
-      let queries = {};
+  async LambdaConstructFile() {
+    const {
+      api: { apiName, lambdaStyle, apiType, database, schema },
+    } = this.config;
+    let mutations = {};
+    let queries = {};
     if (apiType === APITYPE.graphql) {
-      mutations = this.jsonSchema.Mutation ? this.jsonSchema.Mutation : {};
-      queries = this.jsonSchema.Query ? this.jsonSchema.Query : {};
+      mutations = schema.type.Mutation ? schema.type.Mutation : {};
+      queries = schema.type.Query ? schema.type.Query : {};
     }
     const mutationsAndQueries = { ...mutations, ...queries };
 
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
     let lambdaProperties: Property[] | undefined;
-    this.code.openFile(this.outputFile)
+    this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
 
@@ -45,7 +57,7 @@ class lambdaConstruct {
     imp.importLambda();
     imp.importIam();
 
-    if (database === DATABASE.dynamo) {
+    if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
           name: "tableName",
@@ -60,7 +72,7 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
-    if (database === DATABASE.neptune) {
+    if (database === DATABASE.neptuneDB) {
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForNeptunedb();
       lambdaProperties = lambdaProperiesHandlerForNeptuneDb(
@@ -71,7 +83,7 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
-    if (database === DATABASE.aurora) {
+    if (database === DATABASE.auroraDB) {
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForAuroradb();
       lambdaProperties = lambdaProperiesHandlerForAuroraDb(
@@ -86,7 +98,7 @@ class lambdaConstruct {
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
       () => {
-        if (database === DATABASE.dynamo) {
+        if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
             apiName,
@@ -96,7 +108,7 @@ class lambdaConstruct {
             mutationsAndQueries
           );
         }
-        if (database === DATABASE.neptune) {
+        if (database === DATABASE.neptuneDB) {
           lambdaHandlerForNeptunedb(
             this.code,
             lambdaStyle,
@@ -106,7 +118,7 @@ class lambdaConstruct {
             mutationsAndQueries
           );
         }
-        if (database === DATABASE.aurora) {
+        if (database === DATABASE.auroraDB) {
           lambdaHandlerForAuroradb(
             this.code,
             lambdaStyle,
@@ -120,15 +132,14 @@ class lambdaConstruct {
       lambdaProps,
       lambdaProperties
     );
-        this.code.closeFile(this.outputFile);
-        await this.code.save(this.outputDir);
-    }
+    this.code.closeFile(this.outputFile);
+    await this.code.save(this.outputDir);
+  }
 }
 
 export const LambdaConstruct = async (
-    props: StackBuilderProps
-  ): Promise<void> => {
-    const builder = new lambdaConstruct(props);
-    await builder.LambdaConstructFile();
-  };
-  
+  props: StackBuilderProps
+): Promise<void> => {
+  const builder = new lambdaConstruct(props);
+  await builder.LambdaConstructFile();
+};

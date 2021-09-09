@@ -4,8 +4,8 @@ import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class LambdaFunction {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
   public initializeLambdaFunction(
     lambdaStyle: string,
@@ -40,7 +40,9 @@ export class LambdaFunction {
     } else {
       /* rest api */
       this.code.line(`exports.handler = async (event: any) => {`);
-      this.code.line(`const data = await axios.post('http://sandbox:8080', event)`);
+      this.code.line(
+        `const data = await axios.post('http://sandbox:8080', event)`
+      );
       this.code.line(`try {`);
       this.code.line();
       this.code.line("const method = event.httpMethod;");

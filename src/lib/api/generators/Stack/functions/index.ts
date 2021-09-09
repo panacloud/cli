@@ -4,50 +4,66 @@ import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { DynamoDB } from "../../../constructs/Dynamodb";
 
-
-export const importHandlerForStack=(database:string,apiType:string,code:CodeMaker)=>{
+export const importHandlerForStack = (
+  database: string,
+  apiType: string,
+  code: CodeMaker
+) => {
   const cdk = new Cdk(code);
   const imp = new Imports(code);
   imp.importsForStack();
   imp.importApiManager();
-  if (apiType === APITYPE.graphql){
+  if (apiType === APITYPE.graphql) {
     imp.importForAppsyncConstruct();
   } else {
     imp.importForApiGatewayConstruct();
   }
   imp.importForLambdaConstruct();
-  databaseImportHandler(database,code)
-}
+  databaseImportHandler(database, code);
+};
 
-export const databaseImportHandler = (database:string,code:CodeMaker) =>{
-  const imp = new Imports(code)
-  if (database === DATABASE.dynamo) {
+export const databaseImportHandler = (database: string, code: CodeMaker) => {
+  const imp = new Imports(code);
+  if (database === DATABASE.dynamoDB) {
     imp.importForDynamodbConstruct();
   }
-  if (database === DATABASE.neptune) {
+  if (database === DATABASE.neptuneDB) {
     imp.importForNeptuneConstruct();
   }
-  if (database === DATABASE.aurora) {
+  if (database === DATABASE.auroraDB) {
     imp.importForAuroraDbConstruct();
   }
-}
+};
 
 export const LambdaAccessHandler = (
   code: CodeMaker,
   apiName: string,
   lambdaStyle: LAMBDASTYLE,
-  apiType:string,
+  apiType: string,
   mutationsAndQueries: any
 ) => {
   const dynamodb = new DynamoDB(code);
-  if (lambdaStyle === LAMBDASTYLE.single || apiType === APITYPE.rest){
-    dynamodb.dbConstructLambdaAccess(apiName,`${apiName}_table`, `${apiName}Lambda`, lambdaStyle, apiType );
-    code.line()
+  if (lambdaStyle === LAMBDASTYLE.single || apiType === APITYPE.rest) {
+    dynamodb.dbConstructLambdaAccess(
+      apiName,
+      `${apiName}_table`,
+      `${apiName}Lambda`,
+      lambdaStyle,
+      apiType
+    );
+    code.line();
   } else if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
     Object.keys(mutationsAndQueries).forEach((key) => {
-      dynamodb.dbConstructLambdaAccess( apiName, `${apiName}_table`,`${apiName}Lambda`, lambdaStyle,apiType,key);
+      dynamodb.dbConstructLambdaAccess(
+        apiName,
+        `${apiName}_table`,
+        `${apiName}Lambda`,
+        lambdaStyle,
+        apiType,
+        key
+      );
     });
-    code.line()
+    code.line();
   }
 };
 
@@ -58,4 +74,3 @@ export const propsHandlerForApiGatewayConstruct = (
   let lambdafunc = `${apiName}_lambdaFn`;
   code.line(`${lambdafunc}: ${apiName}Lambda.${lambdafunc}`);
 };
-
