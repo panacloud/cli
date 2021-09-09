@@ -105,7 +105,7 @@ export class AuroraServerless {
         },
         {
           Key: 'Name',
-          Value: 'Default/AuroraDbConstructTest/${apiName}Vpc/${state}Subnet${stateNum}',
+          Value: 'Default/${CONSTRUCTS.auroraDB}Test/${apiName}Vpc/${state}Subnet${stateNum}',
         },
       ],
     });`);
@@ -123,7 +123,7 @@ export class AuroraServerless {
       Tags: [
         {
           Key: 'Name',
-          Value: 'Default/AuroraDbConstructTest/${apiName}Vpc/${state}Subnet${stateNum}',
+          Value: 'Default/${CONSTRUCTS.auroraDB}Test/${apiName}Vpc/${state}Subnet${stateNum}',
         },
       ],
     });
@@ -196,7 +196,7 @@ export class AuroraServerless {
       Tags: [
         {
           Key: 'Name',
-          Value: 'Default/AuroraDbConstructTest/${apiName}Vpc/PublicSubnet${stateNum}',
+          Value: 'Default/${CONSTRUCTS.auroraDB}Test/${apiName}Vpc/PublicSubnet${stateNum}',
         },
       ],
     });`);
@@ -223,7 +223,7 @@ export class AuroraServerless {
       Tags: [
         {
           Key: 'Name',
-          Value: 'Default/AuroraDbConstructTest/${apiName}Vpc/PublicSubnet${stateNum}',
+          Value: 'Default/${CONSTRUCTS.auroraDB}Test/${apiName}Vpc/PublicSubnet${stateNum}',
         },
       ],
     });`);
@@ -257,7 +257,7 @@ export class AuroraServerless {
     this.code
       .line(`expect(stack).toHaveResource('AWS::EC2::VPCGatewayAttachment', {
       VpcId: {
-        Ref: stack.getLogicalId(AuroraDbConstruct_stack.vpcRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.auroraDB}_stack.vpcRef.node.defaultChild as cdk.CfnElement),
       },
       InternetGatewayId: {
         Ref: stack.getLogicalId(internetGateway[0] as cdk.CfnElement),

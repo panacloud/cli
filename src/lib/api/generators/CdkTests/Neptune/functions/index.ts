@@ -1,10 +1,11 @@
 import { TypeScriptWriter } from "../../../../../../utils/typescriptWriter";
 import { CodeMaker } from "codemaker";
+import { CONSTRUCTS } from "../../../../../../utils/constants";
 
 export const subnetFunction = (_code: CodeMaker) => {
   const ts = new TypeScriptWriter(_code);
   _code.line(
-    `const subnets = VpcNeptuneConstruct_stack.VPCRef.isolatedSubnets;`
+    `const subnets = ${CONSTRUCTS.neptuneDB}_stack.VPCRef.isolatedSubnets;`
   );
   _code.line(`const subnetRefArray = [];`);
   _code.line(`for (let subnet of subnets) {`);
@@ -19,7 +20,7 @@ export const subnetFunction = (_code: CodeMaker) => {
 export const isolatedFunction = (_code: CodeMaker) => {
   const ts = new TypeScriptWriter(_code);
   _code.line(
-    `const isolated_subnets = VpcNeptuneConstruct_stack.VPCRef.isolatedSubnets;`
+    `const isolated_subnets = ${CONSTRUCTS.neptuneDB}_stack.VPCRef.isolatedSubnets;`
   );
   _code.line(`const isolatedRouteTables = [`);
   _code.line(`isolated_subnets[0].routeTable,`);
