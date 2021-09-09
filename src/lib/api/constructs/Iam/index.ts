@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class Iam {
@@ -162,13 +162,13 @@ export class Iam {
 
   public dynamodbConsturctIdentifier() {
     this.code.line(`const dbConstruct = stack.node.children.filter(elem => {
-            return elem instanceof DynamoDBConstruct;
+            return elem instanceof ${CONSTRUCTS.dynamoDB};
           });`);
   }
 
   public DynamoDBConsturctIdentifier() {
     this.code.line(
-      `const DynamoDBConstruct_stack = new DynamoDBConstruct(stack,"DynamoDBConstructTest");`
+      `const ${CONSTRUCTS.dynamoDB}_stack = new ${CONSTRUCTS.dynamoDB}(stack,"${CONSTRUCTS.dynamoDB}Test");`
     );
   }
 
@@ -235,7 +235,7 @@ export class Iam {
 
   public DynodbTableTestIdentifier() {
     this.code
-      .line(`const db_table = DynamodbConstruct_stack.node.children.filter((elem) => {
+      .line(`const db_table = ${CONSTRUCTS.dynamoDB}_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_dynamodb.Table;
         });`);
   }
@@ -290,7 +290,7 @@ export class Iam {
 
   public LambdaConstructIdentifierForDbb() {
     this.code
-      .line(` const LambdaConstruct_stack = new LambdaConstruct(stack, "LambdaConstructTest", { tableName: DynamodbConstruct_stack.table.tableName})
+      .line(` const LambdaConstruct_stack = new LambdaConstruct(stack, "LambdaConstructTest", { tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName})
     `);
   }
 
