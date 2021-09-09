@@ -1,6 +1,5 @@
 import { TypeScriptWriter } from "../../../../../../utils/typescriptWriter";
-import { CodeMaker } from 'codemaker';
-
+import { CodeMaker } from "codemaker";
 
 export const subnetAuroraFunction = (_code: CodeMaker) => {
   const ts = new TypeScriptWriter(_code);

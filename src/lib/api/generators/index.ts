@@ -3,6 +3,11 @@ import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
 import { auroraDBConstruct } from "./AuroraServerless";
 import { CdkAppClass } from "./bin";
+import { appsyncConstructTest } from "./CdkTests/Appsync";
+import { auroraDBConstructTest } from "./CdkTests/AuroraServerless";
+import { dynamodbConstructTest } from "./CdkTests/Dynamodb";
+import { lambdaConstructTest } from "./CdkTests/Lambda";
+import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
 import { LambdaConstruct } from "./Lambda";
 import { handlers } from "./Lambda/handler";
@@ -11,8 +16,6 @@ import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 
 export const generator = async (config: ApiModel) => {
-  console.log(config);
-
   // bin file
   CdkAppClass({ config });
 
@@ -22,6 +25,7 @@ export const generator = async (config: ApiModel) => {
   // Appsync or Apigateway
   if (config.api.apiType === APITYPE.graphql) {
     AppsyncApiConstruct({ config });
+    appsyncConstructTest({ config });
   } else if (config.api.apiType === APITYPE.rest) {
     ApiGatewayConstruct({ config });
   }
@@ -29,12 +33,17 @@ export const generator = async (config: ApiModel) => {
   // Databases
   if (config.api.database === DATABASE.auroraDB) {
     auroraDBConstruct({ config });
+    auroraDBConstructTest({ config });
   } else if (config.api.database === DATABASE.neptuneDB) {
     neptuneDBConstruct({ config });
+    neptuneDBConstructTest({ config });
   } else {
     dynamoDBConstruct({ config });
+    dynamodbConstructTest({ config });
   }
 
+  // lambda Test
+  lambdaConstructTest({ config });
   // lambda Construct
   LambdaConstruct({ config });
 

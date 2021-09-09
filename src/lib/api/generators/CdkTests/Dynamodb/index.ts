@@ -1,19 +1,19 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../../utils/typescriptWriter";
-import { CONSTRUCTS, Config } from "../../../../../utils/constants";
+import { CONSTRUCTS, ApiModel } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { DynamoDB } from "../../../constructs/Dynamodb";
 import { Iam } from "../../../constructs/Iam";
 
 type StackBuilderProps = {
-  config: Config;
+  config: ApiModel;
 };
 
 export class DynamoDBConstructTest {
-  outputFile: string = `${CONSTRUCTS.dynamodb}.test.ts`;
+  outputFile: string = `${CONSTRUCTS.dynamoDB}.test.ts`;
   outputDir: string = `test`;
-  config: Config;
+  config: ApiModel;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
@@ -29,19 +29,16 @@ export class DynamoDBConstructTest {
     const cdk = new Cdk(this.code);
     const dynamodb = new DynamoDB(this.code);
     const imp = new Imports(this.code);
-    const iam = new Iam(this.code)
+    const iam = new Iam(this.code);
 
     imp.ImportsForTest();
-    imp.importForDynamodbConstructInTest()
+    imp.importForDynamodbConstructInTest();
     this.code.line();
-    cdk.initializeTest(
-      "Dynamodb Constructs Test",
-      () => {
-        iam.constructorIdentifier(CONSTRUCTS.dynamodb)
-        this.code.line()
-        dynamodb.initializeTestForDynamodb(apiName);
-      },
-    );
+    cdk.initializeTest("Dynamodb Constructs Test", () => {
+      iam.constructorIdentifier(CONSTRUCTS.dynamoDB);
+      this.code.line();
+      dynamodb.initializeTestForDynamodb(apiName);
+    });
 
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);
