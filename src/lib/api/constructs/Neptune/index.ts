@@ -115,7 +115,7 @@ export class Neptune {
     this.code.line(`expect(stack).toHaveResource('AWS::EC2::Subnet', {
       CidrBlock: '10.0.${cidr}.0/24',
       VpcId: {
-        Ref: stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.VPCRef.node.defaultChild as cdk.CfnElement),
       },
       AvailabilityZone: {
         'Fn::Select': [
@@ -137,7 +137,7 @@ export class Neptune {
         },
         {
           Key: 'Name',
-          Value: 'Default/VpcNeptuneConstructTest/${apiName}Vpc/IngressSubnet${subnetNum}',
+          Value: 'Default/${CONSTRUCTS.neptuneDB}Test/${apiName}Vpc/IngressSubnet${subnetNum}',
         },
       ],
     });`);
@@ -146,12 +146,12 @@ export class Neptune {
   public initiaizeTestForRouteTable(apiName: string, subnetNum: string) {
     this.code.line(`expect(stack).toHaveResource('AWS::EC2::RouteTable', {
       VpcId: {
-        Ref: stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.VPCRef.node.defaultChild as cdk.CfnElement),
       },
       Tags: [
         {
           Key: 'Name',
-          Value: 'Default/VpcNeptuneConstructTest/${apiName}Vpc/IngressSubnet${subnetNum}',
+          Value: 'Default/${CONSTRUCTS.neptuneDB}Test/${apiName}Vpc/IngressSubnet${subnetNum}',
         },
       ],
     });`);
@@ -189,7 +189,7 @@ export class Neptune {
       },
     ],
     VpcId: {
-      "Ref":  stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement)
+      "Ref":  stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.VPCRef.node.defaultChild as cdk.CfnElement)
     },
   });
 `);
@@ -203,13 +203,13 @@ export class Neptune {
     FromPort: 8182,
     GroupId: {
       'Fn::GetAtt': [
-        stack.getLogicalId(VpcNeptuneConstruct_stack.SGRef.node.defaultChild as cdk.CfnElement),
+        stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.SGRef.node.defaultChild as cdk.CfnElement),
         'GroupId',
       ],
     },
     SourceSecurityGroupId: {
       'Fn::GetAtt': [
-        stack.getLogicalId(VpcNeptuneConstruct_stack.SGRef.node.defaultChild as cdk.CfnElement),
+        stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.SGRef.node.defaultChild as cdk.CfnElement),
         'GroupId',
       ],
     },
@@ -233,7 +233,7 @@ export class Neptune {
       VpcSecurityGroupIds: [
         {
           'Fn::GetAtt': [
-            stack.getLogicalId(VpcNeptuneConstruct_stack.SGRef.node.defaultChild as cdk.CfnElement),
+            stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.SGRef.node.defaultChild as cdk.CfnElement),
             'GroupId',
           ],
         },

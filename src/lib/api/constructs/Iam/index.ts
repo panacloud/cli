@@ -174,14 +174,14 @@ export class Iam {
 
   public lambdaConsturctIdentifier() {
     this.code.line(`const Lambda_consturct = stack.node.children.filter(
-          (elem) => elem instanceof LambdaConstruct
+          (elem) => elem instanceof ${CONSTRUCTS.lambda}
         );`);
   }
 
   public lambdaConsturctTestIdentifier() {
     this.code
-      .line(`const Lambda_consturct = LambdaConstruct_stack.node.children.filter(
-          (elem) => elem instanceof LambdaConstruct
+      .line(`const Lambda_consturct = ${CONSTRUCTS.lambda}_stack.node.children.filter(
+          (elem) => elem instanceof ${CONSTRUCTS.lambda}
         );`);
   }
 
@@ -194,7 +194,7 @@ export class Iam {
 
   public appsyncConsturctIdentifier() {
     this.code.line(`const Appsync_consturct = stack.node.children.filter(
-          (elem) => elem instanceof AppsyncConstruct
+          (elem) => elem instanceof ${CONSTRUCTS.appsync}
         );`);
   }
 
@@ -207,7 +207,7 @@ export class Iam {
 
   public appsyncApiTestIdentifier() {
     this.code
-      .line(`const appsync_api = AppsyncConstruct_stack.node.children.filter(
+      .line(`const appsync_api = ${CONSTRUCTS.appsync}_stack.node.children.filter(
           (elem) => elem instanceof cdk.aws_appsync.CfnGraphQLApi
         );`);
   }
@@ -221,7 +221,7 @@ export class Iam {
 
   public appsyncRoleTestIdentifier() {
     this.code
-      .line(`const role = AppsyncConstruct_stack.node.children.filter((elem) => {
+      .line(`const role = ${CONSTRUCTS.appsync}_stack.node.children.filter((elem) => {
           return elem instanceof cdk.aws_iam.Role;
         });`);
   }
@@ -290,7 +290,7 @@ export class Iam {
 
   public LambdaConstructIdentifierForDbb() {
     this.code
-      .line(` const ${CONSTRUCTS.lambda}_stack = new LambdaConstruct(stack, "LambdaConstructTest", { tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName})
+      .line(` const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, "${CONSTRUCTS.lambda}Test", { tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName})
     `);
   }
 
@@ -303,7 +303,7 @@ export class Iam {
   ) {
     let lambdafunc = `${apiName}_lambdaFn`;
     this.code.line(
-      `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "AppsyncConstructTest", {`
+      `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "${CONSTRUCTS.appsync}Test", {`
     );
     if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
       code.line(
@@ -323,7 +323,7 @@ export class Iam {
       (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
     ) {
       lambdafunc = `${apiName}_lambdaFnArn`;
-      code.line(`${lambdafunc} : LambdaConstruct_stack.${lambdafunc}`);
+      code.line(`${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`);
     }
     else if (
       lambdaStyle === LAMBDASTYLE.multi &&
@@ -331,7 +331,7 @@ export class Iam {
     ) {
       Object.keys(mutationsAndQueries).forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : LambdaConstruct_stack.${lambdafunc}Arn,`);
+        code.line(`${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`);
       });
     }
     this.code.line(`})`);
@@ -340,7 +340,7 @@ export class Iam {
   public LambdaConstructIdentifierForNeptunedb() {
     this.code.line(`const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(
       stack,
-      "LambdaConstructTest",
+      "${CONSTRUCTS.lambda}Test",
       {
         VPCRef: ${CONSTRUCTS.neptuneDB}_stack.VPCRef,
         SGRef: ${CONSTRUCTS.neptuneDB}_stack.SGRef,
@@ -352,7 +352,7 @@ export class Iam {
 
   public LambdaConstructIdentifierForAuroradb() {
     this.code
-      .line(`const LambdaConstruct_stack = new LambdaConstruct(stack, 'LambdaConstructTest', {
+      .line(`const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, '${CONSTRUCTS.lambda}Test', {
     vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,
     secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,
     serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole,

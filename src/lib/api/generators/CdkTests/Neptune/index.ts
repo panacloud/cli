@@ -39,7 +39,7 @@ export class NeptuneDBConstructTest {
     cdk.initializeTest("Neptune Constructs Test", () => {
       iam.constructorIdentifier(CONSTRUCTS.neptuneDB);
       this.code.line(
-        `const constructs = VpcNeptuneConstruct_stack.node.children;`
+        `const constructs = ${CONSTRUCTS.neptuneDB}_stack.node.children;`
       );
       this.code.line(`expect(constructs).toHaveLength(5);`);
       this.code.line();
