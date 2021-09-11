@@ -11,6 +11,10 @@ export class Imports {
   public importsForStack() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["Stack", "StackProps"]);
+  }
+
+  public importsForConstructs(){
+    const ts = new TypeScriptWriter(this.code);
     ts.writeImports("constructs", ["Construct"]);
   }
 

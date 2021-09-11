@@ -1,10 +1,5 @@
 import { CodeMaker } from "codemaker";
-import {
-  ApiModel,
-  APITYPE,
-  CONSTRUCTS,
-  DATABASE,
-} from "../../../../utils/constants";
+import {ApiModel,APITYPE,CONSTRUCTS,DATABASE} from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
@@ -72,7 +67,7 @@ export class CdkStack {
           aurora.auroradbConstructInitializer(apiName, this.code);
           this.code.line();
         }
-        if (lambdaStyle) {
+        if (lambdaStyle || apiType === APITYPE.rest) {
           lambda.lambdaConstructInitializer(apiName, database, this.code);
         }
         database === DATABASE.dynamoDB &&

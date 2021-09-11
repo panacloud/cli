@@ -28,10 +28,8 @@ export class DyanmoDBConstruct {
     const imp = new Imports(this.code);
     const dynamoDB = new DynamoDB(this.code);
     // imports for dynamodb constructs
-    imp.importsForStack();
     imp.importDynamodb();
-    this.code.line();
-
+    
     const properties: Property[] = [
       // properties declaration for dynamoDb constructs
       {
