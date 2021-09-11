@@ -52,11 +52,8 @@ export class TypeScriptWriter {
         `${property.accessModifier} ${property.isReadonly? "readonly" : ""} ${property.name}: ${property.typeName};`
       );
     });
-    let scope = "Construct"
-    if(classDefinition.extends === "Stack")
-      scope = "Stack"
     this.code.line(` 
-    constructor(scope: ${scope}, id: string, props?: ${propsName}) {
+    constructor(scope: Construct, id: string, props?: ${propsName}) {
         super(scope, id);
     `);
     contents();
