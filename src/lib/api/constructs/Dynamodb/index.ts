@@ -2,7 +2,7 @@ import { CodeMaker } from "codemaker";
 import { APITYPE, CONSTRUCTS, LAMBDASTYLE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
-export class DynamoDB  {
+export class DynamoDB {
   code: CodeMaker;
   constructor(_code: CodeMaker) {
     this.code = _code;
@@ -36,7 +36,9 @@ export class DynamoDB  {
     functionName?: string
   ) {
     if (lambdaStyle === LAMBDASTYLE.single) {
-      this.code.line(`${tableName}.grantFullAccess(props!.${lambda}_lambdaFn);`);
+      this.code.line(
+        `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn);`
+      );
     } else if (lambdaStyle === LAMBDASTYLE.multi) {
       this.code.line(
         `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn_${functionName});`
@@ -44,15 +46,15 @@ export class DynamoDB  {
     }
   }
 
-  public dynmaodbConstructInitializer(apiName:string,code:CodeMaker){
-    const ts = new TypeScriptWriter(code)
+  public dynmaodbConstructInitializer(apiName: string, code: CodeMaker) {
+    const ts = new TypeScriptWriter(code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_table`,
-        typeName: CONSTRUCTS.dynamodb,
+        typeName: CONSTRUCTS.dynamoDB,
         initializer: () => {
           this.code.line(
-            `new ${CONSTRUCTS.dynamodb}(this,"${apiName}${CONSTRUCTS.dynamodb}")`
+            `new ${CONSTRUCTS.dynamoDB}(this,"${apiName}${CONSTRUCTS.dynamoDB}")`
           );
         },
       },
@@ -80,24 +82,22 @@ export class DynamoDB  {
   }
 
   public initializeTestForDynamodb(TableName: string) {
-    this.code.line(`expect(actual).to(
-          countResourcesLike("AWS::DynamoDB::Table",1, {
-            KeySchema: [
-              {
-                AttributeName: "id",
-                KeyType: "HASH",
-              },
-            ],
-            AttributeDefinitions: [
-              {
-                AttributeName: "id",
-                AttributeType: "S",
-              },
-            ],
-            BillingMode: "PAY_PER_REQUEST",
-            TableName: "${TableName}",
-          })
-        );
-      `);
+    this.code.line(`expect(stack).toHaveResource("AWS::DynamoDB::Table",{
+      KeySchema: [
+        {
+          AttributeName: "id",
+          KeyType: "HASH",
+        },
+      ],
+      AttributeDefinitions: [
+        {
+          AttributeName: "id",
+          AttributeType: "S",
+        },
+      ],
+      BillingMode: "PAY_PER_REQUEST",
+      TableName: "${TableName}",
+    })
+  `);
   }
 }

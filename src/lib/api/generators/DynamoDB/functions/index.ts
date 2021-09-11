@@ -5,7 +5,7 @@ import { DynamoDB } from "../../../constructs/DynamoDB";
 export const dynamodbAccessHandler = (
   apiName: string,
   lambdaStyle: string,
-  code:CodeMaker,
+  code: CodeMaker,
   mutationsAndQueries: any
 ) => {
   const dynamoDB = new DynamoDB(code);
@@ -28,7 +28,7 @@ export const dynamodbAccessHandler = (
 export const dynamodbPropsHandler = (
   apiName: string,
   lambdaStyle: string,
-  code:CodeMaker,
+  code: CodeMaker,
   mutationsAndQueries: any
 ) => {
   if (lambdaStyle && lambdaStyle === LAMBDASTYLE.single) {

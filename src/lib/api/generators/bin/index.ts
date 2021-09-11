@@ -1,17 +1,17 @@
 import { CodeMaker } from "codemaker";
-import { Config } from "../../../../utils/constants";
+import { ApiModel } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { Imports } from "../../constructs/ConstructsImports";
 const _ = require("lodash");
 
 type StackBuilderProps = {
-  config: Config;
+  config: ApiModel;
 };
 
 export class CdkAppStack {
   outputFile: string = `index.ts`;
   outputDir: string = `bin`;
-  config: Config;
+  config: ApiModel;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
@@ -21,12 +21,12 @@ export class CdkAppStack {
 
   async CdkAppStackFile() {
     const ts = new TypeScriptWriter(this.code);
-    this.outputFile = `${this.config.workingDir}.ts`
+    this.outputFile = `${this.config.workingDir}.ts`;
     this.code.openFile(this.outputFile);
-    const imp = new Imports(this.code)
-    this.code.line(`import * as cdk from "aws-cdk-lib" `)
+    const imp = new Imports(this.code);
+    this.code.line(`import * as cdk from "aws-cdk-lib" `);
     ts.writeImports(`../lib/${this.config.workingDir}-stack`, [
-     `${_.upperFirst(_.camelCase(this.config.workingDir))}Stack`,
+      `${_.upperFirst(_.camelCase(this.config.workingDir))}Stack`,
     ]);
 
     ts.writeVariableDeclaration(
@@ -46,16 +46,14 @@ export class CdkAppStack {
       )}Stack(app, "${_.upperFirst(
         _.camelCase(this.config.workingDir)
       )}Stack", {});`
-    )
+    );
 
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);
   }
 }
 
-export const CdkAppClass = async (
-  props: StackBuilderProps
-): Promise<void> => {
+export const CdkAppClass = async (props: StackBuilderProps): Promise<void> => {
   const builder = new CdkAppStack(props);
   await builder.CdkAppStackFile();
 };

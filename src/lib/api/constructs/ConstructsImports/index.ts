@@ -1,14 +1,14 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { CONSTRUCTS } from "../../../../utils/constants";
-const _ = require("lodash")
+const _ = require("lodash");
 
 export class Imports {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
-  public importsForStack(){
+  public importsForStack() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["Stack", "StackProps"]);
     ts.writeImports("constructs", ["Construct"]);
@@ -69,11 +69,7 @@ export class Imports {
     ts.writeImports(`./${CONSTRUCTS.apigateway}`, [CONSTRUCTS.apigateway]);
   }
 
-  
-  public importIndividualLambdaFunction(
-    name: string,
-    path: string
-  ) {
+  public importIndividualLambdaFunction(name: string, path: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports(`./${path}`, [name]);
   }
@@ -82,14 +78,14 @@ export class Imports {
     this.code.line(`var axios = require('axios')`);
   }
 
-  public importCdkDuration(){
+  public importCdkDuration() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["Duration"]);
   }
 
   public importForDynamodbConstruct() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports(`./${CONSTRUCTS.dynamodb}`, [CONSTRUCTS.dynamodb]);
+    ts.writeImports(`./${CONSTRUCTS.dynamoDB}`, [CONSTRUCTS.dynamoDB]);
   }
 
   public importForLambdaConstruct() {
@@ -99,12 +95,12 @@ export class Imports {
 
   public importForNeptuneConstruct() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports(`./${CONSTRUCTS.neptuneDb}`, [CONSTRUCTS.neptuneDb]);
+    ts.writeImports(`./${CONSTRUCTS.neptuneDB}`, [CONSTRUCTS.neptuneDB]);
   }
 
   public importForAuroraDbConstruct() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports(`./${CONSTRUCTS.auroradb}`, [CONSTRUCTS.auroradb]);
+    ts.writeImports(`./${CONSTRUCTS.auroraDB}`, [CONSTRUCTS.auroraDB]);
   }
 
   public importForAppsyncConstructInTest() {
@@ -114,7 +110,7 @@ export class Imports {
 
   public importForDynamodbConstructInTest() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports(`../lib/${CONSTRUCTS.dynamodb}`, [CONSTRUCTS.dynamodb]);
+    ts.writeImports(`../lib/${CONSTRUCTS.dynamoDB}`, [CONSTRUCTS.dynamoDB]);
   }
 
   public importForLambdaConstructInTest() {
@@ -124,31 +120,18 @@ export class Imports {
 
   public importForNeptuneConstructInTest() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports(`../lib/${CONSTRUCTS.neptuneDb}`, [CONSTRUCTS.neptuneDb]);
+    ts.writeImports(`../lib/${CONSTRUCTS.neptuneDB}`, [CONSTRUCTS.neptuneDB]);
   }
 
   public importForAuroraDbConstructInTest() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports(`../lib/${CONSTRUCTS.auroradb}`, [CONSTRUCTS.auroradb]);
+    ts.writeImports(`../lib/${CONSTRUCTS.auroraDB}`, [CONSTRUCTS.auroraDB]);
   }
 
   public ImportsForTest(
-    workingDir: string,
-    pattern: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-    if (pattern === "pattern_v1") {
-      ts.writeImports("aws-cdk-lib", ["cdk"]);
-      ts.writeImports("@aws-cdk/assert", [
-        "countResources",
-        "haveResource",
-        "expect",
-        "countResourcesLike",
-      ]);
-      ts.writeImports(`../lib/${workingDir}-stack`, _.upperFirst(_.camelCase(workingDir)))
-    } else if (pattern === "pattern_v2") {
-      ts.writeImports("aws-cdk-lib", ["cdk"]);
+      this.code.line(`import * as cdk from "aws-cdk-lib"`)
       this.code.line(`import "@aws-cdk/assert/jest"`);
-    }
   }
 }

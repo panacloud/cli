@@ -2,13 +2,10 @@ import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 export class Ec2 {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
-  public initializeVpc(
-    apiName: string,
-    subnetConfig?: string
-  ) {
+  public initializeVpc(apiName: string, subnetConfig?: string) {
     const ts = new TypeScriptWriter(this.code);
     const config = subnetConfig
       ? `, {subnetConfiguration: [
@@ -27,17 +24,15 @@ export class Ec2 {
     );
   }
 
-  public initializeSecurityGroup(
-    apiName: string,
-    vpcName: string,
-  ) {
+  public initializeSecurityGroup(apiName: string, vpcName: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_sg`,
         typeName: "",
         initializer: () => {
-          this.code.line(`new ec2.SecurityGroup(this, "${apiName}SecurityGroup", {
+          this.code
+            .line(`new ec2.SecurityGroup(this, "${apiName}SecurityGroup", {
             vpc: ${vpcName},
             allowAllOutbound: true,
             description: "${apiName} security group",

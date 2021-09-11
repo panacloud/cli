@@ -9,8 +9,8 @@ interface Environment {
 
 export class Lambda {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
 
   public initializeLambda(
@@ -28,7 +28,7 @@ export class Lambda {
     let lambdaVariable: string = `${apiName}_lambdaFn`;
     let funcName: string = `${apiName}Lambda`;
     let handlerName: string = "main.handler";
-    let handlerAsset: string = "lambda-fns";
+    let handlerAsset: string = "lambda";
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`
@@ -46,7 +46,7 @@ export class Lambda {
       lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
       funcName = `${apiName}Lambda${functionName}`;
       handlerName = `${functionName}.handler`;
-      handlerAsset = `lambda-fns/${functionName}`;
+      handlerAsset = `lambda/${functionName}`;
     }
 
     if (lambdaStyle === LAMBDASTYLE.multi) {
@@ -85,7 +85,8 @@ export class Lambda {
         name: `${apiName}_lambdaLayer`,
         typeName: "lambda.LayerVersion",
         initializer: () => {
-          this.code.line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
+          this.code
+            .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
           code: lambda.Code.fromAsset('lambdaLayer'),
         })`);
         },
@@ -94,8 +95,12 @@ export class Lambda {
     );
   }
 
-  public lambdaConstructInitializer(apiName:string,database:string,code:CodeMaker){
-    const ts = new TypeScriptWriter(code)
+  public lambdaConstructInitializer(
+    apiName: string,
+    database: string,
+    code: CodeMaker
+  ) {
+    const ts = new TypeScriptWriter(code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}Lambda`,
@@ -104,25 +109,24 @@ export class Lambda {
           this.code.line(
             `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}",{`
           );
-          if(database === DATABASE.dynamo){
+          if (database === DATABASE.dynamoDB) {
             code.line(`tableName:${apiName}_table.table.tableName`);
-          }
-          else if(database === DATABASE.neptune){
+          } else if (database === DATABASE.neptuneDB) {
             code.line(`SGRef:${apiName}_neptunedb.SGRef,`);
             code.line(`VPCRef:${apiName}_neptunedb.VPCRef,`);
-            code.line(`neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`);
-          }
-          else if(database === DATABASE.aurora){
+            code.line(
+              `neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`
+            );
+          } else if (database === DATABASE.auroraDB) {
             code.line(`secretRef:${apiName}_auroradb.secretRef,`);
             code.line(`vpcRef:${apiName}_auroradb.vpcRef,`);
             code.line(`serviceRole: ${apiName}_auroradb.serviceRole`);
           }
-        this.code.line("})");
+          this.code.line("})");
         },
       },
       "const"
     );
-    // database === DATABASE.dynamo && LambdaAccessHandler( this.code, apiName, lambdaStyle ,apiType, mutationsAndQueries)
   }
 
   public addEnvironment(
@@ -133,7 +137,9 @@ export class Lambda {
     functionName?: string
   ) {
     if (lambdaStyle === LAMBDASTYLE.single) {
-      this.code.line(`${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`);
+      this.code.line(
+        `${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`
+      );
     } else if (lambdaStyle === LAMBDASTYLE.multi) {
       this.code.line(
         `${lambda}_lambdaFn_${functionName}.addEnvironment("${envName}", ${value});`
@@ -145,22 +151,21 @@ export class Lambda {
     funcName: string,
     handlerName: string
   ) {
-    this.code.line(`expect(actual).to(
-      haveResource("AWS::Lambda::Function", {
-        FunctionName: "${funcName}",
-        Handler: "${handlerName}.handler",
-        Runtime: "nodejs12.x",
-        Environment: {
-          Variables: {
-            TableName: {
-              Ref: stack.getLogicalId(
-                db_table[0].node.defaultChild as cdk.CfnElement
-              ),
-            },
+    this.code.line(`expect(stack).toHaveResource("AWS::Lambda::Function", {
+      FunctionName: "${funcName}",
+      Handler: "${handlerName}.handler",
+      Runtime: "nodejs12.x",
+      Environment: {
+        Variables: {
+          TableName: {
+            Ref: stack.getLogicalId(
+              db_table[0].node.defaultChild as cdk.CfnElement
+            ),
           },
         },
-      })
-    );`);
+      },
+    })
+`);
   }
 
   public initializeTestForLambdaWithNeptune(
@@ -185,7 +190,7 @@ export class Lambda {
       SecurityGroupIds: [
         {
           'Fn::GetAtt': [
-            stack.getLogicalId(VpcNeptuneConstruct_stack.SGRef.node.defaultChild as cdk.CfnElement),
+            stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.SGRef.node.defaultChild as cdk.CfnElement),
             'GroupId',
           ],
         },
