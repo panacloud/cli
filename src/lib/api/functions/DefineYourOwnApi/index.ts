@@ -28,13 +28,17 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   /* copy files from global package dir to cwd */
   fs.readdirSync(templateDir).forEach(async (file: any) => {
-    if (file !== "package.json" && "cdk.json") {
-      await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
-        if (err) {
-          stopSpinner(generatingCode, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      });
+    if (file !== "package.json" && file !== "cdk.json") {
+      if (file === "gitignore") {
+        fse.copy(`${templateDir}/${file}`, ".gitignore");
+      } else {
+        await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
+      }
     }
   });
 
