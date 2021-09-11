@@ -72,7 +72,7 @@ export class CdkStack {
           aurora.auroradbConstructInitializer(apiName, this.code);
           this.code.line();
         }
-        if (lambdaStyle) {
+        if (lambdaStyle || apiType === APITYPE.rest) {
           lambda.lambdaConstructInitializer(apiName, database, this.code);
         }
         database === DATABASE.dynamoDB &&

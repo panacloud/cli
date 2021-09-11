@@ -26,7 +26,8 @@ class ApiGatewayConstructFile {
     const imp = new Imports(this.code);
 
     imp.importsForStack();
-    apigw.importApiGateway();
+    imp.importApiGateway();
+    imp.importLambda();
 
     const props = [
       {
@@ -37,8 +38,8 @@ class ApiGatewayConstructFile {
 
     /* construct initializer code with intializeApiGateway in between */
     cdk.initializeConstruct(
-      `${CONSTRUCTS.appsync}`,
-      "AppsyncProps",
+      `${CONSTRUCTS.apigateway}`,
+      "ApiGatewayProps",
       () => {
         apigw.initializeApiGateway(this.config.api.apiName);
       },

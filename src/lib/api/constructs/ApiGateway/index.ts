@@ -7,11 +7,6 @@ export class ApiGateway {
     this.code = _code;
   }
 
-  public importApiGateway() {
-    const ts = new TypeScriptWriter(this.code);
-    ts.writeImports("aws-cdk-lib", ["aws_apigateway as apigw"]);
-  }
-
   public initializeApiGateway(name: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
