@@ -1,6 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter, Property } from "../../../../utils/typescriptWriter";
-import { CONSTRUCTS, Config } from "../../../../utils/constants";
+import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
 import { AuroraServerless } from "../../constructs/AuroraServerless";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -12,13 +12,13 @@ import {
 } from "./functions";
 
 type StackBuilderProps = {
-  config: Config;
+  config: ApiModel;
 };
 
 export class AuroraDBConstruct {
   outputFile: string = `index.ts`;
-  outputDir: string = `lib/${CONSTRUCTS.auroradb}`;
-  config: Config;
+  outputDir: string = `lib/${CONSTRUCTS.auroraDB}`;
+  config: ApiModel;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
@@ -39,7 +39,7 @@ export class AuroraDBConstruct {
 
     imp.importsForStack();
     imp.importIam();
-    imp.importCdkDuration()
+    imp.importCdkDuration();
     imp.importRds();
     imp.importEc2();
     this.code.line();
@@ -47,7 +47,7 @@ export class AuroraDBConstruct {
     const auroradbProperties: Property[] = auroradbPropertiesHandler();
 
     cdk.initializeConstruct(
-      CONSTRUCTS.auroradb,
+      CONSTRUCTS.auroraDB,
       undefined,
       () => {
         ec2.initializeVpc(apiName);
@@ -77,7 +77,7 @@ export class AuroraDBConstruct {
         aurora.connectionsAllowFromAnyIpv4(`${apiName}_db`);
         this.code.line;
 
-        auroradbPropertiesInitializer(apiName,this.code);
+        auroradbPropertiesInitializer(apiName, this.code);
       },
       undefined,
       auroradbProperties

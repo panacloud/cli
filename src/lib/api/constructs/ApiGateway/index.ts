@@ -3,8 +3,8 @@ import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class ApiGateway {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
 
   public importApiGateway() {

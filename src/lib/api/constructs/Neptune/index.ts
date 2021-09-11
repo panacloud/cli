@@ -4,8 +4,8 @@ import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class Neptune {
   code: CodeMaker;
-  constructor(_code: CodeMaker){
-    this.code = _code
+  constructor(_code: CodeMaker) {
+    this.code = _code;
   }
   public initializeNeptuneCluster(
     apiName: string,
@@ -29,15 +29,20 @@ export class Neptune {
     );
   }
 
-  public neptunedbConstructInitializer(apiName:string,code:CodeMaker){
+  public neptunedbConstructInitializer(apiName: string, code: CodeMaker) {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeVariableDeclaration({
-      name:`${apiName}_neptunedb`,
-      typeName:CONSTRUCTS.neptuneDb,
-      initializer:()=>{
-        this.code.line(`new ${CONSTRUCTS.neptuneDb}(this,"${apiName}${CONSTRUCTS.neptuneDb}")`)
-      }},
-     "const")
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}_neptunedb`,
+        typeName: CONSTRUCTS.neptuneDB,
+        initializer: () => {
+          this.code.line(
+            `new ${CONSTRUCTS.neptuneDB}(this,"${apiName}${CONSTRUCTS.neptuneDB}")`
+          );
+        },
+      },
+      "const"
+    );
   }
 
   public initializeNeptuneSubnet(apiName: string, vpcName: string) {
@@ -74,7 +79,8 @@ export class Neptune {
         name: `${apiName}_neptuneInstance`,
         typeName: "",
         initializer: () => {
-          this.code.line(`new neptune.CfnDBInstance(this, "${apiName}instance", {
+          this.code
+            .line(`new neptune.CfnDBInstance(this, "${apiName}instance", {
             dbInstanceClass: "db.t3.medium",
             dbClusterIdentifier: ${neptuneClusterName}.dbClusterIdentifier,
             availabilityZone: ${vpcName}.availabilityZones[0],
@@ -109,7 +115,7 @@ export class Neptune {
     this.code.line(`expect(stack).toHaveResource('AWS::EC2::Subnet', {
       CidrBlock: '10.0.${cidr}.0/24',
       VpcId: {
-        Ref: stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.VPCRef.node.defaultChild as cdk.CfnElement),
       },
       AvailabilityZone: {
         'Fn::Select': [
@@ -131,7 +137,7 @@ export class Neptune {
         },
         {
           Key: 'Name',
-          Value: 'Default/VpcNeptuneConstructTest/${apiName}Vpc/IngressSubnet${subnetNum}',
+          Value: 'Default/${CONSTRUCTS.neptuneDB}Test/${apiName}Vpc/IngressSubnet${subnetNum}',
         },
       ],
     });`);
@@ -140,12 +146,12 @@ export class Neptune {
   public initiaizeTestForRouteTable(apiName: string, subnetNum: string) {
     this.code.line(`expect(stack).toHaveResource('AWS::EC2::RouteTable', {
       VpcId: {
-        Ref: stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement),
+        Ref: stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.VPCRef.node.defaultChild as cdk.CfnElement),
       },
       Tags: [
         {
           Key: 'Name',
-          Value: 'Default/VpcNeptuneConstructTest/${apiName}Vpc/IngressSubnet${subnetNum}',
+          Value: 'Default/${CONSTRUCTS.neptuneDB}Test/${apiName}Vpc/IngressSubnet${subnetNum}',
         },
       ],
     });`);
@@ -154,8 +160,8 @@ export class Neptune {
   public initializeTestForSubnetRouteTableAssociation(
     isolatedRouteTablesNum: number
   ) {
-    this
-      .code.line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
+    this.code
+      .line(`expect(stack).toHaveResource('AWS::EC2::SubnetRouteTableAssociation', {
       RouteTableId: stack.resolve(isolatedRouteTables[0].routeTableId),
       SubnetId: {
         Ref: stack.getLogicalId(
@@ -183,26 +189,27 @@ export class Neptune {
       },
     ],
     VpcId: {
-      "Ref":  stack.getLogicalId(VpcNeptuneConstruct_stack.VPCRef.node.defaultChild as cdk.CfnElement)
+      "Ref":  stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.VPCRef.node.defaultChild as cdk.CfnElement)
     },
   });
 `);
   }
 
   public initializeTestForSecurityGroupIngress(apiName: string) {
-    this.code.line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroupIngress', {
+    this.code
+      .line(`expect(stack).toHaveResource('AWS::EC2::SecurityGroupIngress', {
     IpProtocol: 'tcp',
     Description: '${apiName}Rule',
     FromPort: 8182,
     GroupId: {
       'Fn::GetAtt': [
-        stack.getLogicalId(VpcNeptuneConstruct_stack.SGRef.node.defaultChild as cdk.CfnElement),
+        stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.SGRef.node.defaultChild as cdk.CfnElement),
         'GroupId',
       ],
     },
     SourceSecurityGroupId: {
       'Fn::GetAtt': [
-        stack.getLogicalId(VpcNeptuneConstruct_stack.SGRef.node.defaultChild as cdk.CfnElement),
+        stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.SGRef.node.defaultChild as cdk.CfnElement),
         'GroupId',
       ],
     },
@@ -211,7 +218,8 @@ export class Neptune {
   }
 
   public initializeTestForDBSubnetGroup(apiName: string) {
-    this.code.line(`  expect(stack).toHaveResource('AWS::Neptune::DBSubnetGroup', {
+    this.code
+      .line(`  expect(stack).toHaveResource('AWS::Neptune::DBSubnetGroup', {
       DBSubnetGroupDescription: '${apiName} Subnet',
       SubnetIds: subnetRefArray,
       DBSubnetGroupName: '${apiName}_subnetgroup',
@@ -225,7 +233,7 @@ export class Neptune {
       VpcSecurityGroupIds: [
         {
           'Fn::GetAtt': [
-            stack.getLogicalId(VpcNeptuneConstruct_stack.SGRef.node.defaultChild as cdk.CfnElement),
+            stack.getLogicalId(${CONSTRUCTS.neptuneDB}_stack.SGRef.node.defaultChild as cdk.CfnElement),
             'GroupId',
           ],
         },

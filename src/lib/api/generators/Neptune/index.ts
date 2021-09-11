@@ -1,6 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter, Property } from "../../../../utils/typescriptWriter";
-import { CONSTRUCTS, Config } from "../../../../utils/constants";
+import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { Ec2 } from "../../constructs/Ec2";
@@ -8,13 +8,13 @@ import { Neptune } from "../../constructs/Neptune";
 import { neptunePropertiesInitializer } from "./functions";
 
 type StackBuilderProps = {
-  config: Config;
+  config: ApiModel;
 };
 
 export class NeptuneDBConstruct {
   outputFile: string = `index.ts`;
-  outputDir: string = `lib/${CONSTRUCTS.neptuneDb}`;
-  config: Config;
+  outputDir: string = `lib/${CONSTRUCTS.neptuneDB}`;
+  config: ApiModel;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
@@ -43,24 +43,24 @@ export class NeptuneDBConstruct {
         name: "VPCRef",
         typeName: "ec2.Vpc",
         accessModifier: "public",
-        isReadonly: false
+        isReadonly: false,
       },
       {
         name: "SGRef",
         typeName: "ec2.SecurityGroup",
         accessModifier: "public",
-        isReadonly: false
+        isReadonly: false,
       },
       {
         name: "neptuneReaderEndpoint",
         typeName: "string",
         accessModifier: "public",
-        isReadonly: false
+        isReadonly: false,
       },
     ];
 
     cdk.initializeConstruct(
-      CONSTRUCTS.neptuneDb,
+      CONSTRUCTS.neptuneDB,
       undefined,
       () => {
         ec2.initializeVpc(
@@ -127,7 +127,7 @@ export class NeptuneDBConstruct {
         );
         this.code.line();
 
-        neptunePropertiesInitializer(apiName,this.code);
+        neptunePropertiesInitializer(apiName, this.code);
       },
       undefined,
       propertiesForNeptuneDbConstruct
