@@ -23,6 +23,11 @@ export class Imports {
     ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync"]);
   }
 
+  public importApiGateway() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["aws_apigateway as apigw"]);
+  }
+
   public importDynamodb() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_dynamodb as dynamodb"]);
