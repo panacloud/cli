@@ -36,7 +36,7 @@ $ npm install -g @panacloud/cli
 $ panacloud COMMAND
 running command...
 $ panacloud (-v|--version|version)
-@panacloud/cli/0.0.2 win32-x64 node-v14.16.1
+@panacloud/cli/0.0.3 win32-x64 node-v14.16.1
 $ panacloud --help [COMMAND]
 USAGE
   $ panacloud COMMAND
@@ -79,5 +79,5 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/init.ts](https://github.com/panacloud/cli/blob/v0.0.2/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/panacloud/cli/blob/v0.0.3/src/commands/init.ts)_
 <!-- commandsstop -->
