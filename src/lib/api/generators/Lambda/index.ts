@@ -1,9 +1,4 @@
-import {
-  CONSTRUCTS,
-  APITYPE,
-  DATABASE,
-  ApiModel,
-} from "../../../../utils/constants";
+import {CONSTRUCTS,APITYPE,DATABASE,ApiModel} from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { CodeMaker } from "codemaker";
@@ -51,11 +46,7 @@ class lambdaConstruct {
     this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
-
-    imp.importsForStack();
-    imp.importEc2();
     imp.importLambda();
-    imp.importIam();
 
     if (database === DATABASE.dynamoDB) {
       lambdaProps = [
@@ -73,6 +64,7 @@ class lambdaConstruct {
       );
     }
     if (database === DATABASE.neptuneDB) {
+      imp.importEc2()
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForNeptunedb();
       lambdaProperties = lambdaProperiesHandlerForNeptuneDb(
@@ -84,6 +76,8 @@ class lambdaConstruct {
       );
     }
     if (database === DATABASE.auroraDB) {
+      imp.importEc2()
+      imp.importIam()
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForAuroradb();
       lambdaProperties = lambdaProperiesHandlerForAuroraDb(

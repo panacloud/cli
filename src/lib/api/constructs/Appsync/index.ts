@@ -97,7 +97,7 @@ export class Appsync {
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
     if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
-      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
+      code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn`);
     }
     if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
       Object.keys(mutationsAndQueries).forEach((key) => {

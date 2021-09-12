@@ -1,11 +1,5 @@
 import { CodeMaker } from "codemaker";
-import {
-  ApiModel,
-  APITYPE,
-  CONSTRUCTS,
-  DATABASE,
-} from "../../../../utils/constants";
-import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+import {ApiModel,APITYPE,CONSTRUCTS,DATABASE} from "../../../../utils/constants";
 import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
 import { AuroraServerless } from "../../constructs/AuroraServerless";
@@ -36,7 +30,6 @@ export class CdkStack {
   }
 
   async CdkStackFile() {
-    const ts = new TypeScriptWriter(this.code);
     this.outputFile = `${this.config.workingDir}-stack.ts`;
     this.code.openFile(this.outputFile);
     const { apiName, database, lambdaStyle, apiType , schema } = this.config.api;

@@ -32,11 +32,9 @@ export class NeptuneDBConstruct {
     const neptune = new Neptune(this.code);
     const imp = new Imports(this.code);
 
-    imp.importsForStack();
     ts.writeImports("aws-cdk-lib", ["Tags"]);
     imp.importNeptune();
     imp.importEc2();
-    this.code.line();
 
     const propertiesForNeptuneDbConstruct: Property[] = [
       {

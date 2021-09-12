@@ -25,7 +25,6 @@ class ApiGatewayConstructFile {
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
 
-    imp.importsForStack();
     imp.importApiGateway();
     imp.importLambda();
 
