@@ -33,14 +33,12 @@ class AppsyncConstruct {
     const cdk = new Cdk(this.code);
     const iam = new Iam(this.code);
     const imp = new Imports(this.code);
-
     const schemaGql = readFileSync(
       path.resolve(schemaPath)
     ).toString("utf8");
     const mutations = schema.type.Mutation ? schema.type.Mutation : {};
     const queries = schema.type.Query ? schema.type.Query : {};
     const mutationsAndQueries = { ...mutations, ...queries };
-    imp.importsForStack();
     imp.importAppsync();
     imp.importIam();
 

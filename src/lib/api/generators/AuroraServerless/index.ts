@@ -37,12 +37,10 @@ export class AuroraDBConstruct {
     const iam = new Iam(this.code);
     const imp = new Imports(this.code);
 
-    imp.importsForStack();
     imp.importIam();
     imp.importCdkDuration();
     imp.importRds();
     imp.importEc2();
-    this.code.line();
 
     const auroradbProperties: Property[] = auroradbPropertiesHandler();
 
