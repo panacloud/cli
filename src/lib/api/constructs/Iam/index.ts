@@ -166,12 +166,6 @@ export class Iam {
           });`);
   }
 
-  public DynamoDBConsturctIdentifier() {
-    this.code.line(
-      `const ${CONSTRUCTS.dynamoDB}_stack = new ${CONSTRUCTS.dynamoDB}(stack,"${CONSTRUCTS.dynamoDB}Test");`
-    );
-  }
-
   public lambdaConsturctIdentifier() {
     this.code.line(`const Lambda_consturct = stack.node.children.filter(
           (elem) => elem instanceof ${CONSTRUCTS.lambda}
@@ -240,123 +234,9 @@ export class Iam {
         });`);
   }
 
-  public natgatewayIdentifier(natGatewayNum: string, subnetNum: number) {
-    this.code
-      .line(`const natGateway${natGatewayNum} = public_subnets[${subnetNum}].node.children.filter((elem) => {
-          return elem instanceof cdk.aws_ec2.CfnNatGateway;
-        });`);
-  }
-
-  public eipIdentifier(epiNum: string, subnetNum: number) {
-    this.code
-      .line(`const eip${epiNum} = public_subnets[${subnetNum}].node.children.filter((elem) => {
-          return elem instanceof cdk.aws_ec2.CfnEIP;
-        });`);
-  }
-
-  public internetGatewayIdentifier() {
-    this.code
-      .line(`const internetGateway = ${CONSTRUCTS.auroraDB}_stack.vpcRef.node.children.filter((elem) => {
-          return elem instanceof cdk.aws_ec2.CfnInternetGateway;
-        });`);
-  }
-
-  public serverlessClusterIdentifier() {
-    this.code
-      .line(`const ServerlessCluster = ${CONSTRUCTS.auroraDB}_stack.node.children.filter((elem) => {
-          return elem instanceof cdk.aws_rds.ServerlessCluster;
-        }); `);
-  }
-
-  public secretIdentifier() {
-    this.code
-      .line(`const secret = ServerlessCluster[0].node.children.filter((elem) => {
-          return elem instanceof cdk.aws_secretsmanager.Secret;
-        });`);
-  }
-
-  public secretAttachment() {
-    this.code
-      .line(`const secretAttachment = secret[0].node.children.filter((elem) => {
-          return elem instanceof cdk.aws_secretsmanager.SecretTargetAttachment;
-        });`);
-  }
-
   public constructorIdentifier(constructor: string) {
     this.code.line(
       `const ${constructor}_stack = new ${constructor}(stack, "${constructor}Test");`
     );
-  }
-
-  public LambdaConstructIdentifierForDbb() {
-    this.code
-      .line(` const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, "${CONSTRUCTS.lambda}Test", { tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName})
-    `);
-  }
-
-  public appsyncDatabasePropsHandler(
-    apiName: string,
-    lambdaStyle: string,
-    database: string,
-    mutationsAndQueries: any,
-    code: CodeMaker
-  ) {
-    let lambdafunc = `${apiName}_lambdaFn`;
-    this.code.line(
-      `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "${CONSTRUCTS.appsync}Test", {`
-    );
-    if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
-      code.line(
-        `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn`
-      );
-    }
-    else if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
-        lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(
-          `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn,`
-        );
-      });
-    }
-    if (
-      lambdaStyle === LAMBDASTYLE.single &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
-      lambdafunc = `${apiName}_lambdaFnArn`;
-      code.line(`${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`);
-    }
-    else if (
-      lambdaStyle === LAMBDASTYLE.multi &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
-        lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`);
-      });
-    }
-    this.code.line(`})`);
-  }
-
-  public LambdaConstructIdentifierForNeptunedb() {
-    this.code.line(`const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(
-      stack,
-      "${CONSTRUCTS.lambda}Test",
-      {
-        VPCRef: ${CONSTRUCTS.neptuneDB}_stack.VPCRef,
-        SGRef: ${CONSTRUCTS.neptuneDB}_stack.SGRef,
-        neptuneReaderEndpoint: ${CONSTRUCTS.neptuneDB}_stack.neptuneReaderEndpoint,
-      }
-    );
-    `);
-  }
-
-  public LambdaConstructIdentifierForAuroradb() {
-    this.code
-      .line(`const ${CONSTRUCTS.lambda}_stack = new ${CONSTRUCTS.lambda}(stack, '${CONSTRUCTS.lambda}Test', {
-    vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,
-    secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,
-    serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole,
-    });
-  `);
   }
 }

@@ -12,8 +12,8 @@ import { Imports } from "../../../constructs/ConstructsImports";
 import { Iam } from "../../../constructs/Iam";
 import { Lambda } from "../../../constructs/Lambda";
 import {
-  lambdaWithAuroraFunction,
-  lambdaWithNeptuneFunction,
+  neptuneIdentifierCalls,
+  auroradbIdentifierCalls
 } from "./functions";
 
 type StackBuilderProps = {
@@ -60,7 +60,6 @@ export class LambdaConstructTest {
       imp.importForAuroraDbConstructInTest();
       imp.importForLambdaConstructInTest();
     }
-
     this.code.line();
     cdk.initializeTest(
       `Lambda Attach With ${
@@ -74,9 +73,17 @@ export class LambdaConstructTest {
       } Constructs Test`,
       () => {
         this.code.line();
+        if(database === DATABASE.dynamoDB) {
+          iam.constructorIdentifier(CONSTRUCTS.dynamoDB)
+        } else if(database === DATABASE.neptuneDB) {
+          iam.constructorIdentifier(CONSTRUCTS.neptuneDB);
+        } else if(database === DATABASE.auroraDB) {
+          iam.constructorIdentifier(CONSTRUCTS.auroraDB)
+        }
+        this.code.line()
+        lambda.lambdaTestConstructInitializer(apiName, database, this.code)
+        this.code.line()
         if (database === DATABASE.dynamoDB) {
-          iam.DynamoDBConsturctIdentifier();
-          iam.LambdaConstructIdentifierForDbb();
           if (
             apiType === APITYPE.rest ||
             (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql)
@@ -99,10 +106,25 @@ export class LambdaConstructTest {
           }
         } else if (database === DATABASE.neptuneDB) {
           this.code.line();
-          iam.constructorIdentifier(CONSTRUCTS.neptuneDB);
-          this.code.line();
-          lambdaWithNeptuneFunction(this.code);
-          this.code.line();
+          neptuneIdentifierCalls(this.code)
+          // ts.writeVariableDeclaration({
+          //   name: "isolated_subnets",
+          //   typeName: "",
+          //   initializer: () => {
+          //     this.code.line(`${CONSTRUCTS.neptuneDB}_stack.VPCRef.isolatedSubnets;`)
+          //   }
+          // }, "const")
+          // this.code.line();
+          // ts.writeVariableDeclaration({
+          //   name: `cfn_cluster`,
+          //   typeName: "",
+          //   initializer: () => {
+          //     this.code.line(`${CONSTRUCTS.neptuneDB}_stack.node.children.filter(
+          //       (elem) => elem instanceof cdk.aws_neptune.CfnDBCluster
+          //       );`)
+          //   }
+          // }, "const")
+          // this.code.line();
           if (
             apiType === APITYPE.rest ||
             (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql)
@@ -118,16 +140,7 @@ export class LambdaConstructTest {
           }
         } else if (database === DATABASE.auroraDB) {
           this.code.line();
-          this.code.line();
-          iam.constructorIdentifier(CONSTRUCTS.auroraDB);
-          this.code.line();
-          lambdaWithAuroraFunction(this.code);
-          this.code.line();
-          iam.serverlessClusterIdentifier();
-          this.code.line();
-          iam.secretIdentifier();
-          this.code.line();
-          iam.secretAttachment();
+          auroradbIdentifierCalls(this.code)
           this.code.line();
           if (
             apiType === APITYPE.rest ||

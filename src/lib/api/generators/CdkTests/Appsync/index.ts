@@ -10,6 +10,7 @@ import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { Iam } from "../../../constructs/Iam";
 import { Appsync } from "../../../constructs/Appsync";
+import { Lambda } from "../../../constructs/Lambda";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -34,6 +35,7 @@ export class AppsyncConstructTest {
     } = this.config;
     const iam = new Iam(this.code);
     const appsync = new Appsync(this.code);
+    const lambda = new Lambda(this.code);
     const imp = new Imports(this.code);
     const testClass = new Cdk(this.code);
     const mutations = schema.type.Mutation ? schema.type.Mutation : {};
@@ -58,17 +60,17 @@ export class AppsyncConstructTest {
     this.code.line();
     testClass.initializeTest("Appsync Api Constructs Test", () => {
       appsync.apiName = apiName;
+
       if (database === DATABASE.dynamoDB) {
         iam.constructorIdentifier(CONSTRUCTS.dynamoDB);
-        iam.LambdaConstructIdentifierForDbb();
       } else if (database === DATABASE.neptuneDB) {
         iam.constructorIdentifier(CONSTRUCTS.neptuneDB);
-        iam.LambdaConstructIdentifierForNeptunedb();
       } else if (database === DATABASE.auroraDB) {
         iam.constructorIdentifier(CONSTRUCTS.auroraDB);
-        iam.LambdaConstructIdentifierForAuroradb();
       }
-      iam.appsyncDatabasePropsHandler(
+      lambda.lambdaTestConstructInitializer(apiName, database, this.code)
+      
+      appsync.appsyncTestConstructInitializer(
         apiName,
         lambdaStyle,
         database,
