@@ -107,24 +107,6 @@ export class LambdaConstructTest {
         } else if (database === DATABASE.neptuneDB) {
           this.code.line();
           neptuneIdentifierCalls(this.code)
-          // ts.writeVariableDeclaration({
-          //   name: "isolated_subnets",
-          //   typeName: "",
-          //   initializer: () => {
-          //     this.code.line(`${CONSTRUCTS.neptuneDB}_stack.VPCRef.isolatedSubnets;`)
-          //   }
-          // }, "const")
-          // this.code.line();
-          // ts.writeVariableDeclaration({
-          //   name: `cfn_cluster`,
-          //   typeName: "",
-          //   initializer: () => {
-          //     this.code.line(`${CONSTRUCTS.neptuneDB}_stack.node.children.filter(
-          //       (elem) => elem instanceof cdk.aws_neptune.CfnDBCluster
-          //       );`)
-          //   }
-          // }, "const")
-          // this.code.line();
           if (
             apiType === APITYPE.rest ||
             (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql)
