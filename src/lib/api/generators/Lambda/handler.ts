@@ -1,7 +1,10 @@
 import { CodeMaker } from "codemaker";
+import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { ApiModel, APITYPE, LAMBDASTYLE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
+const _ = require("lodash");
+const SwaggerParser = require("@apidevtools/swagger-parser");
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -89,6 +92,62 @@ class Handlers {
           });
         }
       }
+    } else {
+      SwaggerParser.validate(
+        this.config.api.schemaPath,
+        async (err: any, api: any) => {
+          if (err) {
+            console.error(err);
+          } else {
+            this.outputFile = "main.ts";
+            this.code.openFile(this.outputFile);
+            const ts = new TypeScriptWriter(this.code);
+            const lambda = new LambdaFunction(this.code);
+            const imp = new Imports(this.code);
+            imp.importAxios();
+            /* import all lambda files */
+            Object.keys(api.paths).forEach((path) => {
+              for (var methodName in api.paths[`${path}`]) {
+                let lambdaFunctionFile =
+                  api.paths[`${path}`][`${methodName}`][`operationId`];
+                imp.importIndividualLambdaFunction(
+                  lambdaFunctionFile,
+                  `${lambdaFunctionFile}`
+                );
+              }
+            });
+            this.code.line();
+
+            let isFirstIf: boolean = true;
+            lambda.initializeLambdaFunction(lambdaStyle, apiType, () => {
+              Object.keys(api.paths).forEach((path) => {
+                for (var methodName in api.paths[`${path}`]) {
+                  let lambdaFunctionFile =
+                    api.paths[`${path}`][`${methodName}`][`operationId`];
+                  isFirstIf
+                    ? this.code.indent(`
+                      if (method === "${_.upperCase(
+                        methodName
+                      )}" && requestName === "${path.substring(1)}") {
+                        return await ${lambdaFunctionFile}();
+                      }
+                    `)
+                    : this.code.indent(`
+                      else if (method === "${_.upperCase(
+                        methodName
+                      )}" && requestName === "${path.substring(1)}") {
+                        return await ${lambdaFunctionFile}();
+                      }
+                    `);
+                  isFirstIf = false;
+                }
+              });
+            });
+            this.code.closeFile(this.outputFile);
+            await this.code.save(this.outputDir);
+          }
+        }
+      );
     }
   }
 }

@@ -12,6 +12,7 @@ export const importHandlerForStack = (
   const cdk = new Cdk(code);
   const imp = new Imports(code);
   imp.importsForStack();
+  imp.importsForConstructs()
   imp.importApiManager();
   if (apiType === APITYPE.graphql) {
     imp.importForAppsyncConstruct();

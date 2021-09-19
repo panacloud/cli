@@ -4,6 +4,7 @@ import {
   Property,
   TypeScriptWriter,
 } from "../../../../utils/typescriptWriter";
+import { Imports } from "../ConstructsImports";
 const _ = require("lodash");
 
 interface consturctProps {
@@ -33,7 +34,13 @@ export class Cdk {
     properties?: Property[]
   ) {
     const ts = new TypeScriptWriter(this.code);
+    const imp = new Imports(this.code)
     this.code.line;
+    imp.importsForConstructs()
+    if (!constructProps) {
+      imp.importsForStack()
+    }
+    this.code.line()
     if (constructProps) {
       ts.writeInterfaceBlock(propsName, constructProps);
       this.code.line();
@@ -60,7 +67,6 @@ export class Cdk {
     description: string,
     contents: any,
   ) {
-    const ts = new TypeScriptWriter(this.code);
       this.code.openBlock(`test("${description}", () => `);
       this.code.line(`const stack = new cdk.Stack();`);
       this.code.line();

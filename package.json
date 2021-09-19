@@ -1,6 +1,6 @@
 {
   "name": "@panacloud/cli",
-  "version": "1.0.0-alpha.7",
+  "version": "0.0.3",
   "description": "panacloud cli",
   "author": "Muhammad Hasan @muh_hasan",
   "bin": {
@@ -16,9 +16,14 @@
     "@oclif/plugin-help": "^3",
     "@types/inquirer": "^7.3.3",
     "await-exec": "^0.1.2",
+    "axios": "^0.21.4",
     "chalk": "^4.1.1",
     "chokidar": "^2.0.4",
     "codemaker": "^1.34.0",
+    "configstore": "3.1.5",
+    "copyfiles": "^2.4.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
     "fs": "^0.0.1-security",
     "fs-extra": "^10.0.0",
     "graphql-to-json-converter": "^1.2.0",
@@ -27,6 +32,7 @@
     "lodash": "^4.17.21",
     "log-symbols": "^4.0.0",
     "make-dir": "^3.1.0",
+    "open": "^8.2.1",
     "ora": "^5.4.1",
     "path": "^0.12.7",
     "prettier": "^2.3.2",
@@ -99,7 +105,8 @@
   "scripts": {
     "postpack": "rimraf oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "copy-files": "copyfiles -a -u 1 \"./src/lib/api/template/**/*\" lib",
+    "prepack": "rimraf lib && tsc -b && oclif-dev manifest && yarn copy-files",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
   },

@@ -25,7 +25,7 @@ class AppsyncConstruct {
 
   async AppsyncConstructFile() {
     const {
-      api: { apiName, lambdaStyle, schema },
+      api: { apiName, lambdaStyle, schema , schemaPath },
     } = this.config;
     const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
@@ -33,14 +33,12 @@ class AppsyncConstruct {
     const cdk = new Cdk(this.code);
     const iam = new Iam(this.code);
     const imp = new Imports(this.code);
-
     const schemaGql = readFileSync(
-      path.join(path.resolve("."), `/schema/schema.gql`)
+      path.resolve(schemaPath)
     ).toString("utf8");
     const mutations = schema.type.Mutation ? schema.type.Mutation : {};
     const queries = schema.type.Query ? schema.type.Query : {};
     const mutationsAndQueries = { ...mutations, ...queries };
-    imp.importsForStack();
     imp.importAppsync();
     imp.importIam();
 
