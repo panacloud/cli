@@ -187,6 +187,49 @@ export class Appsync {
     );
   }
 
+  public appsyncTestConstructInitializer(
+    apiName: string,
+    lambdaStyle: string,
+    database: string,
+    mutationsAndQueries: any,
+    code: CodeMaker
+  ) {
+    let lambdafunc = `${apiName}_lambdaFn`;
+    this.code.line(
+      `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "${CONSTRUCTS.appsync}Test", {`
+    );
+    if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
+      code.line(
+        `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn`
+      );
+    }
+    else if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(
+          `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn,`
+        );
+      });
+    }
+    if (
+      lambdaStyle === LAMBDASTYLE.single &&
+      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
+    ) {
+      lambdafunc = `${apiName}_lambdaFnArn`;
+      code.line(`${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`);
+    }
+    else if (
+      lambdaStyle === LAMBDASTYLE.multi &&
+      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
+    ) {
+      Object.keys(mutationsAndQueries).forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`);
+      });
+    }
+    this.code.line(`})`);
+  }
+
   public appsyncApiTest() {
     this.code.line(`expect(stack).toHaveResource("AWS::AppSync::GraphQLApi", {
       AuthenticationType: "API_KEY",

@@ -132,6 +132,40 @@ export class Lambda {
     );
   }
 
+  public lambdaTestConstructInitializer(
+    apiName: string,
+    database: string,
+    code: CodeMaker
+  ) {
+    const ts = new TypeScriptWriter(code);
+    ts.writeVariableDeclaration(
+      {
+        name: `${CONSTRUCTS.lambda}_stack`,
+        typeName: "",
+        initializer: () => {
+          this.code.line(
+            `new ${CONSTRUCTS.lambda}(stack, "${CONSTRUCTS.lambda}Test", {`
+          );
+          if (database === DATABASE.dynamoDB) {
+            code.line(`tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName`);
+          } else if (database === DATABASE.neptuneDB) {
+            code.line(`SGRef: ${CONSTRUCTS.neptuneDB}_stack.SGRef,`);
+            code.line(`VPCRef: ${CONSTRUCTS.neptuneDB}_stack.VPCRef,`);
+            code.line(
+              `neptuneReaderEndpoint: ${CONSTRUCTS.neptuneDB}_stack.neptuneReaderEndpoint,`
+            );
+          } else if (database === DATABASE.auroraDB) {
+            code.line(`secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,`);
+            code.line(`vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,`);
+            code.line(`serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole,`);
+          }
+          this.code.line("})");
+        },
+      },
+      "const"
+    );
+  }
+
   public addEnvironment(
     lambda: string,
     envName: string,

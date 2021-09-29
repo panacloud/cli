@@ -25,7 +25,7 @@ export const generator = async (config: ApiModel) => {
   // Appsync or Apigateway
   if (config.api.apiType === APITYPE.graphql) {
     AppsyncApiConstruct({ config });
-    appsyncConstructTest({ config });
+    // appsyncConstructTest({ config });
   } else if (config.api.apiType === APITYPE.rest) {
     ApiGatewayConstruct({ config });
   }
@@ -39,11 +39,11 @@ export const generator = async (config: ApiModel) => {
     neptuneDBConstructTest({ config });
   } else {
     dynamoDBConstruct({ config });
-    dynamodbConstructTest({ config });
+    // dynamodbConstructTest({ config });
   }
 
   // lambda Test
-  lambdaConstructTest({ config });
+  // lambdaConstructTest({ config });
   // lambda Construct
   LambdaConstruct({ config });
 
