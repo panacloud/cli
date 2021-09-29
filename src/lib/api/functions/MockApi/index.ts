@@ -3,8 +3,7 @@ import {writeFileAsync,copyFileAsync,mkdirRecursiveAsync} from "../../../fs";
 import { contextInfo } from "../../info";
 import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
-import { buildSchema, introspectionFromSchema, __Directive } from "graphql";
-import { writeFileSync } from "fs";
+import {  introspectionFromSchema } from "graphql";
 import { loadSDLSchema } from "../../../../utils/loading";
 const path = require("path");
 const fs = require("fs");
@@ -127,19 +126,19 @@ async function MockApi(config: Config, templateDir: string) {
 
   const installingModules = startSpinner("Installing Modules");
 
-  // try {
-  //   await exec(`npm install`);
-  // } catch (error) {
-  //   stopSpinner(installingModules, `Error: ${error}`, true);
-  //   process.exit(1);
-  // }
+  try {
+    await exec(`npm install`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
+  }
 
-  // try {
-  //   await exec(`cd lambdaLayer/nodejs && npm install`);
-  // } catch (error) {
-  //   stopSpinner(installingModules, `Error: ${error}`, true);
-  //   process.exit(1);
-  // }
+  try {
+    await exec(`cd lambdaLayer/nodejs && npm install`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
+  }
 
   stopSpinner(installingModules, "Modules installed", false);
 }

@@ -7,10 +7,11 @@ import {
 import { contextInfo } from "../../info";
 import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
+import { loadSDLSchema } from "../../../../utils/loading";
+import { introspectionFromSchema } from "graphql";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
-const convert = require("graphql-to-json-converter");
 const exec = require("await-exec");
 const fse = require("fs-extra");
 const _ = require("lodash");
@@ -18,11 +19,16 @@ const _ = require("lodash");
 async function defineYourOwnApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
 
-  const {
-    api: { schemaPath, apiType },
-  } = config;
+  const { api: { schemaPath, apiType }} = config;
 
   const workingDir = _.snakeCase(path.basename(process.cwd()));
+
+  const model: ApiModel = {
+    api: {
+      ...config.api,
+    },
+    workingDir: workingDir,
+  };
 
   const generatingCode = startSpinner("Generating CDK Code...");
 
@@ -116,16 +122,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   ) {
     schema = YAML.parse(schema);
   } else {
-    schema = convert(schema);
+    const schemaAst = loadSDLSchema(schemaPath)
+    const queriesFields : any = schemaAst.getQueryType()?.getFields()
+    const mutationsFields : any = schemaAst.getMutationType()?.getFields()
+    model.api.schema = introspectionFromSchema(schemaAst)
+    model.api.queiresFields = [...Object.keys(queriesFields)] 
+    model.api.mutationFields = [...Object.keys(mutationsFields)]
   }
-
-  const model: ApiModel = {
-    api: {
-      ...config.api,
-      schema: schema,
-    },
-    workingDir: workingDir,
-  };
 
   // Codegenerator Function
   await generator(model);

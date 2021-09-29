@@ -32,14 +32,12 @@ export class CdkStack {
   async CdkStackFile() {
     this.outputFile = `${this.config.workingDir}-stack.ts`;
     this.code.openFile(this.outputFile);
-    const { apiName, database, lambdaStyle, apiType , schema } = this.config.api;
-    let mutations = {};
-    let queries = {};
+    const { apiName, database, lambdaStyle, apiType , schema , template } = this.config.api;
+    let mutationsAndQueries :string[] = []
     if (apiType === APITYPE.graphql) {
-      mutations = schema.type.Mutation ? schema.type.Mutation : {};
-      queries = schema.type.Query ? schema.type.Query : {};
+      const { queiresFields,mutationFields } = this.config.api;
+      mutationsAndQueries = [...queiresFields! , ...mutationFields!];
     }
-    const mutationsAndQueries = { ...mutations, ...queries };
     const cdk = new Cdk(this.code);
     const manager = new apiManager(this.code);
     const dynamodb = new DynamoDB(this.code);
@@ -66,7 +64,7 @@ export class CdkStack {
           this.code.line();
         }
         if (lambdaStyle || apiType === APITYPE.rest) {
-          lambda.lambdaConstructInitializer(apiName, database, this.code);
+          lambda.lambdaConstructInitializer(apiName, database);
         }
         database === DATABASE.dynamoDB &&
           LambdaAccessHandler(
@@ -83,6 +81,7 @@ export class CdkStack {
             lambdaStyle,
             database,
             mutationsAndQueries,
+            template,
             this.code
           );
         }

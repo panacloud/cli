@@ -54,7 +54,7 @@ export const LambdaAccessHandler = (
     );
     code.line();
   } else if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
-    Object.keys(mutationsAndQueries).forEach((key) => {
+    mutationsAndQueries.forEach((key:string) => {
       dynamodb.dbConstructLambdaAccess(
         apiName,
         `${apiName}_table`,

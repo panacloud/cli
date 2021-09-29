@@ -22,7 +22,7 @@
     "copyfiles": "^2.4.1",
     "fs": "^0.0.1-security",
     "fs-extra": "^10.0.0",
-    "graphql-to-json-converter": "^1.2.0",
+    "graphql": "^15.6.0",
     "inquirer": "^8.1.2",
     "isomorphic-git": "^1.10.0",
     "lodash": "^4.17.21",

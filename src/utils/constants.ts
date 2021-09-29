@@ -33,6 +33,7 @@ export enum TEMPLATE {
   basicApi = "Basic Skeleton API",
   todoApi = "Todo CRUD API",
   defineApi = "Define Your Own API",
+  mockApi = "mockApi"
 }
 
 export enum CLOUDPROVIDER {
@@ -62,6 +63,8 @@ export interface API {
   apiName: string;
   schemaPath: string;
   schema?: any;
+  queiresFields?: string[];
+  mutationFields?:string[];
   apiType: APITYPE;
   lambdaStyle: LAMBDASTYLE;
   database: DATABASE;
