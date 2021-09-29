@@ -52,7 +52,7 @@ export class Lambda {
     if (lambdaStyle === LAMBDASTYLE.multi) {
       lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
       funcName = `${apiName}Lambda${functionName}`;
-      handlerName = `${functionName}.handler`;
+      handlerName = `index.handler`;
     }
 
     ts.writeVariableDeclaration(
@@ -98,31 +98,34 @@ export class Lambda {
   public lambdaConstructInitializer(
     apiName: string,
     database: string,
-    code: CodeMaker
   ) {
-    const ts = new TypeScriptWriter(code);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}Lambda`,
         typeName: CONSTRUCTS.lambda,
         initializer: () => {
           this.code.line(
-            `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}",{`
+            `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}"`
           );
           if (database === DATABASE.dynamoDB) {
-            code.line(`tableName:${apiName}_table.table.tableName`);
+            this.code.line(',{')
+            this.code.line(`tableName:${apiName}_table.table.tableName`);
+            this.code.line("}");
           } else if (database === DATABASE.neptuneDB) {
-            code.line(`SGRef:${apiName}_neptunedb.SGRef,`);
-            code.line(`VPCRef:${apiName}_neptunedb.VPCRef,`);
-            code.line(
-              `neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`
-            );
+            this.code.line(',{')
+            this.code.line(`SGRef:${apiName}_neptunedb.SGRef,`);
+            this.code.line(`VPCRef:${apiName}_neptunedb.VPCRef,`);
+            this.code.line(`neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`);
+            this.code.line("}");
           } else if (database === DATABASE.auroraDB) {
-            code.line(`secretRef:${apiName}_auroradb.secretRef,`);
-            code.line(`vpcRef:${apiName}_auroradb.vpcRef,`);
-            code.line(`serviceRole: ${apiName}_auroradb.serviceRole`);
+            this.code.line(',{')
+            this.code.line(`secretRef:${apiName}_auroradb.secretRef,`);
+            this.code.line(`vpcRef:${apiName}_auroradb.vpcRef,`);
+            this.code.line(`serviceRole: ${apiName}_auroradb.serviceRole`);
+            this.code.line("}");
           }
-          this.code.line("})");
+          this.code.line(')')
         },
       },
       "const"

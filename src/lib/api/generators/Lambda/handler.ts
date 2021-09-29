@@ -22,22 +22,16 @@ class Handlers {
   }
 
   async handlers() {
-    const {
-      api: { lambdaStyle, apiType, schema },
-    } = this.config;
-
+    const {api: { lambdaStyle, apiType,schema }} = this.config;
     if (apiType === APITYPE.graphql) {
+      const {api: { queiresFields,mutationFields }} = this.config;
+      let mutationsAndQueries:string[] = [...queiresFields!,...mutationFields!]      
       if (lambdaStyle === LAMBDASTYLE.single) {
         this.outputFile = "main.ts";
         this.code.openFile(this.outputFile);
         const lambda = new LambdaFunction(this.code);
         const imp = new Imports(this.code);
-        for (var key in schema.type.Query) {
-          imp.importIndividualLambdaFunction(key, `${key}`);
-        }
-        for (var key in schema.type.Mutation) {
-          imp.importIndividualLambdaFunction(key, `${key}`);
-        }
+        mutationsAndQueries.forEach((key:string)=> imp.importIndividualLambdaFunction(key, `${key}`))
 
         imp.importAxios();
         this.code.line();
@@ -49,24 +43,18 @@ class Handlers {
           }`);
         this.code.line();
         lambda.initializeLambdaFunction(lambdaStyle, apiType, () => {
-          for (var key in schema.type.Query) {
+          mutationsAndQueries.forEach((key:string)=>{
             this.code.indent(`
               case "${key}":
                   return await ${key}();
               `);
-          }
-          for (var key in schema.type.Mutation) {
-            this.code.indent(`
-              case "${key}":
-                  return await ${key}();
-              `);
-          }
+          })
+
         });
         this.code.closeFile(this.outputFile);
         await this.code.save(this.outputDir);
       } else if (lambdaStyle === LAMBDASTYLE.multi) {
-        if (schema.type.Mutation) {
-          Object.keys(schema.type.Mutation).forEach(async (key) => {
+        mutationsAndQueries.forEach(async(key:string)=>{
             this.outputFile = "index.ts";
             this.code.openFile(this.outputFile);
             const imp = new Imports(this.code);
@@ -76,23 +64,12 @@ class Handlers {
             this.code.closeFile(this.outputFile);
             this.outputDir = `lambda/${key}`;
             await this.code.save(this.outputDir);
-          });
+        })
+
         }
-        if (schema.type.Query) {
-          Object.keys(schema.type.Query).forEach(async (key) => {
-            this.outputFile = "index.ts";
-            this.code.openFile(this.outputFile);
-            const lambda = new LambdaFunction(this.code);
-            const imp = new Imports(this.code);
-            imp.importAxios();
-            lambda.initializeLambdaFunction(lambdaStyle, apiType);
-            this.code.closeFile(this.outputFile);
-            this.outputDir = `lambda/${key}`;
-            await this.code.save(this.outputDir);
-          });
-        }
-      }
-    } else {
+
+    }
+     else {
       SwaggerParser.validate(
         this.config.api.schemaPath,
         async (err: any, api: any) => {
