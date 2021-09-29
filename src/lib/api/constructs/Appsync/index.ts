@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE, TEMPLATE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -62,6 +62,7 @@ export class Appsync {
     lambdaStyle: string,
     database: string,
     mutationsAndQueries: any,
+    template:string,
     code: CodeMaker
   ) {
     const ts = new TypeScriptWriter(code);
@@ -78,6 +79,7 @@ export class Appsync {
             lambdaStyle,
             database,
             mutationsAndQueries,
+            template,
             code
           );
           this.code.line("})");
@@ -92,6 +94,7 @@ export class Appsync {
     lambdaStyle: string,
     database: string,
     mutationsAndQueries: any,
+    template:string,
     code: CodeMaker
   ) {
     let apiLambda = apiName + "Lambda";
@@ -100,7 +103,7 @@ export class Appsync {
       code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn`);
     }
     if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
+      mutationsAndQueries.forEach((key:string) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
       });
@@ -114,9 +117,9 @@ export class Appsync {
     }
     if (
       lambdaStyle === LAMBDASTYLE.multi &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
+      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB || template === TEMPLATE.mockApi)
     ) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
+      mutationsAndQueries.forEach((key:string) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
       });
