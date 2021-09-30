@@ -43,6 +43,7 @@ export class AppsyncApiConstructTest {
 
     testClass.initializeTest("Appsync Api Constructs Test", () => {
       appsync.apiName = apiName;
+
       if (database === DATABASE.dynamoDB) {
         iam.constructorIdentifier(CONSTRUCTS.dynamoDB);
       } else if (database === DATABASE.neptuneDB) {

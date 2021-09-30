@@ -48,7 +48,6 @@ export class LambdaConstructTest {
     } else if (database === DATABASE.auroraDB) {
       imp.importForAuroraDbConstructInTest();
     }
-
     this.code.line();
     cdk.initializeTest(
       `Lambda Attach With ${
