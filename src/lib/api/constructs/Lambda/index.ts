@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE, TEMPLATE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Environment {
@@ -21,7 +21,7 @@ export class Lambda {
     securityGroupsName?: string,
     environments?: Environment[],
     vpcSubnets?: string,
-    roleName?: string
+    roleName?: string,
   ) {
     const ts = new TypeScriptWriter(this.code);
     let lambdaConstructName: string = `${apiName}Lambda`;
@@ -40,7 +40,7 @@ export class Lambda {
       ? `vpcSubnets: { subnetType: ${vpcSubnets} },`
       : "";
     let role = roleName ? `role: ${roleName},` : "";
-
+    let lambdaLayer = `layers:[${apiName}_lambdaLayer]` ;
     if (lambdaStyle === LAMBDASTYLE.multi) {
       lambdaConstructName = `${apiName}Lambda${functionName}`;
       lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
@@ -65,7 +65,7 @@ export class Lambda {
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
         code: lambda.Code.fromAsset("${handlerAsset}"),
-        layers:[${apiName}_lambdaLayer],
+        ${lambdaLayer},
         ${role}
         ${vpc}
         ${securityGroups}
@@ -98,6 +98,7 @@ export class Lambda {
   public lambdaConstructInitializer(
     apiName: string,
     database: string,
+
   ) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
@@ -144,22 +145,26 @@ export class Lambda {
         typeName: "",
         initializer: () => {
           this.code.line(
-            `new ${CONSTRUCTS.lambda}(stack, "${CONSTRUCTS.lambda}Test", {`
+            `new ${CONSTRUCTS.lambda}(stack, "${CONSTRUCTS.lambda}Test"`
           );
           if (database === DATABASE.dynamoDB) {
+            code.line(',{')
             code.line(`tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName`);
+            code.line('}')
           } else if (database === DATABASE.neptuneDB) {
+            code.line(',{')
             code.line(`SGRef: ${CONSTRUCTS.neptuneDB}_stack.SGRef,`);
             code.line(`VPCRef: ${CONSTRUCTS.neptuneDB}_stack.VPCRef,`);
-            code.line(
-              `neptuneReaderEndpoint: ${CONSTRUCTS.neptuneDB}_stack.neptuneReaderEndpoint,`
-            );
+            code.line(`neptuneReaderEndpoint: ${CONSTRUCTS.neptuneDB}_stack.neptuneReaderEndpoint`);
+            this.code.line("}");
           } else if (database === DATABASE.auroraDB) {
+            code.line(',{')
             code.line(`secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,`);
             code.line(`vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,`);
-            code.line(`serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole,`);
+            code.line(`serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole`);
+            this.code.line("}");
           }
-          this.code.line("})");
+          this.code.line(")");
         },
       },
       "const"

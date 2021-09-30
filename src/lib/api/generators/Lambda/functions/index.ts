@@ -139,7 +139,7 @@ export const lambdaHandlerForNeptunedb = (
             value: `props!.neptuneReaderEndpoint`,
           },
         ],
-        `ec2.SubnetType.ISOLATED`
+        `ec2.SubnetType.PRIVATE_ISOLATED`
       );
       code.line();
       code.line(
@@ -164,7 +164,7 @@ export const lambdaHandlerForNeptunedb = (
               value: `props!.neptuneReaderEndpoint`,
             },
           ],
-          `ec2.SubnetType.ISOLATED`
+          `ec2.SubnetType.PRIVATE_ISOLATED`
         );
         code.line();
         code.line(

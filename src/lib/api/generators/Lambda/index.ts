@@ -94,7 +94,6 @@ class lambdaConstruct {
       lambdaPropsWithName,
       () => {
         if (template === TEMPLATE.mockApi){
-          lambda.lambdaLayer(apiName);
           mutationsAndQueries.forEach((key:string)=>{
             lambda.initializeLambda(
               apiName,
