@@ -2,11 +2,9 @@ import { Command, flags } from "@oclif/command";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
-import {
-  checkEmptyDirectoy,
-  validateSchemaFile,
-} from "../lib/api/errorHandling";
+import {checkEmptyDirectoy,validateSchemaFile} from "../lib/api/errorHandling";
 import { TEMPLATE, SAASTYPE, Config } from "../utils/constants";
+import MockApi from "../lib/api/functions/MockApi";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -68,6 +66,8 @@ export default class Create extends Command {
         await todoApi(config);
       } else if (config.api?.template === TEMPLATE.defineApi) {
         await defineYourOwnApi(config, templateDir);
+      } else if (config.api?.template === TEMPLATE.mockApi) {
+        await MockApi(config,templateDir)
       } else {
         await basicApi(config, templateDir);
       }

@@ -1,4 +1,4 @@
-import {CONSTRUCTS,APITYPE,DATABASE,ApiModel} from "../../../../utils/constants";
+import {CONSTRUCTS,APITYPE,DATABASE,ApiModel, TEMPLATE} from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { CodeMaker } from "codemaker";
@@ -9,10 +9,12 @@ import {
   lambdaHandlerForNeptunedb,
   lambdaProperiesHandlerForAuroraDb,
   lambdaProperiesHandlerForDynoDb,
+  lambdaProperiesHandlerForMockApi,
   lambdaProperiesHandlerForNeptuneDb,
   lambdaPropsHandlerForAuroradb,
   lambdaPropsHandlerForNeptunedb,
 } from "./functions";
+import { Lambda } from "../../constructs/Lambda";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -29,25 +31,24 @@ class lambdaConstruct {
   }
 
   async LambdaConstructFile() {
-    const {
-      api: { apiName, lambdaStyle, apiType, database, schema },
-    } = this.config;
-    let mutations = {};
-    let queries = {};
+    const {api: { apiName, lambdaStyle, apiType, database,template }} = this.config;
+    let mutationsAndQueries :string[] = []
     if (apiType === APITYPE.graphql) {
-      mutations = schema.type.Mutation ? schema.type.Mutation : {};
-      queries = schema.type.Query ? schema.type.Query : {};
+      const { queiresFields,mutationFields } = this.config.api;
+      mutationsAndQueries = [...queiresFields! , ...mutationFields!];
     }
-    const mutationsAndQueries = { ...mutations, ...queries };
-
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
     let lambdaProperties: Property[] | undefined;
     this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
+    const lambda = new Lambda(this.code);  
     imp.importLambda();
-
+    
+    if(template === TEMPLATE.mockApi){
+      lambdaProperties = lambdaProperiesHandlerForMockApi(apiName,apiType,lambdaStyle,mutationsAndQueries)
+    }
     if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
@@ -92,6 +93,18 @@ class lambdaConstruct {
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
       () => {
+        if (template === TEMPLATE.mockApi){
+          mutationsAndQueries.forEach((key:string)=>{
+            lambda.initializeLambda(
+              apiName,
+              lambdaStyle,
+              key
+            );
+            this.code.line();  
+            this.code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
+            this.code.line();
+          })  
+        }
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,

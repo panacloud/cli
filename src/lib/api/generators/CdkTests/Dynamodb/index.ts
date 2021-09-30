@@ -1,5 +1,4 @@
 import { CodeMaker } from "codemaker";
-import { TypeScriptWriter } from "../../../../../utils/typescriptWriter";
 import { CONSTRUCTS, ApiModel } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
@@ -22,7 +21,6 @@ export class DynamoDBConstructTest {
   }
 
   async constructdynamoDBConstructTestFile() {
-    const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
 
     const { apiName } = this.config.api;

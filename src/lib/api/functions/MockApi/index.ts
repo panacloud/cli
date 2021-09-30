@@ -1,14 +1,10 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import {
-  writeFileAsync,
-  copyFileAsync,
-  mkdirRecursiveAsync,
-} from "../../../fs";
+import {writeFileAsync,copyFileAsync,mkdirRecursiveAsync} from "../../../fs";
 import { contextInfo } from "../../info";
 import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
+import {  introspectionFromSchema } from "graphql";
 import { loadSDLSchema } from "../../../../utils/loading";
-import { introspectionFromSchema } from "graphql";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -16,27 +12,22 @@ const exec = require("await-exec");
 const fse = require("fs-extra");
 const _ = require("lodash");
 
-async function defineYourOwnApi(config: Config, templateDir: string) {
+async function MockApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
-
   const { api: { schemaPath, apiType }} = config;
-
   const workingDir = _.snakeCase(path.basename(process.cwd()));
-
   const model: ApiModel = {
-    api: {
+    api: { 
       ...config.api,
     },
     workingDir: workingDir,
   };
-
   const generatingCode = startSpinner("Generating CDK Code...");
-
   /* copy files from global package dir to cwd */
   fs.readdirSync(templateDir).forEach(async (file: any) => {
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
-        fse.copy(`${templateDir}/${file}`, ".gitignore");
+        await fse.copy(`${templateDir}/${file}`, ".gitignore");
       } else {
         await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
           if (err) {
@@ -116,10 +107,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   });
 
-  if (
-    path.extname(schemaPath) === ".yml" ||
-    path.extname(schemaPath) === ".yaml"
-  ) {
+
+  if (path.extname(schemaPath) === ".yml" ||path.extname(schemaPath) === ".yaml") {
     schema = YAML.parse(schema);
   } else {
     const schemaAst = loadSDLSchema(schemaPath)
@@ -128,7 +117,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.schema = introspectionFromSchema(schemaAst)
     model.api.queiresFields = [...Object.keys(queriesFields)] 
     model.api.mutationFields = [...Object.keys(mutationsFields)]
-  }
+   }
 
   // Codegenerator Function
   await generator(model);
@@ -154,4 +143,4 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   stopSpinner(installingModules, "Modules installed", false);
 }
 
-export default defineYourOwnApi;
+export default MockApi;

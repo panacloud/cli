@@ -7,7 +7,6 @@ import { Imports } from "../../constructs/ConstructsImports";
 import { CodeMaker } from "codemaker";
 import { readFileSync } from "fs";
 import * as path from "path";
-import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -25,23 +24,18 @@ class AppsyncConstruct {
 
   async AppsyncConstructFile() {
     const {
-      api: { apiName, lambdaStyle, schema , schemaPath },
-    } = this.config;
-    const ts = new TypeScriptWriter(this.code);
+      api: { apiName, lambdaStyle , schemaPath , queiresFields , mutationFields }} = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
     const cdk = new Cdk(this.code);
     const iam = new Iam(this.code);
     const imp = new Imports(this.code);
-    const schemaGql = readFileSync(
-      path.resolve(schemaPath)
-    ).toString("utf8");
-    const mutations = schema.type.Mutation ? schema.type.Mutation : {};
-    const queries = schema.type.Query ? schema.type.Query : {};
-    const mutationsAndQueries = { ...mutations, ...queries };
+    const schemaGql = readFileSync(path.resolve(schemaPath)).toString("utf8");
+    const mutationsAndQueries:string[] = [...queiresFields!,...mutationFields!]
+
     imp.importAppsync();
     imp.importIam();
-
+    
     let ConstructProps = [
       {
         name: `${apiName}_lambdaFnArn`,
@@ -50,7 +44,7 @@ class AppsyncConstruct {
     ];
 
     if (lambdaStyle && lambdaStyle === LAMBDASTYLE.multi) {
-      Object.keys(mutationsAndQueries).forEach((key: string, index: number) => {
+      mutationsAndQueries.forEach((key: string, index: number) => {
         ConstructProps[index] = {
           name: `${apiName}_lambdaFn_${key}Arn`,
           type: "string",
@@ -80,7 +74,7 @@ class AppsyncConstruct {
           mutationsAndQueries
         );
         this.code.line();
-        appsyncResolverhandler(apiName, lambdaStyle, this.code, schema.type);
+        appsyncResolverhandler(apiName, lambdaStyle, this.code, queiresFields!, mutationFields!);
       },
       ConstructProps
     );

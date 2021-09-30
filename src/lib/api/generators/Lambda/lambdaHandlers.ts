@@ -23,32 +23,21 @@ class LambdaHandlers {
   }
 
   async lambdaHandler() {
-    const {
-      api: { lambdaStyle, apiType, schema },
-    } = this.config;
+    const { api: { lambdaStyle, apiType } } = this.config;
 
     if (apiType === APITYPE.graphql) {
+      const {api: { queiresFields,mutationFields }} = this.config;
+      let mutationsAndQueries:string[] = [...queiresFields!,...mutationFields!]      
       if (lambdaStyle === LAMBDASTYLE.single) {
-        if (schema.type?.Query) {
-          Object.keys(schema.type.Query).forEach(async (key) => {
-            this.outputFile = `${key}.ts`;
-            this.code.openFile(this.outputFile);
-            const lambda = new LambdaFunction(this.code);
-            lambda.helloWorldFunction(key);
-            this.code.closeFile(this.outputFile);
-            await this.code.save(this.outputDir);
-          });
-        }
-        if (schema.type?.Mutation) {
-          Object.keys(schema.type.Mutation).forEach(async (key) => {
-            this.outputFile = `${key}.ts`;
-            this.code.openFile(this.outputFile);
-            const lambda = new LambdaFunction(this.code);
-            lambda.helloWorldFunction(key);
-            this.code.closeFile(this.outputFile);
-            await this.code.save(this.outputDir);
-          });
-        }
+        mutationsAndQueries.forEach(async(key:string)=>{
+          this.outputFile = `${key}.ts`;
+          this.code.openFile(this.outputFile);
+          const lambda = new LambdaFunction(this.code);
+          lambda.helloWorldFunction(key);
+          this.code.closeFile(this.outputFile);
+          await this.code.save(this.outputDir);
+        })
+
       }
     } else {
       SwaggerParser.validate(

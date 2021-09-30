@@ -1,5 +1,6 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE, APITYPE } from "../../../../utils/constants";
+import { threadId } from "worker_threads";
+import { LAMBDASTYLE, APITYPE, TEMPLATE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class LambdaFunction {
@@ -10,25 +11,25 @@ export class LambdaFunction {
   public initializeLambdaFunction(
     lambdaStyle: string,
     apiType: APITYPE,
+    template:string,
     content?: any
   ) {
     const ts = new TypeScriptWriter(this.code);
 
     if (apiType === APITYPE.graphql) {
       if (lambdaStyle === LAMBDASTYLE.multi) {
-        this.code.line(`
-      var AWS = require('aws-sdk');
-      
-      exports.handler = async(event:any) => {
-        // write your code here
-        const data = await axios.post('http://sandbox:8080', event)
-      }
-      `);
+        this.code.line(`var AWS = require('aws-sdk')`)
+        this.code.line
+        this.code.line(`exports.handler = async (event: any) => {`);
+        if(template !== TEMPLATE.mockApi){
+          this.code.line(`const data = await axios.post('http://sandbox:8080', event)`)
+        }
+        this.code.line(`}`);
       } else if (lambdaStyle === LAMBDASTYLE.single) {
         this.code.line(`exports.handler = async (event:Event) => {`);
-        this.code.line(
-          `const data = await axios.post('http://sandbox:8080', event)`
-        );
+        if(template !== TEMPLATE.mockApi){
+          this.code.line(`const data = await axios.post('http://sandbox:8080', event)`)
+        }
         this.code.line();
         this.code.line(`switch (event.info.fieldName) {`);
         this.code.line();

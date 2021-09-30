@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
+import { CONSTRUCTS, DATABASE, LAMBDASTYLE, TEMPLATE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -62,9 +62,8 @@ export class Appsync {
     lambdaStyle: string,
     database: string,
     mutationsAndQueries: any,
-    code: CodeMaker
   ) {
-    const ts = new TypeScriptWriter(code);
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}`,
@@ -78,7 +77,7 @@ export class Appsync {
             lambdaStyle,
             database,
             mutationsAndQueries,
-            code
+            this.code
           );
           this.code.line("})");
         },
@@ -100,23 +99,17 @@ export class Appsync {
       code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn`);
     }
     if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
+      mutationsAndQueries.forEach((key:string) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
       });
     }
-    if (
-      lambdaStyle === LAMBDASTYLE.single &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
+    else if ( lambdaStyle === LAMBDASTYLE.single ) {
       lambdafunc = `${apiName}_lambdaFnArn`;
       code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
     }
-    if (
-      lambdaStyle === LAMBDASTYLE.multi &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
+    else if (lambdaStyle === LAMBDASTYLE.multi) {
+      mutationsAndQueries.forEach((key:string) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
       });
@@ -188,40 +181,31 @@ export class Appsync {
     apiName: string,
     lambdaStyle: string,
     database: string,
-    mutationsAndQueries: any,
-    code: CodeMaker
+    mutationsAndQueries: string[],
   ) {
     let lambdafunc = `${apiName}_lambdaFn`;
     this.code.line(
       `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "${CONSTRUCTS.appsync}Test", {`
     );
     if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
-      code.line(
+      this.code.line(
         `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn`
       );
     }
     else if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
+      mutationsAndQueries.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(
+        this.code.line(
           `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn,`
         );
       });
-    }
-    if (
-      lambdaStyle === LAMBDASTYLE.single &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
+    } else if (lambdaStyle === LAMBDASTYLE.single) {
       lambdafunc = `${apiName}_lambdaFnArn`;
-      code.line(`${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`);
-    }
-    else if (
-      lambdaStyle === LAMBDASTYLE.multi &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
+      this.code.line(`${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`);
+    } else if(lambdaStyle === LAMBDASTYLE.multi){
+      mutationsAndQueries.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`);
+        this.code.line(`${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`);
       });
     }
     this.code.line(`})`);

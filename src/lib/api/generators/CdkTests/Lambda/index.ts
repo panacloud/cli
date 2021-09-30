@@ -1,20 +1,11 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../../utils/typescriptWriter";
-import {
-  CONSTRUCTS,
-  APITYPE,
-  DATABASE,
-  LAMBDASTYLE,
-  ApiModel,
-} from "../../../../../utils/constants";
+import {CONSTRUCTS,APITYPE,DATABASE,LAMBDASTYLE,ApiModel} from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { Iam } from "../../../constructs/Iam";
 import { Lambda } from "../../../constructs/Lambda";
-import {
-  neptuneIdentifierCalls,
-  auroradbIdentifierCalls
-} from "./functions";
+import {neptuneIdentifierCalls,auroradbIdentifierCalls} from "./functions";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -40,25 +31,22 @@ export class LambdaConstructTest {
     const lambda = new Lambda(this.code);
     const imp = new Imports(this.code);
     const iam = new Iam(this.code);
-    let mutations = {};
-    let queries = {};
+    let mutationsAndQueries:string[] = []
 
     if (apiType === APITYPE.graphql) {
-      mutations = schema.type.Mutation ? schema.type.Mutation : {};
-      queries = schema.type.Query ? schema.type.Query : {};
+      const {api: {mutationFields,queiresFields}} = this.config
+      mutationsAndQueries = [...queiresFields!,...mutationFields!]
     }
-    const mutationsAndQueries = { ...mutations, ...queries };
+
     imp.ImportsForTest();
+    imp.importForLambdaConstructInTest();
 
     if (database === DATABASE.dynamoDB) {
       imp.importForDynamodbConstructInTest();
-      imp.importForLambdaConstructInTest();
     } else if (database === DATABASE.neptuneDB) {
       imp.importForNeptuneConstructInTest();
-      imp.importForLambdaConstructInTest();
     } else if (database === DATABASE.auroraDB) {
       imp.importForAuroraDbConstructInTest();
-      imp.importForLambdaConstructInTest();
     }
     this.code.line();
     cdk.initializeTest(
@@ -98,9 +86,9 @@ export class LambdaConstructTest {
             this.code.line();
             iam.DynodbTableTestIdentifier();
             this.code.line();
-            Object.keys(mutationsAndQueries).forEach((key) => {
+            mutationsAndQueries.forEach((key) => {
               let funcName = `${apiName}Lambda${key}`;
-              lambda.initializeTestForLambdaWithDynamoDB(funcName, key);
+              lambda.initializeTestForLambdaWithDynamoDB(funcName, "index");
               this.code.line();
             });
           }
@@ -114,9 +102,9 @@ export class LambdaConstructTest {
             let funcName = `${apiName}Lambda`;
             lambda.initializeTestForLambdaWithNeptune(funcName, "main");
           } else if (lambdaStyle === LAMBDASTYLE.multi) {
-            Object.keys(mutationsAndQueries).forEach((key) => {
+            mutationsAndQueries.forEach((key) => {
               let funcName = `${apiName}Lambda${key}`;
-              lambda.initializeTestForLambdaWithNeptune(funcName, key);
+              lambda.initializeTestForLambdaWithNeptune(funcName, "index");
               this.code.line();
             });
           }
@@ -131,9 +119,9 @@ export class LambdaConstructTest {
             let funcName = `${apiName}Lambda`;
             lambda.initializeTestForLambdaWithAuroradb(funcName, "main");
           } else if (lambdaStyle === LAMBDASTYLE.multi) {
-            Object.keys(mutationsAndQueries).forEach((key) => {
+            mutationsAndQueries.forEach((key) => {
               let funcName = `${apiName}Lambda${key}`;
-              lambda.initializeTestForLambdaWithAuroradb(funcName, key);
+              lambda.initializeTestForLambdaWithAuroradb(funcName, "index");
               this.code.line();
             });
           }

@@ -6,14 +6,14 @@ export const dynamodbAccessHandler = (
   apiName: string,
   lambdaStyle: string,
   code: CodeMaker,
-  mutationsAndQueries: any
+  mutationsAndQueries: string[]
 ) => {
   const dynamoDB = new DynamoDB(code);
 
   if (lambdaStyle === LAMBDASTYLE.single) {
     dynamoDB.grantFullAccess(`${apiName}`, `${apiName}_table`, lambdaStyle);
   } else if (lambdaStyle === LAMBDASTYLE.multi) {
-    Object.keys(mutationsAndQueries).forEach((key) => {
+    mutationsAndQueries.forEach((key:string) => {
       dynamoDB.grantFullAccess(
         `${apiName}`,
         `${apiName}_table`,
@@ -29,7 +29,7 @@ export const dynamodbPropsHandler = (
   apiName: string,
   lambdaStyle: string,
   code: CodeMaker,
-  mutationsAndQueries: any
+  mutationsAndQueries: string[]
 ) => {
   if (lambdaStyle && lambdaStyle === LAMBDASTYLE.single) {
     const props = {
@@ -39,7 +39,7 @@ export const dynamodbPropsHandler = (
   }
 
   if (lambdaStyle && lambdaStyle === LAMBDASTYLE.multi) {
-    Object.keys(mutationsAndQueries).forEach((key, index) => {
+    mutationsAndQueries.forEach((key:string) => {
       const props = {
         name: `${apiName}_lambdaFn_${key}`,
         type: "lambda.Function",
