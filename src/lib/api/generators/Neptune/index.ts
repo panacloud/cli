@@ -67,7 +67,7 @@ export class NeptuneDBConstruct {
                     {
                       cidrMask: 24, 
                       name: 'Ingress',
-                      subnetType: ec2.SubnetType.ISOLATED,
+                      subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
                     }`
         );
 

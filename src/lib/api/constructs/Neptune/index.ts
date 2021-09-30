@@ -57,7 +57,7 @@ export class Neptune {
             "${apiName}neptuneSubnetGroup",
             {
               dbSubnetGroupDescription: "${apiName} Subnet",
-              subnetIds: ${vpcName}.selectSubnets({ subnetType: ec2.SubnetType.ISOLATED })
+              subnetIds: ${vpcName}.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_ISOLATED })
                 .subnetIds,
               dbSubnetGroupName: "${apiName}_subnetgroup",
             }

@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, DATABASE, LAMBDASTYLE } from "../../../../../utils/constants";
+import { APITYPE, DATABASE, LAMBDASTYLE, TEMPLATE } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { DynamoDB } from "../../../constructs/Dynamodb";
@@ -7,13 +7,13 @@ import { DynamoDB } from "../../../constructs/Dynamodb";
 export const importHandlerForStack = (
   database: string,
   apiType: string,
+  template: string,
   code: CodeMaker
 ) => {
   const cdk = new Cdk(code);
   const imp = new Imports(code);
   imp.importsForStack();
   imp.importsForConstructs()
-  imp.importApiManager();
   if (apiType === APITYPE.graphql) {
     imp.importForAppsyncConstruct();
   } else {
@@ -21,6 +21,9 @@ export const importHandlerForStack = (
   }
   imp.importForLambdaConstruct();
   databaseImportHandler(database, code);
+  if(template !== TEMPLATE.mockApi){
+    imp.importApiManager();
+  }
 };
 
 export const databaseImportHandler = (database: string, code: CodeMaker) => {
