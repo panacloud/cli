@@ -34,10 +34,12 @@ export const generator = async (config: ApiModel) => {
   if (config.api.database === DATABASE.auroraDB) {
     auroraDBConstruct({ config });
     auroraDBConstructTest({ config });
-  } if (config.api.database === DATABASE.neptuneDB) {
+  }
+  if (config.api.database === DATABASE.neptuneDB) {
     neptuneDBConstruct({ config });
     neptuneDBConstructTest({ config });
-  } if (config.api.database === DATABASE.dynamoDB)  {
+  }
+  if (config.api.database === DATABASE.dynamoDB) {
     dynamoDBConstruct({ config });
     dynamodbConstructTest({ config });
   }

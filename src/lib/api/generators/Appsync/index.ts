@@ -1,5 +1,10 @@
 import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import { CONSTRUCTS, LAMBDASTYLE, Config, ApiModel } from "../../../../utils/constants";
+import {
+  CONSTRUCTS,
+  LAMBDASTYLE,
+  Config,
+  ApiModel,
+} from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -24,18 +29,22 @@ class AppsyncConstruct {
 
   async AppsyncConstructFile() {
     const {
-      api: { apiName, lambdaStyle , schemaPath , queiresFields , mutationFields }} = this.config;
+      api: { apiName, lambdaStyle, schemaPath, queiresFields, mutationFields },
+    } = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
     const cdk = new Cdk(this.code);
     const iam = new Iam(this.code);
     const imp = new Imports(this.code);
     const schemaGql = readFileSync(path.resolve(schemaPath)).toString("utf8");
-    const mutationsAndQueries:string[] = [...queiresFields!,...mutationFields!]
+    const mutationsAndQueries: string[] = [
+      ...queiresFields!,
+      ...mutationFields!,
+    ];
 
     imp.importAppsync();
     imp.importIam();
-    
+
     let ConstructProps = [
       {
         name: `${apiName}_lambdaFnArn`,
@@ -74,7 +83,13 @@ class AppsyncConstruct {
           mutationsAndQueries
         );
         this.code.line();
-        appsyncResolverhandler(apiName, lambdaStyle, this.code, queiresFields!, mutationFields!);
+        appsyncResolverhandler(
+          apiName,
+          lambdaStyle,
+          this.code,
+          queiresFields!,
+          mutationFields!
+        );
       },
       ConstructProps
     );

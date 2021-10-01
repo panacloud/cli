@@ -37,7 +37,9 @@ export class NeptuneDBConstructTest {
 
     cdk.initializeTest("Neptune Constructs Test", () => {
       iam.constructorIdentifier(CONSTRUCTS.neptuneDB);
-      this.code.line(`const constructs = ${CONSTRUCTS.neptuneDB}_stack.node.children;`);
+      this.code.line(
+        `const constructs = ${CONSTRUCTS.neptuneDB}_stack.node.children;`
+      );
       this.code.line(`expect(constructs).toHaveLength(5);`);
       this.code.line();
       isolatedFunction(this.code);
@@ -69,9 +71,15 @@ export class NeptuneDBConstructTest {
       neptune.initializeTestForCountResources("AWS::EC2::VPC", 1);
       neptune.initializeTestForCountResources("AWS::EC2::Subnet", 2);
       neptune.initializeTestForCountResources("AWS::EC2::RouteTable", 2);
-      neptune.initializeTestForCountResources("AWS::EC2::SubnetRouteTableAssociation",2);
+      neptune.initializeTestForCountResources(
+        "AWS::EC2::SubnetRouteTableAssociation",
+        2
+      );
       neptune.initializeTestForCountResources("AWS::EC2::SecurityGroup", 1);
-      neptune.initializeTestForCountResources("AWS::EC2::SecurityGroupIngress", 1 );
+      neptune.initializeTestForCountResources(
+        "AWS::EC2::SecurityGroupIngress",
+        1
+      );
       neptune.initializeTestForCountResources("AWS::Neptune::DBCluster", 1);
       neptune.initializeTestForCountResources("AWS::Neptune::DBInstance", 1);
     });

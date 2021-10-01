@@ -1,6 +1,11 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-import { ApiModel, APITYPE, LAMBDASTYLE, TEMPLATE } from "../../../../utils/constants";
+import {
+  ApiModel,
+  APITYPE,
+  LAMBDASTYLE,
+  TEMPLATE,
+} from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 const _ = require("lodash");
@@ -22,19 +27,28 @@ class Handlers {
   }
 
   async handlers() {
-    const {api: { lambdaStyle, apiType,template }} = this.config;
+    const {
+      api: { lambdaStyle, apiType, template },
+    } = this.config;
     if (apiType === APITYPE.graphql) {
-      const {api: { queiresFields,mutationFields }} = this.config;
-      let mutationsAndQueries:string[] = [...queiresFields!,...mutationFields!]      
+      const {
+        api: { queiresFields, mutationFields },
+      } = this.config;
+      let mutationsAndQueries: string[] = [
+        ...queiresFields!,
+        ...mutationFields!,
+      ];
       if (lambdaStyle === LAMBDASTYLE.single) {
         this.outputFile = "main.ts";
         this.code.openFile(this.outputFile);
         const lambda = new LambdaFunction(this.code);
         const imp = new Imports(this.code);
-        mutationsAndQueries.forEach((key:string)=> imp.importIndividualLambdaFunction(key, `${key}`))
-        if(template !== TEMPLATE.mockApi){
+        mutationsAndQueries.forEach((key: string) =>
+          imp.importIndividualLambdaFunction(key, `${key}`)
+        );
+        if (template !== TEMPLATE.mockApi) {
           imp.importAxios();
-          this.code.line();  
+          this.code.line();
         }
         this.code.indent(`
           type Event = {
@@ -44,32 +58,31 @@ class Handlers {
           }`);
         this.code.line();
         lambda.initializeLambdaFunction(lambdaStyle, apiType, template, () => {
-          mutationsAndQueries.forEach((key:string)=>{
+          mutationsAndQueries.forEach((key: string) => {
             this.code.indent(`
               case "${key}":
                   return await ${key}();
               `);
-          })
+          });
         });
         this.code.closeFile(this.outputFile);
         await this.code.save(this.outputDir);
       } else if (lambdaStyle === LAMBDASTYLE.multi) {
-        mutationsAndQueries.forEach(async(key:string)=>{
-            this.outputFile = "index.ts";
-            this.code.openFile(this.outputFile);
-            const imp = new Imports(this.code);
-            const lambda = new LambdaFunction(this.code);
-            if(template !== TEMPLATE.mockApi){
-              imp.importAxios();
-            }
-            lambda.initializeLambdaFunction(lambdaStyle, apiType,template);
-            this.code.closeFile(this.outputFile);
-            this.outputDir = `lambda/${key}`;
-            await this.code.save(this.outputDir);
-        })
-        }
-    }
-     else {
+        mutationsAndQueries.forEach(async (key: string) => {
+          this.outputFile = "index.ts";
+          this.code.openFile(this.outputFile);
+          const imp = new Imports(this.code);
+          const lambda = new LambdaFunction(this.code);
+          if (template !== TEMPLATE.mockApi) {
+            imp.importAxios();
+          }
+          lambda.initializeLambdaFunction(lambdaStyle, apiType, template);
+          this.code.closeFile(this.outputFile);
+          this.outputDir = `lambda/${key}`;
+          await this.code.save(this.outputDir);
+        });
+      }
+    } else {
       SwaggerParser.validate(
         this.config.api.schemaPath,
         async (err: any, api: any) => {
@@ -96,30 +109,35 @@ class Handlers {
             this.code.line();
 
             let isFirstIf: boolean = true;
-            lambda.initializeLambdaFunction(lambdaStyle, apiType, template,() => {
-              Object.keys(api.paths).forEach((path) => {
-                for (var methodName in api.paths[`${path}`]) {
-                  let lambdaFunctionFile =
-                    api.paths[`${path}`][`${methodName}`][`operationId`];
-                  isFirstIf
-                    ? this.code.indent(`
+            lambda.initializeLambdaFunction(
+              lambdaStyle,
+              apiType,
+              template,
+              () => {
+                Object.keys(api.paths).forEach((path) => {
+                  for (var methodName in api.paths[`${path}`]) {
+                    let lambdaFunctionFile =
+                      api.paths[`${path}`][`${methodName}`][`operationId`];
+                    isFirstIf
+                      ? this.code.indent(`
                       if (method === "${_.upperCase(
                         methodName
                       )}" && requestName === "${path.substring(1)}") {
                         return await ${lambdaFunctionFile}();
                       }
                     `)
-                    : this.code.indent(`
+                      : this.code.indent(`
                       else if (method === "${_.upperCase(
                         methodName
                       )}" && requestName === "${path.substring(1)}") {
                         return await ${lambdaFunctionFile}();
                       }
                     `);
-                  isFirstIf = false;
-                }
-              });
-            });
+                    isFirstIf = false;
+                  }
+                });
+              }
+            );
             this.code.closeFile(this.outputFile);
             await this.code.save(this.outputDir);
           }

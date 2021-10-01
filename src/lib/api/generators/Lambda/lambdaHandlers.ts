@@ -23,21 +23,27 @@ class LambdaHandlers {
   }
 
   async lambdaHandler() {
-    const { api: { lambdaStyle, apiType } } = this.config;
+    const {
+      api: { lambdaStyle, apiType },
+    } = this.config;
 
     if (apiType === APITYPE.graphql) {
-      const {api: { queiresFields,mutationFields }} = this.config;
-      let mutationsAndQueries:string[] = [...queiresFields!,...mutationFields!]      
+      const {
+        api: { queiresFields, mutationFields },
+      } = this.config;
+      let mutationsAndQueries: string[] = [
+        ...queiresFields!,
+        ...mutationFields!,
+      ];
       if (lambdaStyle === LAMBDASTYLE.single) {
-        mutationsAndQueries.forEach(async(key:string)=>{
+        mutationsAndQueries.forEach(async (key: string) => {
           this.outputFile = `${key}.ts`;
           this.code.openFile(this.outputFile);
           const lambda = new LambdaFunction(this.code);
           lambda.helloWorldFunction(key);
           this.code.closeFile(this.outputFile);
           await this.code.save(this.outputDir);
-        })
-
+        });
       }
     } else {
       SwaggerParser.validate(

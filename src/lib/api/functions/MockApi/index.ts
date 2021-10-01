@@ -1,9 +1,13 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import {writeFileAsync,copyFileAsync,mkdirRecursiveAsync} from "../../../fs";
+import {
+  writeFileAsync,
+  copyFileAsync,
+  mkdirRecursiveAsync,
+} from "../../../fs";
 import { contextInfo } from "../../info";
 import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
-import {  introspectionFromSchema } from "graphql";
+import { introspectionFromSchema } from "graphql";
 import { loadSDLSchema } from "../../../../utils/loading";
 const path = require("path");
 const fs = require("fs");
@@ -14,10 +18,12 @@ const _ = require("lodash");
 
 async function MockApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
-  const { api: { schemaPath, apiType }} = config;
+  const {
+    api: { schemaPath, apiType },
+  } = config;
   const workingDir = _.snakeCase(path.basename(process.cwd()));
   const model: ApiModel = {
-    api: { 
+    api: {
       ...config.api,
     },
     workingDir: workingDir,
@@ -107,17 +113,19 @@ async function MockApi(config: Config, templateDir: string) {
     }
   });
 
-
-  if (path.extname(schemaPath) === ".yml" ||path.extname(schemaPath) === ".yaml") {
+  if (
+    path.extname(schemaPath) === ".yml" ||
+    path.extname(schemaPath) === ".yaml"
+  ) {
     schema = YAML.parse(schema);
   } else {
-    const schemaAst = loadSDLSchema(schemaPath)
-    const queriesFields : any = schemaAst.getQueryType()?.getFields()
-    const mutationsFields : any = schemaAst.getMutationType()?.getFields()
-    model.api.schema = introspectionFromSchema(schemaAst)
-    model.api.queiresFields = [...Object.keys(queriesFields)] 
-    model.api.mutationFields = [...Object.keys(mutationsFields)]
-   }
+    const schemaAst = loadSDLSchema(schemaPath);
+    const queriesFields: any = schemaAst.getQueryType()?.getFields();
+    const mutationsFields: any = schemaAst.getMutationType()?.getFields();
+    model.api.schema = introspectionFromSchema(schemaAst);
+    model.api.queiresFields = [...Object.keys(queriesFields)];
+    model.api.mutationFields = [...Object.keys(mutationsFields)];
+  }
 
   // Codegenerator Function
   await generator(model);
