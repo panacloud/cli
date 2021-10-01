@@ -52,7 +52,12 @@ export const userInput = async () => {
       type: "list",
       name: "template",
       message: "Which Kind of Mutli-Tenant Serverless API?",
-      choices: [TEMPLATE.basicApi, TEMPLATE.todoApi, TEMPLATE.defineApi ,TEMPLATE.mockApi],
+      choices: [
+        TEMPLATE.basicApi,
+        TEMPLATE.todoApi,
+        TEMPLATE.defineApi,
+        TEMPLATE.mockApi,
+      ],
       default: TEMPLATE.mockApi,
       validate: Boolean,
     },
@@ -62,7 +67,9 @@ export const userInput = async () => {
       message: "Select API Type?",
       choices: [APITYPE.graphql, APITYPE.rest],
       default: APITYPE.graphql,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi || answers.template === TEMPLATE.mockApi,
+      when: (answers: any) =>
+        answers.template === TEMPLATE.defineApi ||
+        answers.template === TEMPLATE.mockApi,
       validate: Boolean,
     },
     {
@@ -85,7 +92,9 @@ export const userInput = async () => {
       name: "api_name",
       message: "API Name",
       default: "myApi",
-      when: (answers: any) => answers.template === TEMPLATE.defineApi || answers.template === TEMPLATE.mockApi,
+      when: (answers: any) =>
+        answers.template === TEMPLATE.defineApi ||
+        answers.template === TEMPLATE.mockApi,
       validate: Boolean,
     },
     {
@@ -104,6 +113,31 @@ export const userInput = async () => {
       choices: [DATABASE.dynamoDB, DATABASE.neptuneDB, DATABASE.auroraDB],
       default: DATABASE.auroraDB,
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      validate: Boolean,
+    },
+  ]);
+};
+
+export const mergeInputs = async () => {
+  return await inquirer.prompt([
+    {
+      type: "list",
+      name: "api_type",
+      message: "Select API Type?",
+      choices: [APITYPE.graphql],
+      default: APITYPE.graphql,
+      validate: Boolean,
+    },
+    {
+      type: "string",
+      name: "schema",
+      message: "Schema Files Path (Glob Path)",
+      validate: Boolean,
+    },
+    {
+      type: "string",
+      name: "output",
+      message: "Output File Name",
       validate: Boolean,
     },
   ]);
