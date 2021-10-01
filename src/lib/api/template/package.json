@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "aws-cdk-lib": "^2.0.0-rc.19",
-    "constructs": "10.0.0",
+    "constructs": "10.0.5",
     "panacloud-manager": "^0.3.1",
     "source-map-support": "^0.5.19"
   }
