@@ -36,7 +36,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   /* copy files from global package dir to cwd */
   fs.readdirSync(templateDir).forEach(async (file: any) => {
-    if (file !== "package.json" && file !== "cdk.json") {
+    if (
+      file !== "package.json" &&
+      file !== "cdk.json" &&
+      (mockApi ? file !== "lambdaLayer" : true)
+    ) {
       if (file === "gitignore") {
         fse.copy(`${templateDir}/${file}`, ".gitignore");
       } else {
@@ -175,11 +179,9 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       path.extname(schemaPath) === ".yaml"
     ) {
       schema = YAML.parse(schema);
-      model.api.schema = schema
+      model.api.schema = schema;
     }
   }
-
-  
 
   // Codegenerator Function
   await generator(model);

@@ -3,7 +3,6 @@ import {
   APITYPE,
   DATABASE,
   LAMBDASTYLE,
-  TEMPLATE,
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
@@ -16,8 +15,6 @@ import { lambdaConstructTest } from "./CdkTests/Lambda";
 import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
 import { LambdaConstruct } from "./Lambda";
-import { handlers } from "./Lambda/handler";
-import { lambdaHandlers } from "./Lambda/lambdaHandlers";
 import { multipleLambda } from "./Lambda/multipleLambda";
 import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
@@ -59,10 +56,13 @@ export const generator = async (config: ApiModel) => {
   LambdaConstruct({ config });
 
   // Single or Multi
-  if (config.api.lambdaStyle === LAMBDASTYLE.single) {
+  if (
+    config.api.lambdaStyle === LAMBDASTYLE.single ||
+    config.api.apiType === APITYPE.rest
+  ) {
     singleLambda({ config });
   }
-  if (config.api.lambdaStyle === LAMBDASTYLE.multi) {
+  if (config.api.lambdaStyle === LAMBDASTYLE.multi || config.api.mockApi) {
     multipleLambda({ config });
   }
 

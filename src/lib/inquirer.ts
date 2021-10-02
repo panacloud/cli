@@ -40,11 +40,7 @@ export const userInput = async () => {
       type: "list",
       name: "template",
       message: "Which Kind of Mutli-Tenant Serverless API?",
-      choices: [
-        TEMPLATE.basicApi,
-        TEMPLATE.todoApi,
-        TEMPLATE.defineApi,
-      ],
+      choices: [TEMPLATE.basicApi, TEMPLATE.todoApi, TEMPLATE.defineApi],
       default: TEMPLATE.basicApi,
       validate: Boolean,
     },
@@ -108,7 +104,8 @@ export const userInput = async () => {
       message: "Lambda Handlers?",
       choices: [LAMBDASTYLE.single, LAMBDASTYLE.multi],
       default: LAMBDASTYLE.multi,
-      when: (answers: any) => answers.api_type === APITYPE.graphql,
+      when: (answers: any) =>
+        answers.api_type === APITYPE.graphql && !answers.mockApi,
       validate: Boolean,
     },
     {

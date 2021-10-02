@@ -1,5 +1,4 @@
 import { CodeMaker } from "codemaker";
-import { threadId } from "worker_threads";
 import { LAMBDASTYLE, APITYPE, TEMPLATE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
@@ -23,21 +22,10 @@ export class LambdaFunction {
         this.code.line;
 
         this.code.line(`exports.handler = async (event: any) => {`);
-        if (mockApi) {
-          this.code.indent(`let response = {}`);
-          this.code.line(`data.fields.${fieldName}.forEach((item:any) => {`);
-          this.code.line(
-            ` if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){`
-          );
-          this.code.line(`response = item.response`);
-          this.code.line(`} `);
-          this.code.line(`})`);
-          this.code.line(`return response`);
-        } else {
-          this.code.line(
-            `const data = await axios.post('http://sandbox:8080', event)`
-          );
-        }
+        this.code.line(
+          `const data = await axios.post('http://sandbox:8080', event)`
+        );
+        this.code.line();
         this.code.line(`}`);
       } else if (lambdaStyle === LAMBDASTYLE.single) {
         this.code.line(`exports.handler = async (event:Event) => {`);
@@ -51,6 +39,19 @@ export class LambdaFunction {
         this.code.line();
         this.code.line(`}`);
         this.code.line(`}`);
+      } else if (mockApi) {
+        this.code.line(`var AWS = require('aws-sdk')`);
+        this.code.line(`
+        exports.handler = async (event: any) => {
+        let response = {}
+        data.fields.${fieldName}.forEach((item:any) => {
+        if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){
+        response = item.response
+        }  
+        })
+        return response
+        }
+      `);
       }
     } else {
       /* rest api */

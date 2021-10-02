@@ -1,11 +1,6 @@
 import { Command, flags } from "@oclif/command";
 import { startSpinner, stopSpinner } from "../lib/spinner";
-import {
-  basicApi,
-  todoApi,
-  defineYourOwnApi,
-  mockApi,
-} from "../lib/api/functions";
+import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
 import {
   checkEmptyDirectoy,
