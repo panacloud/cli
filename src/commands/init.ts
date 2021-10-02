@@ -1,16 +1,24 @@
 import { Command, flags } from "@oclif/command";
 import { startSpinner, stopSpinner } from "../lib/spinner";
-import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
+import {
+  basicApi,
+  todoApi,
+  defineYourOwnApi,
+  mockApi,
+} from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
-import {checkEmptyDirectoy,validateSchemaFile} from "../lib/api/errorHandling";
+import {
+  checkEmptyDirectoy,
+  validateSchemaFile,
+} from "../lib/api/errorHandling";
 import { TEMPLATE, SAASTYPE, Config } from "../utils/constants";
-import MockApi from "../lib/api/functions/MockApi";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
 const prettier = require("prettier");
 const globby = require("globby");
-const _ = require("lodash");
+const exec = require("await-exec");
+const camelCase = require("lodash/camelCase");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
@@ -36,7 +44,7 @@ export default class Create extends Command {
         template: usrInput.template,
         language: usrInput.language,
         cloudprovider: usrInput.cloud_provider,
-        apiName: _.camelCase(usrInput.api_name),
+        apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
         lambdaStyle: usrInput.lambda,
@@ -67,12 +75,23 @@ export default class Create extends Command {
       } else if (config.api?.template === TEMPLATE.defineApi) {
         await defineYourOwnApi(config, templateDir);
       } else if (config.api?.template === TEMPLATE.mockApi) {
-        await MockApi(config,templateDir)
+        await mockApi(config, templateDir);
+
+        const generatingTypes = startSpinner("Generating Types");
+        try {
+          await exec(`npx graphql-codegen`);
+        } catch (error) {
+          stopSpinner(generatingTypes, `Error: ${error}`, true);
+          process.exit(1);
+        }
+        stopSpinner(generatingTypes, "Generating Types", false);
+      
       } else {
         await basicApi(config, templateDir);
       }
     }
 
+    const formatting = startSpinner("Formatting Code");
     // Formatting files.
     const files = await globby(
       [
@@ -97,6 +116,8 @@ export default class Create extends Command {
       });
       await fs.writeFileSync(file, nextData, "utf8");
     });
+
+    stopSpinner(formatting, "Formatting Done", false);
 
     this.log(chalk.greenBright("Build your Billion Dollar API"));
   }

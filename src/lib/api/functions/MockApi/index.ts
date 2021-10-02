@@ -1,8 +1,5 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import {
-  copyFileAsync,
-  mkdirRecursiveAsync,
-} from "../../../fs";
+import { copyFileAsync, mkdirRecursiveAsync } from "../../../fs";
 import { Config, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
@@ -83,18 +80,8 @@ async function mockApi(config: Config, templateDir: string) {
     }
   );
 
-  await mkdirRecursiveAsync(`schema`);
-
-  copyFileAsync(
-    schemaPath,
-    `./schema/${path.basename(schemaPath)}}`,
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  await mkdirRecursiveAsync(`graphql`);
+  await mkdirRecursiveAsync(`graphql/schema`);
 
   let schema = fs.readFileSync(schemaPath, "utf8", (err: string) => {
     if (err) {
@@ -103,9 +90,14 @@ async function mockApi(config: Config, templateDir: string) {
     }
   });
 
-  const directivesPath = path.resolve(
+  let directivesPath = path.resolve(
     __dirname,
     "../../../../utils/awsAppsyncDirectives.graphql"
+  );
+
+  let scalarPath = path.resolve(
+    __dirname,
+    "../../../../utils/awsAppsyncScalars.graphql"
   );
 
   let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
@@ -115,9 +107,27 @@ async function mockApi(config: Config, templateDir: string) {
     }
   });
 
-  const gqlSchema = buildSchema(`${directives}\n${schema}`);
+  let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
+    if (err) {
+      stopSpinner(generatingCode, `Error: ${err}`, true);
+      process.exit(1);
+    }
+  });
+
+  fs.writeFileSync(
+    `./graphql/schema/schema.graphql`,
+    `${scalars}\n${schema}`,
+    (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    }
+  );
+
+  const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
   const mockApiCollection = buildSchemaToTypescript(gqlSchema);
-  
+
   // Model Config
   const queriesFields: any = gqlSchema.getQueryType()?.getFields();
   const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
