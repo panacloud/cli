@@ -49,6 +49,7 @@ export default class Create extends Command {
         apiType: usrInput.api_type,
         lambdaStyle: usrInput.lambda,
         database: usrInput.database,
+        mockApi: usrInput.mockApi,
       },
     };
 
@@ -74,22 +75,19 @@ export default class Create extends Command {
         await todoApi(config);
       } else if (config.api?.template === TEMPLATE.defineApi) {
         await defineYourOwnApi(config, templateDir);
-      } else if (config.api?.template === TEMPLATE.mockApi) {
-        await mockApi(config, templateDir);
-
-        const generatingTypes = startSpinner("Generating Types");
-        try {
-          await exec(`npx graphql-codegen`);
-        } catch (error) {
-          stopSpinner(generatingTypes, `Error: ${error}`, true);
-          process.exit(1);
-        }
-        stopSpinner(generatingTypes, "Generating Types", false);
-      
       } else {
         await basicApi(config, templateDir);
       }
     }
+
+    const generatingTypes = startSpinner("Generating Types");
+    try {
+      await exec(`npx graphql-codegen`);
+    } catch (error) {
+      stopSpinner(generatingTypes, `Error: ${error}`, true);
+      process.exit(1);
+    }
+    stopSpinner(generatingTypes, "Generating Types", false);
 
     const formatting = startSpinner("Formatting Code");
     // Formatting files.

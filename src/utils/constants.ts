@@ -33,7 +33,6 @@ export enum TEMPLATE {
   basicApi = "Basic Skeleton API",
   todoApi = "Todo CRUD API",
   defineApi = "Define Your Own API",
-  mockApi = "Mock API",
 }
 
 export enum CLOUDPROVIDER {
@@ -75,4 +74,5 @@ export interface API {
   lambdaStyle: LAMBDASTYLE;
   database: DATABASE;
   mockApiData?: mockApiData;
+  mockApi?: boolean
 }

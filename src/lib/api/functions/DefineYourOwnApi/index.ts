@@ -7,8 +7,8 @@ import {
 import { contextInfo } from "../../info";
 import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
-import { loadSDLSchema } from "../../../../utils/loading";
-import { introspectionFromSchema } from "graphql";
+import { introspectionFromSchema, buildSchema } from "graphql";
+import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -19,7 +19,9 @@ const _ = require("lodash");
 async function defineYourOwnApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
 
-  const { api: { schemaPath, apiType }} = config;
+  const {
+    api: { schemaPath, apiType, mockApi },
+  } = config;
 
   const workingDir = _.snakeCase(path.basename(process.cwd()));
 
@@ -81,33 +83,25 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   );
 
-  writeFileAsync(
-    `./cdk.context.json`,
-    JSON.stringify(contextInfo(api_token, entityId)),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
+  if (!mockApi) {
+    writeFileAsync(
+      `./cdk.context.json`,
+      JSON.stringify(contextInfo(api_token, entityId)),
+      (err: string) => {
+        if (err) {
+          stopSpinner(generatingCode, `Error: ${err}`, true);
+          process.exit(1);
+        }
       }
-    }
-  );
+    );
+  }
 
-  await mkdirRecursiveAsync(`schema`);
-
-  copyFileAsync(
-    schemaPath,
-    `./schema/${
-      apiType === APITYPE.graphql
-        ? path.basename(schemaPath)
-        : path.basename(schemaPath)
-    }`,
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  if (apiType === APITYPE.graphql) {
+    await mkdirRecursiveAsync(`graphql`);
+    await mkdirRecursiveAsync(`graphql/schema`);
+  } else {
+    await mkdirRecursiveAsync(`schema`);
+  }
 
   let schema = fs.readFileSync(schemaPath, "utf8", (err: string) => {
     if (err) {
@@ -116,19 +110,76 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   });
 
-  if (
-    path.extname(schemaPath) === ".yml" ||
-    path.extname(schemaPath) === ".yaml"
-  ) {
-    schema = YAML.parse(schema);
+  if (apiType === APITYPE.graphql) {
+    let directivesPath = path.resolve(
+      __dirname,
+      "../../../../utils/awsAppsyncDirectives.graphql"
+    );
+
+    let scalarPath = path.resolve(
+      __dirname,
+      "../../../../utils/awsAppsyncScalars.graphql"
+    );
+
+    let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    });
+
+    let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    });
+
+    fs.writeFileSync(
+      `./graphql/schema/schema.graphql`,
+      `${scalars}\n${schema}`,
+      (err: string) => {
+        if (err) {
+          stopSpinner(generatingCode, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      }
+    );
+
+    const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
+
+    // Model Config
+    const queriesFields: any = gqlSchema.getQueryType()?.getFields();
+    const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+    model.api.schema = introspectionFromSchema(gqlSchema);
+    model.api.queiresFields = [...Object.keys(queriesFields)];
+    model.api.mutationFields = [...Object.keys(mutationsFields)];
+
+    if (mockApi) {
+      const mockApiCollection = buildSchemaToTypescript(gqlSchema);
+      model.api.mockApiData = mockApiCollection;
+    }
   } else {
-    const schemaAst = loadSDLSchema(schemaPath)
-    const queriesFields : any = schemaAst.getQueryType()?.getFields()
-    const mutationsFields : any = schemaAst.getMutationType()?.getFields()
-    model.api.schema = introspectionFromSchema(schemaAst)
-    model.api.queiresFields = [...Object.keys(queriesFields)] 
-    model.api.mutationFields = [...Object.keys(mutationsFields)]
+    copyFileAsync(
+      schemaPath,
+      `./schema/${path.basename(schemaPath)}`,
+      (err: string) => {
+        if (err) {
+          stopSpinner(generatingCode, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      }
+    );
+    if (
+      path.extname(schemaPath) === ".yml" ||
+      path.extname(schemaPath) === ".yaml"
+    ) {
+      schema = YAML.parse(schema);
+      model.api.schema = schema
+    }
   }
+
+  
 
   // Codegenerator Function
   await generator(model);
@@ -144,11 +195,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     process.exit(1);
   }
 
-  try {
-    await exec(`cd lambdaLayer/nodejs && npm install`);
-  } catch (error) {
-    stopSpinner(installingModules, `Error: ${error}`, true);
-    process.exit(1);
+  if (!mockApi) {
+    try {
+      await exec(`cd lambdaLayer/nodejs && npm install`);
+    } catch (error) {
+      stopSpinner(installingModules, `Error: ${error}`, true);
+      process.exit(1);
+    }
   }
 
   stopSpinner(installingModules, "Modules installed", false);

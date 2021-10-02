@@ -1,11 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-import {
-  ApiModel,
-  APITYPE,
-  LAMBDASTYLE,
-  TEMPLATE,
-} from "../../../../utils/constants";
+import { ApiModel, APITYPE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 const _ = require("lodash");
@@ -15,21 +10,22 @@ type StackBuilderProps = {
   config: ApiModel;
 };
 
-class Handlers {
-  outputFile: string = `index.ts`;
+class SingleLambda {
+  outputFile: string = `main.ts`;
   outputDir: string = `lambda`;
   config: ApiModel;
-  jsonSchema: any;
   code: CodeMaker;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
     this.code = new CodeMaker();
   }
 
-  async handlers() {
+  async SingleLambdaFile() {
     const {
-      api: { lambdaStyle, apiType, template },
+      api: { apiType, lambdaStyle, mockApi },
     } = this.config;
+
+    // GraphQL
     if (apiType === APITYPE.graphql) {
       const {
         api: { queiresFields, mutationFields },
@@ -38,59 +34,52 @@ class Handlers {
         ...queiresFields!,
         ...mutationFields!,
       ];
-      if (lambdaStyle === LAMBDASTYLE.single) {
-        this.outputFile = "main.ts";
-        this.code.openFile(this.outputFile);
-        const lambda = new LambdaFunction(this.code);
-        const imp = new Imports(this.code);
-        mutationsAndQueries.forEach((key: string) =>
-          imp.importIndividualLambdaFunction(key, `${key}`)
-        );
-        if (template !== TEMPLATE.mockApi) {
-          imp.importAxios();
-          this.code.line();
-        }
-        this.code.indent(`
-          type Event = {
-              info: {
-                fieldName: string
-              }
-          }`);
-        this.code.line();
-        lambda.initializeLambdaFunction(
-          lambdaStyle,
-          apiType,
-          template,
-          undefined,
-          () => {
-            mutationsAndQueries.forEach((key: string) => {
-              this.code.indent(`
-              case "${key}":
-                  return await ${key}();
-              `);
-            });
+      this.code.openFile(this.outputFile);
+
+      const lambda = new LambdaFunction(this.code);
+      const imp = new Imports(this.code);
+      mutationsAndQueries.forEach((key: string) =>
+        imp.importIndividualLambdaFunction(key, `${key}`)
+      );
+
+      imp.importAxios();
+      this.code.line();
+
+      this.code.indent(`
+      type Event = {
+          info: {
+            fieldName: string
           }
-        );
+      }`);
+      this.code.line();
+
+      lambda.initializeLambdaFunction(
+        lambdaStyle,
+        apiType,
+        mockApi,
+        undefined,
+        () => {
+          mutationsAndQueries.forEach((key: string) => {
+            this.code.indent(`
+            case "${key}":
+                return await ${key}();
+            `);
+          });
+        }
+      );
+      this.code.closeFile(this.outputFile);
+      await this.code.save(this.outputDir);
+
+      mutationsAndQueries.forEach(async (key: string) => {
+        this.outputFile = `${key}.ts`;
+        this.code.openFile(this.outputFile);
+
+        const lambda = new LambdaFunction(this.code);
+        lambda.helloWorldFunction(key);
+
         this.code.closeFile(this.outputFile);
         await this.code.save(this.outputDir);
-      } else if (lambdaStyle === LAMBDASTYLE.multi) {
-        mutationsAndQueries.forEach(async (key: string) => {
-          this.outputFile = "index.ts";
-          this.code.openFile(this.outputFile);
-          const imp = new Imports(this.code);
-          const lambda = new LambdaFunction(this.code);
-          if (template === TEMPLATE.mockApi) {
-            this.code.line(`const data = require("/opt/testCollections")`);
-          } else {
-            imp.importAxios();
-            this.code.line();
-          }
-          lambda.initializeLambdaFunction(lambdaStyle, apiType, template, key);
-          this.code.closeFile(this.outputFile);
-          this.outputDir = `lambda/${key}`;
-          await this.code.save(this.outputDir);
-        });
-      }
+      });
     } else {
       SwaggerParser.validate(
         this.config.api.schemaPath,
@@ -98,11 +87,12 @@ class Handlers {
           if (err) {
             console.error(err);
           } else {
-            this.outputFile = "main.ts";
             this.code.openFile(this.outputFile);
+
             const ts = new TypeScriptWriter(this.code);
             const lambda = new LambdaFunction(this.code);
             const imp = new Imports(this.code);
+
             imp.importAxios();
             /* import all lambda files */
             Object.keys(api.paths).forEach((path) => {
@@ -121,7 +111,7 @@ class Handlers {
             lambda.initializeLambdaFunction(
               lambdaStyle,
               apiType,
-              template,
+              undefined,
               undefined,
               () => {
                 Object.keys(api.paths).forEach((path) => {
@@ -130,33 +120,51 @@ class Handlers {
                       api.paths[`${path}`][`${methodName}`][`operationId`];
                     isFirstIf
                       ? this.code.indent(`
-                      if (method === "${_.upperCase(
-                        methodName
-                      )}" && requestName === "${path.substring(1)}") {
-                        return await ${lambdaFunctionFile}();
-                      }
-                    `)
+                          if (method === "${_.upperCase(
+                            methodName
+                          )}" && requestName === "${path.substring(1)}") {
+                            return await ${lambdaFunctionFile}();
+                          }
+                        `)
                       : this.code.indent(`
-                      else if (method === "${_.upperCase(
-                        methodName
-                      )}" && requestName === "${path.substring(1)}") {
-                        return await ${lambdaFunctionFile}();
-                      }
-                    `);
+                          else if (method === "${_.upperCase(
+                            methodName
+                          )}" && requestName === "${path.substring(1)}") {
+                            return await ${lambdaFunctionFile}();
+                          }
+                        `);
                     isFirstIf = false;
                   }
                 });
               }
             );
+
             this.code.closeFile(this.outputFile);
             await this.code.save(this.outputDir);
+
+            Object.keys(api.paths).forEach(async (path) => {
+              for (var methodName in api.paths[`${path}`]) {
+                let lambdaFunctionFile =
+                  api.paths[`${path}`][`${methodName}`][`operationId`];
+                
+                this.outputFile = `${lambdaFunctionFile}.ts`;
+                this.code.openFile(this.outputFile);
+                
+                const lambda = new LambdaFunction(this.code);
+                lambda.helloWorldFunction(lambdaFunctionFile);
+                
+                this.code.closeFile(this.outputFile);
+                await this.code.save(this.outputDir);
+              }
+            });
           }
         }
       );
     }
   }
 }
-export const handlers = async (props: StackBuilderProps): Promise<void> => {
-  const builder = new Handlers(props);
-  await builder.handlers();
+
+export const singleLambda = async (props: StackBuilderProps): Promise<void> => {
+  const builder = new SingleLambda(props);
+  await builder.SingleLambdaFile();
 };

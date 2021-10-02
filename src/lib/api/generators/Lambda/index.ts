@@ -38,7 +38,7 @@ class lambdaConstruct {
 
   async LambdaConstructFile() {
     const {
-      api: { apiName, lambdaStyle, apiType, database, template },
+      api: { apiName, lambdaStyle, apiType, database , mockApi },
     } = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
@@ -54,7 +54,7 @@ class lambdaConstruct {
     const lambda = new Lambda(this.code);
     imp.importLambda();
 
-    if (template === TEMPLATE.mockApi) {
+    if (mockApi) {
       lambdaProperties = lambdaProperiesHandlerForMockApi(
         apiName,
         apiType,
@@ -106,7 +106,7 @@ class lambdaConstruct {
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
       () => {
-        if (template === TEMPLATE.mockApi) {
+        if (mockApi) {
           mutationsAndQueries.forEach((key: string) => {
             lambda.initializeLambda(apiName, lambdaStyle, key);
             this.code.line();

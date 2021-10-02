@@ -1,4 +1,10 @@
-import { ApiModel, APITYPE, DATABASE, TEMPLATE } from "../../../utils/constants";
+import {
+  ApiModel,
+  APITYPE,
+  DATABASE,
+  LAMBDASTYLE,
+  TEMPLATE,
+} from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
 import { auroraDBConstruct } from "./AuroraServerless";
@@ -12,6 +18,8 @@ import { dynamoDBConstruct } from "./DynamoDB";
 import { LambdaConstruct } from "./Lambda";
 import { handlers } from "./Lambda/handler";
 import { lambdaHandlers } from "./Lambda/lambdaHandlers";
+import { multipleLambda } from "./Lambda/multipleLambda";
+import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
@@ -50,11 +58,15 @@ export const generator = async (config: ApiModel) => {
   // lambda Construct
   LambdaConstruct({ config });
 
-  // handlers
-  handlers({ config });
-  lambdaHandlers({ config });
+  // Single or Multi
+  if (config.api.lambdaStyle === LAMBDASTYLE.single) {
+    singleLambda({ config });
+  }
+  if (config.api.lambdaStyle === LAMBDASTYLE.multi) {
+    multipleLambda({ config });
+  }
 
-  if(config.api.template === TEMPLATE.mockApi){
-    mockApiTestCollections({ config })
+  if (config.api.mockApi) {
+    mockApiTestCollections({ config });
   }
 };

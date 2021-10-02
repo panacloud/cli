@@ -11,7 +11,8 @@ export class LambdaFunction {
   public initializeLambdaFunction(
     lambdaStyle: string,
     apiType: APITYPE,
-    template: string,
+    mockApi?: boolean,
+    fieldName?: string,
     content?: any
   ) {
     const ts = new TypeScriptWriter(this.code);
@@ -20,8 +21,19 @@ export class LambdaFunction {
       if (lambdaStyle === LAMBDASTYLE.multi) {
         this.code.line(`var AWS = require('aws-sdk')`);
         this.code.line;
+
         this.code.line(`exports.handler = async (event: any) => {`);
-        if (template !== TEMPLATE.mockApi) {
+        if (mockApi) {
+          this.code.indent(`let response = {}`);
+          this.code.line(`data.fields.${fieldName}.forEach((item:any) => {`);
+          this.code.line(
+            ` if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){`
+          );
+          this.code.line(`response = item.response`);
+          this.code.line(`} `);
+          this.code.line(`})`);
+          this.code.line(`return response`);
+        } else {
           this.code.line(
             `const data = await axios.post('http://sandbox:8080', event)`
           );
@@ -29,11 +41,9 @@ export class LambdaFunction {
         this.code.line(`}`);
       } else if (lambdaStyle === LAMBDASTYLE.single) {
         this.code.line(`exports.handler = async (event:Event) => {`);
-        if (template !== TEMPLATE.mockApi) {
-          this.code.line(
-            `const data = await axios.post('http://sandbox:8080', event)`
-          );
-        }
+        this.code.line(
+          `const data = await axios.post('http://sandbox:8080', event)`
+        );
         this.code.line();
         this.code.line(`switch (event.info.fieldName) {`);
         this.code.line();
