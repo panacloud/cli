@@ -1,7 +1,6 @@
-import { GraphQLSchema } from "graphql";
-let upperFirst = require("lodash/upperFirst")
+let upperFirst = require("lodash/upperFirst");
 
-export const buildSchemaToJson = (gqlSchema: any) => {
+export const buildSchemaToTypescript = (gqlSchema: any) => {
   let includeDeprecatedFields = false;
 
   let collectionsObject: {
@@ -10,7 +9,9 @@ export const buildSchemaToJson = (gqlSchema: any) => {
     fields: {},
   };
 
-  let typeStr = "type TestCollection {\n fields {\n";
+  let allImports: string[] = [];
+
+  let typeStr = "type TestCollection = {\n fields: {\n";
 
   const generateCollections = (obj: any, description: "Query" | "Mutation") => {
     Object.keys(obj).forEach((type: string) => {
@@ -18,13 +19,15 @@ export const buildSchemaToJson = (gqlSchema: any) => {
       if (includeDeprecatedFields || !field.isDeprecated) {
         const field = gqlSchema.getType(description).getFields()[type];
         const responseTypeName = field.type.inspect().replace(/[[\]!]/g, "");
-        const responseType = gqlSchema.getType(responseTypeName);
         collectionsObject.fields[type] = [{ arguments: {}, response: {} }];
-        typeStr += `${type}: [{ arguments: ${description}${upperFirst(type)}Args; response: ${responseTypeName} }];\n`;
+        typeStr += `${type}: [{ arguments: ${description}${upperFirst(
+          type
+        )}Args; response: ${responseTypeName} }];\n`;
+
+        allImports.push(responseTypeName);
+        allImports.push(`${description}${upperFirst(type)}Args`);
       }
-      console.log(typeStr);
     });
-    console.log(typeStr);
   };
 
   if (gqlSchema.getMutationType()) {
@@ -34,7 +37,15 @@ export const buildSchemaToJson = (gqlSchema: any) => {
   if (gqlSchema.getQueryType()) {
     generateCollections(gqlSchema?.getQueryType()?.getFields(), "Query");
   }
+
   typeStr += "}\n}";
 
-  console.log(typeStr);
+  // Remove Duplication from Imports array
+  let imports: string[] = [...new Set(allImports)];
+
+  return {
+    collections: collectionsObject,
+    types: typeStr,
+    imports: imports,
+  };
 };

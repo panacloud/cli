@@ -1,4 +1,4 @@
-import { ApiModel, APITYPE, DATABASE } from "../../../utils/constants";
+import { ApiModel, APITYPE, DATABASE, TEMPLATE } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
 import { auroraDBConstruct } from "./AuroraServerless";
@@ -12,6 +12,7 @@ import { dynamoDBConstruct } from "./DynamoDB";
 import { LambdaConstruct } from "./Lambda";
 import { handlers } from "./Lambda/handler";
 import { lambdaHandlers } from "./Lambda/lambdaHandlers";
+import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 
@@ -52,4 +53,8 @@ export const generator = async (config: ApiModel) => {
   // handlers
   handlers({ config });
   lambdaHandlers({ config });
+
+  if(config.api.template === TEMPLATE.mockApi){
+    mockApiTestCollections({ config })
+  }
 };
