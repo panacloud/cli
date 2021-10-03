@@ -1,5 +1,10 @@
 import { CodeMaker } from "codemaker";
-import {CONSTRUCTS,LAMBDASTYLE, DATABASE,ApiModel} from "../../../../../utils/constants";
+import {
+  CONSTRUCTS,
+  LAMBDASTYLE,
+  DATABASE,
+  ApiModel,
+} from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { Iam } from "../../../constructs/Iam";
@@ -22,13 +27,22 @@ export class AppsyncApiConstructTest {
 
   async AppsyncConstructTestFile() {
     this.code.openFile(this.outputFile);
-    const {api: { apiName, lambdaStyle, database, schema,queiresFields,mutationFields }} = this.config;
+    const {
+      api: {
+        apiName,
+        lambdaStyle,
+        database,
+        schema,
+        queiresFields,
+        mutationFields,
+      },
+    } = this.config;
     const iam = new Iam(this.code);
     const appsync = new Appsync(this.code);
     const lambda = new Lambda(this.code);
     const imp = new Imports(this.code);
     const testClass = new Cdk(this.code);
-    const mutationsAndQueries = [...queiresFields!,...mutationFields!];
+    const mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     imp.ImportsForTest();
     imp.importForAppsyncConstructInTest();
     imp.importForLambdaConstructInTest();
@@ -51,8 +65,13 @@ export class AppsyncApiConstructTest {
       } else if (database === DATABASE.auroraDB) {
         iam.constructorIdentifier(CONSTRUCTS.auroraDB);
       }
-      lambda.lambdaTestConstructInitializer(apiName, database, this.code)
-      appsync.appsyncTestConstructInitializer(apiName,lambdaStyle,database,mutationsAndQueries);
+      lambda.lambdaTestConstructInitializer(apiName, database, this.code);
+      appsync.appsyncTestConstructInitializer(
+        apiName,
+        lambdaStyle,
+        database,
+        mutationsAndQueries
+      );
       this.code.line();
       iam.appsyncApiTestIdentifier();
       this.code.line();
@@ -85,27 +104,27 @@ export class AppsyncApiConstructTest {
         });
       }
 
-      queiresFields?.forEach((key)=>{
-        if(lambdaStyle){
-          let dsName = `${apiName}_dataSource`
-          if(lambdaStyle === LAMBDASTYLE.multi){
-            dsName = `${apiName}_dataSource_${key}`
+      queiresFields?.forEach((key) => {
+        if (lambdaStyle) {
+          let dsName = `${apiName}_dataSource`;
+          if (lambdaStyle === LAMBDASTYLE.multi) {
+            dsName = `${apiName}_dataSource_${key}`;
           }
           appsync.appsyncResolverTest(key, "Query", dsName);
-          this.code.line()
+          this.code.line();
         }
-      })
+      });
 
-      mutationFields?.forEach((key)=>{
-        if(lambdaStyle){
-          let dsName = `${apiName}_dataSource`
-          if(lambdaStyle === LAMBDASTYLE.multi){
-            dsName = `${apiName}_dataSource_${key}`
+      mutationFields?.forEach((key) => {
+        if (lambdaStyle) {
+          let dsName = `${apiName}_dataSource`;
+          if (lambdaStyle === LAMBDASTYLE.multi) {
+            dsName = `${apiName}_dataSource_${key}`;
           }
           appsync.appsyncResolverTest(key, "Mutation", dsName);
-          this.code.line()
+          this.code.line();
         }
-      })
+      });
     });
 
     this.code.closeFile(this.outputFile);

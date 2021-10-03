@@ -38,8 +38,8 @@ export class AuroraServerlessDBConstructTest {
     cdk.initializeTest("Auroradb Constructs Test", () => {
       this.code.line();
       iam.constructorIdentifier(CONSTRUCTS.auroraDB);
-      this.code.line();;
-      auroradbIdentifierCalls(this.code)
+      this.code.line();
+      auroradbIdentifierCalls(this.code);
       this.code.line();
       auroradb.initializeTestForEC2Vpc();
       this.code.line();

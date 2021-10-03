@@ -13,7 +13,7 @@ export class Imports {
     ts.writeImports("aws-cdk-lib", ["Stack", "StackProps"]);
   }
 
-  public importsForConstructs(){
+  public importsForConstructs() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("constructs", ["Construct"]);
   }
@@ -137,10 +137,9 @@ export class Imports {
     ts.writeImports(`../lib/${CONSTRUCTS.auroraDB}`, [CONSTRUCTS.auroraDB]);
   }
 
-  public ImportsForTest(
-  ) {
+  public ImportsForTest() {
     const ts = new TypeScriptWriter(this.code);
-      this.code.line(`import * as cdk from "aws-cdk-lib"`)
-      this.code.line(`import "@aws-cdk/assert/jest"`);
+    this.code.line(`import * as cdk from "aws-cdk-lib"`);
+    this.code.line(`import "@aws-cdk/assert/jest"`);
   }
 }

@@ -83,7 +83,7 @@ export const lambdaHandlerForAuroradb = (
     }
   } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
     if (database === DATABASE.auroraDB) {
-      mutationsAndQueries.forEach((key:string) => {
+      mutationsAndQueries.forEach((key: string) => {
         lambda.initializeLambda(
           apiName,
           lambdaStyle,
@@ -151,7 +151,7 @@ export const lambdaHandlerForNeptunedb = (
     }
   } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
     if (database === DATABASE.neptuneDB) {
-      mutationsAndQueries.forEach((key:string) => {
+      mutationsAndQueries.forEach((key: string) => {
         lambda.initializeLambda(
           apiName,
           lambdaStyle,
@@ -224,7 +224,7 @@ export const lambdaProperiesHandlerForAuroraDb = (
     apiType === APITYPE.graphql &&
     database === DATABASE.auroraDB
   ) {
-    mutationsAndQueries.forEach((key:string, index:number) => {
+    mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
         typeName: "string",
@@ -282,7 +282,7 @@ export const lambdaProperiesHandlerForNeptuneDb = (
     apiType === APITYPE.graphql &&
     database === DATABASE.neptuneDB
   ) {
-    mutationsAndQueries.forEach((key:string, index:number) => {
+    mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
         typeName: "string",
@@ -300,8 +300,8 @@ export const lambdaProperiesHandlerForMockApi = (
   lambdaStyle: string,
   mutationsAndQueries: any
 ) => {
-  if(lambdaStyle){
-    let properties: Property[] =[
+  if (lambdaStyle) {
+    let properties: Property[] = [
       {
         name: `${apiName}_lambdaFnArn`,
         typeName: "string",
@@ -315,10 +315,16 @@ export const lambdaProperiesHandlerForMockApi = (
         isReadonly: false,
       },
     ];
-    if (((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) || apiType === APITYPE.rest)) {
+    if (
+      (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
+      apiType === APITYPE.rest
+    ) {
       return properties;
-    } else if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
-      mutationsAndQueries.forEach((key:string, index:number) => {
+    } else if (
+      lambdaStyle === LAMBDASTYLE.multi &&
+      apiType === APITYPE.graphql
+    ) {
+      mutationsAndQueries.forEach((key: string, index: number) => {
         properties[index] = {
           name: `${apiName}_lambdaFn_${key}Arn`,
           typeName: "string",
@@ -359,7 +365,7 @@ export const lambdaProperiesHandlerForDynoDb = (
     ];
     return properties;
   } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
-    mutationsAndQueries.forEach((key:string, index:number) => {
+    mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}`,
         typeName: "lambda.Function",
@@ -399,7 +405,7 @@ export const lambdaHandlerForDynamodb = (
     }
   } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
     if (database === DATABASE.dynamoDB) {
-      mutationsAndQueries.forEach((key:string) => {
+      mutationsAndQueries.forEach((key: string) => {
         lambda.initializeLambda(
           apiName,
           lambdaStyle,

@@ -37,29 +37,35 @@ export const userInput = async () => {
       validate: Boolean,
     },
     {
+      type: "list",
+      name: "template",
+      message: "Which Kind of Mutli-Tenant Serverless API?",
+      choices: [TEMPLATE.basicApi, TEMPLATE.todoApi, TEMPLATE.defineApi],
+      default: TEMPLATE.basicApi,
+      validate: Boolean,
+    },
+    {
+      type: "confirm",
+      name: "mockApi",
+      message: "Mock Server",
+      validate: Boolean,
+      when: (answers: any) =>
+        answers.template === TEMPLATE.defineApi ||
+        answers.template === TEMPLATE.todoApi,
+    },
+    {
       type: "string",
       name: "entityId",
       message: "Enter Your Panacloud Portal User ID",
       validate: Boolean,
+      when: (answers: any) => !answers.mockApi,
     },
     {
       type: "string",
       name: "api_token",
       message: "Enter Your Panacloud Portal API Key",
       validate: Boolean,
-    },
-    {
-      type: "list",
-      name: "template",
-      message: "Which Kind of Mutli-Tenant Serverless API?",
-      choices: [
-        TEMPLATE.basicApi,
-        TEMPLATE.todoApi,
-        TEMPLATE.defineApi,
-        TEMPLATE.mockApi,
-      ],
-      default: TEMPLATE.mockApi,
-      validate: Boolean,
+      when: (answers: any) => !answers.mockApi,
     },
     {
       type: "list",
@@ -67,16 +73,13 @@ export const userInput = async () => {
       message: "Select API Type?",
       choices: [APITYPE.graphql, APITYPE.rest],
       default: APITYPE.graphql,
-      when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi ||
-        answers.template === TEMPLATE.mockApi,
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
     {
       type: "string",
       name: "schema_path",
       message: "GraphQL Schema File Path",
-      default: "schema.graphql",
       when: (answers: any) => answers.api_type === APITYPE.graphql,
       validate: (val: string) => fileExistsAsync(val),
     },
@@ -92,9 +95,7 @@ export const userInput = async () => {
       name: "api_name",
       message: "API Name",
       default: "myApi",
-      when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi ||
-        answers.template === TEMPLATE.mockApi,
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
     {
@@ -103,7 +104,8 @@ export const userInput = async () => {
       message: "Lambda Handlers?",
       choices: [LAMBDASTYLE.single, LAMBDASTYLE.multi],
       default: LAMBDASTYLE.multi,
-      when: (answers: any) => answers.api_type === APITYPE.graphql,
+      when: (answers: any) =>
+        answers.api_type === APITYPE.graphql && !answers.mockApi,
       validate: Boolean,
     },
     {

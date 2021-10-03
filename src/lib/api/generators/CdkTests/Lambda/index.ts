@@ -1,11 +1,17 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../../utils/typescriptWriter";
-import {CONSTRUCTS,APITYPE,DATABASE,LAMBDASTYLE,ApiModel} from "../../../../../utils/constants";
+import {
+  CONSTRUCTS,
+  APITYPE,
+  DATABASE,
+  LAMBDASTYLE,
+  ApiModel,
+} from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { Iam } from "../../../constructs/Iam";
 import { Lambda } from "../../../constructs/Lambda";
-import {neptuneIdentifierCalls,auroradbIdentifierCalls} from "./functions";
+import { neptuneIdentifierCalls, auroradbIdentifierCalls } from "./functions";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -31,11 +37,13 @@ export class LambdaConstructTest {
     const lambda = new Lambda(this.code);
     const imp = new Imports(this.code);
     const iam = new Iam(this.code);
-    let mutationsAndQueries:string[] = []
+    let mutationsAndQueries: string[] = [];
 
     if (apiType === APITYPE.graphql) {
-      const {api: {mutationFields,queiresFields}} = this.config
-      mutationsAndQueries = [...queiresFields!,...mutationFields!]
+      const {
+        api: { mutationFields, queiresFields },
+      } = this.config;
+      mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
 
     imp.ImportsForTest();
@@ -61,16 +69,16 @@ export class LambdaConstructTest {
       } Constructs Test`,
       () => {
         this.code.line();
-        if(database === DATABASE.dynamoDB) {
-          iam.constructorIdentifier(CONSTRUCTS.dynamoDB)
-        } else if(database === DATABASE.neptuneDB) {
+        if (database === DATABASE.dynamoDB) {
+          iam.constructorIdentifier(CONSTRUCTS.dynamoDB);
+        } else if (database === DATABASE.neptuneDB) {
           iam.constructorIdentifier(CONSTRUCTS.neptuneDB);
-        } else if(database === DATABASE.auroraDB) {
-          iam.constructorIdentifier(CONSTRUCTS.auroraDB)
+        } else if (database === DATABASE.auroraDB) {
+          iam.constructorIdentifier(CONSTRUCTS.auroraDB);
         }
-        this.code.line()
-        lambda.lambdaTestConstructInitializer(apiName, database, this.code)
-        this.code.line()
+        this.code.line();
+        lambda.lambdaTestConstructInitializer(apiName, database, this.code);
+        this.code.line();
         if (database === DATABASE.dynamoDB) {
           if (
             apiType === APITYPE.rest ||
@@ -94,7 +102,7 @@ export class LambdaConstructTest {
           }
         } else if (database === DATABASE.neptuneDB) {
           this.code.line();
-          neptuneIdentifierCalls(this.code)
+          neptuneIdentifierCalls(this.code);
           if (
             apiType === APITYPE.rest ||
             (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql)
@@ -110,7 +118,7 @@ export class LambdaConstructTest {
           }
         } else if (database === DATABASE.auroraDB) {
           this.code.line();
-          auroradbIdentifierCalls(this.code)
+          auroradbIdentifierCalls(this.code);
           this.code.line();
           if (
             apiType === APITYPE.rest ||
