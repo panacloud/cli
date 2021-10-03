@@ -62,7 +62,7 @@ export const generator = async (config: ApiModel) => {
   ) {
     singleLambda({ config });
   }
-  if (config.api.lambdaStyle === LAMBDASTYLE.multi || config.api.mockApi) {
+  if (config.api.lambdaStyle === LAMBDASTYLE.multi) {
     multipleLambda({ config });
   }
 
