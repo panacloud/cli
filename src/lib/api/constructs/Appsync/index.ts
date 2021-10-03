@@ -1,5 +1,10 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS, DATABASE, LAMBDASTYLE, TEMPLATE } from "../../../../utils/constants";
+import {
+  CONSTRUCTS,
+  DATABASE,
+  LAMBDASTYLE,
+  TEMPLATE,
+} from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -12,7 +17,7 @@ export class Appsync {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-  
+
   public apiName: string = "appsync_api";
   public initializeAppsyncApi(name: string, authenticationType?: string) {
     this.apiName = name;
@@ -61,7 +66,7 @@ export class Appsync {
     apiName: string,
     lambdaStyle: string,
     database: string,
-    mutationsAndQueries: any,
+    mutationsAndQueries: any
   ) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
@@ -99,17 +104,15 @@ export class Appsync {
       code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn`);
     }
     if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
-      mutationsAndQueries.forEach((key:string) => {
+      mutationsAndQueries.forEach((key: string) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
       });
-    }
-    else if ( lambdaStyle === LAMBDASTYLE.single ) {
+    } else if (lambdaStyle === LAMBDASTYLE.single) {
       lambdafunc = `${apiName}_lambdaFnArn`;
       code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
-    }
-    else if (lambdaStyle === LAMBDASTYLE.multi) {
-      mutationsAndQueries.forEach((key:string) => {
+    } else if (lambdaStyle === LAMBDASTYLE.multi) {
+      mutationsAndQueries.forEach((key: string) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
       });
@@ -181,7 +184,7 @@ export class Appsync {
     apiName: string,
     lambdaStyle: string,
     database: string,
-    mutationsAndQueries: string[],
+    mutationsAndQueries: string[]
   ) {
     let lambdafunc = `${apiName}_lambdaFn`;
     this.code.line(
@@ -191,8 +194,10 @@ export class Appsync {
       this.code.line(
         `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn`
       );
-    }
-    else if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
+    } else if (
+      lambdaStyle === LAMBDASTYLE.multi &&
+      database === DATABASE.dynamoDB
+    ) {
       mutationsAndQueries.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         this.code.line(
@@ -201,11 +206,15 @@ export class Appsync {
       });
     } else if (lambdaStyle === LAMBDASTYLE.single) {
       lambdafunc = `${apiName}_lambdaFnArn`;
-      this.code.line(`${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`);
-    } else if(lambdaStyle === LAMBDASTYLE.multi){
+      this.code.line(
+        `${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`
+      );
+    } else if (lambdaStyle === LAMBDASTYLE.multi) {
       mutationsAndQueries.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        this.code.line(`${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`);
+        this.code.line(
+          `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`
+        );
       });
     }
     this.code.line(`})`);

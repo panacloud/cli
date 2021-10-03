@@ -20,23 +20,29 @@ export const subnetFunction = (_code: CodeMaker) => {
 export const isolatedFunction = (_code: CodeMaker) => {
   const ts = new TypeScriptWriter(_code);
 
-  ts.writeVariableDeclaration({
-    name: `isolated_subnets`,
-    typeName: "",
-    initializer: () => {
-      _code.line(`${CONSTRUCTS.neptuneDB}_stack.VPCRef.isolatedSubnets;`)
-    }
-  }, "const")
-  _code.line()
-  
-  ts.writeVariableDeclaration({
-    name: `isolatedRouteTables`,
-    typeName: "",
-    initializer: () => {
-      _code.line(`[
+  ts.writeVariableDeclaration(
+    {
+      name: `isolated_subnets`,
+      typeName: "",
+      initializer: () => {
+        _code.line(`${CONSTRUCTS.neptuneDB}_stack.VPCRef.isolatedSubnets;`);
+      },
+    },
+    "const"
+  );
+  _code.line();
+
+  ts.writeVariableDeclaration(
+    {
+      name: `isolatedRouteTables`,
+      typeName: "",
+      initializer: () => {
+        _code.line(`[
         isolated_subnets[0].routeTable,
         isolated_subnets[1].routeTable,
-      ]`)
-    }
-  }, "const")
+      ]`);
+      },
+    },
+    "const"
+  );
 };

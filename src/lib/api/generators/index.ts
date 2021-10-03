@@ -1,4 +1,9 @@
-import { ApiModel, APITYPE, DATABASE } from "../../../utils/constants";
+import {
+  ApiModel,
+  APITYPE,
+  DATABASE,
+  LAMBDASTYLE,
+} from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
 import { auroraDBConstruct } from "./AuroraServerless";
@@ -10,8 +15,9 @@ import { lambdaConstructTest } from "./CdkTests/Lambda";
 import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
 import { LambdaConstruct } from "./Lambda";
-import { handlers } from "./Lambda/handler";
-import { lambdaHandlers } from "./Lambda/lambdaHandlers";
+import { multipleLambda } from "./Lambda/multipleLambda";
+import { singleLambda } from "./Lambda/singleLambda";
+import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 
@@ -34,10 +40,12 @@ export const generator = async (config: ApiModel) => {
   if (config.api.database === DATABASE.auroraDB) {
     auroraDBConstruct({ config });
     auroraDBConstructTest({ config });
-  } if (config.api.database === DATABASE.neptuneDB) {
+  }
+  if (config.api.database === DATABASE.neptuneDB) {
     neptuneDBConstruct({ config });
     neptuneDBConstructTest({ config });
-  } if (config.api.database === DATABASE.dynamoDB)  {
+  }
+  if (config.api.database === DATABASE.dynamoDB) {
     dynamoDBConstruct({ config });
     dynamodbConstructTest({ config });
   }
@@ -47,7 +55,18 @@ export const generator = async (config: ApiModel) => {
   // lambda Construct
   LambdaConstruct({ config });
 
-  // handlers
-  handlers({ config });
-  lambdaHandlers({ config });
+  // Single or Multi
+  if (
+    config.api.lambdaStyle === LAMBDASTYLE.single ||
+    config.api.apiType === APITYPE.rest
+  ) {
+    singleLambda({ config });
+  }
+  if (config.api.lambdaStyle === LAMBDASTYLE.multi || config.api.mockApi) {
+    multipleLambda({ config });
+  }
+
+  if (config.api.mockApi) {
+    mockApiTestCollections({ config });
+  }
 };

@@ -34,13 +34,13 @@ export class Cdk {
     properties?: Property[]
   ) {
     const ts = new TypeScriptWriter(this.code);
-    const imp = new Imports(this.code)
+    const imp = new Imports(this.code);
     this.code.line;
-    imp.importsForConstructs()
+    imp.importsForConstructs();
     if (!constructProps) {
-      imp.importsForStack()
+      imp.importsForStack();
     }
-    this.code.line()
+    this.code.line();
     if (constructProps) {
       ts.writeInterfaceBlock(propsName, constructProps);
       this.code.line();
@@ -63,16 +63,13 @@ export class Cdk {
     this.code.line(`Tags.of(${source}).add("${name}", "${value}");`);
   }
 
-  public initializeTest(
-    description: string,
-    contents: any,
-  ) {
-      this.code.openBlock(`test("${description}", () => `);
-      this.code.line(`const stack = new cdk.Stack();`);
-      this.code.line();
-      contents();
-      this.code.closeBlock(`})`);
-      this.code.line(`)`)
+  public initializeTest(description: string, contents: any) {
+    this.code.openBlock(`test("${description}", () => `);
+    this.code.line(`const stack = new cdk.Stack();`);
+    this.code.line();
+    contents();
+    this.code.closeBlock(`})`);
+    this.code.line(`)`);
     // }
   }
 }

@@ -1,5 +1,11 @@
 import { CodeMaker } from "codemaker";
-import {ApiModel,APITYPE,CONSTRUCTS,DATABASE, TEMPLATE} from "../../../../utils/constants";
+import {
+  ApiModel,
+  APITYPE,
+  CONSTRUCTS,
+  DATABASE,
+  TEMPLATE,
+} from "../../../../utils/constants";
 import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
 import { AuroraServerless } from "../../constructs/AuroraServerless";
@@ -7,8 +13,11 @@ import { Cdk } from "../../constructs/Cdk";
 import { DynamoDB } from "../../constructs/Dynamodb";
 import { Lambda } from "../../constructs/Lambda";
 import { Neptune } from "../../constructs/Neptune";
-import MockApi from "../../functions/MockApi";
-import {importHandlerForStack,LambdaAccessHandler,propsHandlerForApiGatewayConstruct} from "./functions";
+import {
+  importHandlerForStack,
+  LambdaAccessHandler,
+  propsHandlerForApiGatewayConstruct,
+} from "./functions";
 const upperFirst = require("lodash/upperFirst");
 const camelCase = require("lodash/camelCase");
 
@@ -30,11 +39,12 @@ export class CdkStack {
   async CdkStackFile() {
     this.outputFile = `${this.config.workingDir}-stack.ts`;
     this.code.openFile(this.outputFile);
-    const { apiName, database, lambdaStyle, apiType  , template } = this.config.api;
-    let mutationsAndQueries :string[] = []
+    const { apiName, database, lambdaStyle, apiType, mockApi } =
+      this.config.api;
+    let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
-      const { queiresFields,mutationFields } = this.config.api;
-      mutationsAndQueries = [...queiresFields! , ...mutationFields!];
+      const { queiresFields, mutationFields } = this.config.api;
+      mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
     const cdk = new Cdk(this.code);
     const manager = new apiManager(this.code);
@@ -43,15 +53,15 @@ export class CdkStack {
     const aurora = new AuroraServerless(this.code);
     const lambda = new Lambda(this.code);
     const appsync = new Appsync(this.code);
-    importHandlerForStack(database, apiType,template,this.code);
+    importHandlerForStack(database, apiType, mockApi!, this.code);
     this.code.line();
 
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
       () => {
-        if(template !== TEMPLATE.mockApi){
+        if (mockApi) {
           manager.apiManagerInitializer(apiName);
-          this.code.line();  
+          this.code.line();
         }
         if (database == DATABASE.dynamoDB) {
           dynamodb.dynmaodbConstructInitializer(apiName, this.code);
@@ -80,7 +90,7 @@ export class CdkStack {
             apiName,
             lambdaStyle,
             database,
-            mutationsAndQueries,
+            mutationsAndQueries
           );
         }
         if (apiType === APITYPE.rest) {
