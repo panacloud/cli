@@ -1,40 +1,49 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE } from "../../../../../utils/constants";
+import { ApiModel, ARCHITECTURE, LAMBDASTYLE } from "../../../../../utils/constants";
 import { Appsync } from "../../../constructs/Appsync";
 import { Cdk } from "../../../constructs/Cdk";
 
 export const appsyncDatasourceHandler = (
-  apiName: string,
-  lambdaStyle: string,
+  config: ApiModel,
   code: CodeMaker,
-  mutationsAndQueries: any
 ) => {
+  const {api: {apiName, lambdaStyle, architecture, mutationFields, queiresFields }} = config;
   const appsync = new Appsync(code);
   appsync.apiName = apiName;
   if (lambdaStyle === LAMBDASTYLE.single) {
     appsync.appsyncLambdaDataSource(apiName, apiName, lambdaStyle);
   } else if (lambdaStyle === LAMBDASTYLE.multi) {
-    mutationsAndQueries.forEach((key: string) => {
-      appsync.appsyncLambdaDataSource(apiName, apiName, lambdaStyle, key);
+    if(architecture === ARCHITECTURE.eventDriven) {
+      appsync.appsyncLambdaDataSource(apiName, apiName, lambdaStyle, "eventProducer");
       code.line();
-    });
+      queiresFields!.forEach((key: string) => {
+        appsync.appsyncLambdaDataSource(apiName, apiName, lambdaStyle, key);
+        code.line();
+      })
+    }
+    else {
+      const mutationsAndQueries: string[] = [...mutationFields!, ...queiresFields!];
+      mutationsAndQueries.forEach((key: string) => {
+        appsync.appsyncLambdaDataSource(apiName, apiName, lambdaStyle, key);
+        code.line();
+      });
+    }
+
   } else {
     code.line();
   }
 };
 
 export const appsyncResolverhandler = (
-  apiName: string,
-  lambdaStyle: string,
+  config: ApiModel,
   code: CodeMaker,
-  queiresFields: string[],
-  mutationFields: string[]
 ) => {
+  const {api: { apiName, lambdaStyle, queiresFields, mutationFields, architecture }} = config;
   const appsync = new Appsync(code);
   appsync.apiName = apiName;
   const cdk = new Cdk(code);
 
-  queiresFields.forEach((key: string) => {
+  queiresFields!.forEach((key: string) => {
     let dataSourceName = `ds_${apiName}`;
     if (lambdaStyle === LAMBDASTYLE.multi) {
       dataSourceName = `ds_${apiName}_${key}`;
@@ -46,10 +55,17 @@ export const appsyncResolverhandler = (
     code.line();
   });
 
-  mutationFields.forEach((key: string) => {
+
+  mutationFields!.forEach((key: string) => {
     let dataSourceName = `ds_${apiName}`;
     if (lambdaStyle === LAMBDASTYLE.multi) {
-      dataSourceName = `ds_${apiName}_${key}`;
+      if(architecture === ARCHITECTURE.eventDriven) {
+        dataSourceName = `ds_${apiName}_eventProducer`;
+      }
+      else {
+        dataSourceName = `ds_${apiName}_${key}`;
+      }
+      
     }
     appsync.appsyncLambdaResolver(key, "Mutation", dataSourceName);
     code.line();
@@ -57,6 +73,7 @@ export const appsyncResolverhandler = (
     cdk.nodeAddDependency(`${key}_resolver`, dataSourceName);
     code.line();
   });
+
 };
 // if (schema?.Query) {
 //   for (var key in schema?.Query) {

@@ -4,6 +4,7 @@ import {
   LAMBDASTYLE,
   Config,
   ApiModel,
+  ARCHITECTURE,
 } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
@@ -29,7 +30,7 @@ class AppsyncConstruct {
 
   async AppsyncConstructFile() {
     const {
-      api: { apiName, lambdaStyle, schemaPath, queiresFields, mutationFields },
+      api: { apiName, lambdaStyle, schemaPath, queiresFields, mutationFields, architecture },
     } = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
@@ -53,12 +54,27 @@ class AppsyncConstruct {
     ];
 
     if (lambdaStyle && lambdaStyle === LAMBDASTYLE.multi) {
-      mutationsAndQueries.forEach((key: string, index: number) => {
-        ConstructProps[index] = {
-          name: `${apiName}_lambdaFn_${key}Arn`,
+      if(architecture === ARCHITECTURE.eventDriven) {
+        queiresFields!.forEach((key: string, index: number) => {
+          ConstructProps[index] = {
+            name: `${apiName}_lambdaFn_${key}Arn`,
+            type: "string",
+          };
+        });
+        ConstructProps.push({
+          name: `${apiName}_lambdaFn_eventProducerArn`,
           type: "string",
-        };
-      });
+        })
+      }
+      else {
+        mutationsAndQueries.forEach((key: string, index: number) => {
+          ConstructProps[index] = {
+            name: `${apiName}_lambdaFn_${key}Arn`,
+            type: "string",
+          };
+        });
+      }
+      
     }
 
     cdk.initializeConstruct(
@@ -77,18 +93,13 @@ class AppsyncConstruct {
         iam.attachLambdaPolicyToRole(`${apiName}`);
         this.code.line();
         appsyncDatasourceHandler(
-          apiName,
-          lambdaStyle,
+          this.config,
           this.code,
-          mutationsAndQueries
         );
         this.code.line();
         appsyncResolverhandler(
-          apiName,
-          lambdaStyle,
+          this.config,
           this.code,
-          queiresFields!,
-          mutationFields!
         );
       },
       ConstructProps

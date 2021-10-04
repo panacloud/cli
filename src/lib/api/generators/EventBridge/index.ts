@@ -33,6 +33,7 @@ class EventBridgeConstruct {
         const eventBridge = new EventBridge(this.code);
 
         imp.importEventBridge();
+        imp.importLambda();
 
         let ConstructProps: ConstructPropsType[] = [];
         mutationFields?.forEach((key: string, index: number) => {

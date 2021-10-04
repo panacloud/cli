@@ -39,6 +39,7 @@ export default class Create extends Command {
         template: usrInput.template,
         language: usrInput.language,
         cloudprovider: usrInput.cloud_provider,
+        architecture: usrInput.architecture,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
