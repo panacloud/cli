@@ -27,6 +27,7 @@ export enum CONSTRUCTS {
   neptuneDB = "VpcNeptuneConstruct",
   auroraDB = "AuroraDBConstruct",
   apigateway = "ApiGatewayConstruct",
+  eventBridge = "EventBridgeConstruct"
 }
 
 export enum TEMPLATE {
