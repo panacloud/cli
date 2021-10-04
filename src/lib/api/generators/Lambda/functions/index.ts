@@ -48,7 +48,8 @@ export const lambdaHandlerForAuroradb = (
   database: DATABASE,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: any,
+  mockApi?:boolean,
 ) => {
   const lambda = new Lambda(code);
   const ts = new TypeScriptWriter(code);
@@ -61,6 +62,7 @@ export const lambdaHandlerForAuroradb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         undefined,
         `props!.vpcRef`,
         undefined,
@@ -87,6 +89,7 @@ export const lambdaHandlerForAuroradb = (
         lambda.initializeLambda(
           apiName,
           lambdaStyle,
+          mockApi,
           key,
           `props!.vpcRef`,
           undefined,
@@ -117,7 +120,8 @@ export const lambdaHandlerForNeptunedb = (
   database: DATABASE,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: any,
+  mockApi?:boolean,
 ) => {
   const lambda = new Lambda(code);
   const ts = new TypeScriptWriter(code);
@@ -130,6 +134,7 @@ export const lambdaHandlerForNeptunedb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         undefined,
         `props!.VPCRef`,
         `props!.SGRef`,
@@ -155,6 +160,7 @@ export const lambdaHandlerForNeptunedb = (
         lambda.initializeLambda(
           apiName,
           lambdaStyle,
+          mockApi,
           key,
           `props!.VPCRef`,
           `props!.SGRef`,
@@ -383,7 +389,8 @@ export const lambdaHandlerForDynamodb = (
   apiType: string,
   lambdaStyle: string,
   database: DATABASE,
-  mutationsAndQueries?: any
+  mutationsAndQueries?: any,
+  mockApi?:boolean,
 ) => {
   const lambda = new Lambda(code);
   lambda.lambdaLayer(apiName);
@@ -395,6 +402,7 @@ export const lambdaHandlerForDynamodb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         undefined,
         undefined,
         undefined,
@@ -409,6 +417,7 @@ export const lambdaHandlerForDynamodb = (
         lambda.initializeLambda(
           apiName,
           lambdaStyle,
+          mockApi,
           key,
           undefined,
           undefined,

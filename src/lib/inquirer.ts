@@ -114,7 +114,7 @@ export const userInput = async () => {
       message: "Select Database?",
       choices: [DATABASE.dynamoDB, DATABASE.neptuneDB, DATABASE.auroraDB],
       default: DATABASE.auroraDB,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      when: (answers: any) => answers.mockApi === false ,
       validate: Boolean,
     },
   ]);

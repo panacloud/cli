@@ -17,21 +17,41 @@ export class LambdaFunction {
     const ts = new TypeScriptWriter(this.code);
 
     if (apiType === APITYPE.graphql) {
-      if (lambdaStyle === LAMBDASTYLE.multi) {
+      if (mockApi) {
+        this.code.line(`var AWS = require('aws-sdk')`);
+        this.code.line(`
+        exports.handler = async (event: any) => {
+           let response = {}
+           data.testCollections.fields.${fieldName}.forEach((item:any) => {
+              if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){
+                 response = item.response
+              }  
+           })
+          
+         return response
+        
+        }
+      `);
+      }
+      else if (lambdaStyle === LAMBDASTYLE.multi) {
         this.code.line(`var AWS = require('aws-sdk')`);
         this.code.line;
 
         this.code.line(`exports.handler = async (event: any) => {`);
+        if(!mockApi){
         this.code.line(
           `const data = await axios.post('http://sandbox:8080', event)`
         );
+        }
         this.code.line();
         this.code.line(`}`);
       } else if (lambdaStyle === LAMBDASTYLE.single) {
         this.code.line(`exports.handler = async (event:Event) => {`);
-        this.code.line(
-          `const data = await axios.post('http://sandbox:8080', event)`
-        );
+        if(!mockApi){
+          this.code.line(
+            `const data = await axios.post('http://sandbox:8080', event)`
+          );  
+        }
         this.code.line();
         this.code.line(`switch (event.info.fieldName) {`);
         this.code.line();
@@ -39,20 +59,7 @@ export class LambdaFunction {
         this.code.line();
         this.code.line(`}`);
         this.code.line(`}`);
-      } else if (mockApi) {
-        this.code.line(`var AWS = require('aws-sdk')`);
-        this.code.line(`
-        exports.handler = async (event: any) => {
-        let response = {}
-        data.fields.${fieldName}.forEach((item:any) => {
-        if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){
-        response = item.response
-        }  
-        })
-        return response
-        }
-      `);
-      }
+      } 
     } else {
       /* rest api */
       this.code.line(`exports.handler = async (event: any) => {`);
