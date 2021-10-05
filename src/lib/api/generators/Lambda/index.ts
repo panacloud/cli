@@ -38,7 +38,7 @@ class lambdaConstruct {
 
   async LambdaConstructFile() {
     const {
-      api: { apiName, lambdaStyle, apiType, database , mockApi },
+      api: { apiName, lambdaStyle, apiType, database , mockApi, architecture },
     } = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
@@ -59,6 +59,7 @@ class lambdaConstruct {
         apiName,
         apiType,
         lambdaStyle,
+        architecture,
         mutationsAndQueries
       );
     }
@@ -74,6 +75,7 @@ class lambdaConstruct {
         lambdaStyle,
         apiName,
         apiType,
+        architecture,
         mutationsAndQueries
       );
     }
@@ -85,7 +87,7 @@ class lambdaConstruct {
         apiName,
         apiType,
         lambdaStyle,
-        database,
+        architecture,
         mutationsAndQueries
       );
     }
@@ -98,7 +100,7 @@ class lambdaConstruct {
         apiName,
         apiType,
         lambdaStyle,
-        database,
+        architecture,
         mutationsAndQueries
       );
     }
@@ -122,7 +124,7 @@ class lambdaConstruct {
             apiName,
             apiType,
             lambdaStyle,
-            database,
+            architecture,
             mutationsAndQueries
           );
         }
@@ -130,7 +132,7 @@ class lambdaConstruct {
           lambdaHandlerForNeptunedb(
             this.code,
             lambdaStyle,
-            database,
+            architecture,
             apiType,
             apiName,
             mutationsAndQueries
@@ -140,7 +142,7 @@ class lambdaConstruct {
           lambdaHandlerForAuroradb(
             this.code,
             lambdaStyle,
-            database,
+            architecture,
             apiType,
             apiName,
             mutationsAndQueries

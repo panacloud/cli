@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE, APITYPE, TEMPLATE } from "../../../../utils/constants";
+import { LAMBDASTYLE, APITYPE, TEMPLATE, ARCHITECTURE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class LambdaFunction {
@@ -26,6 +26,26 @@ export class LambdaFunction {
           `const data = await axios.post('http://sandbox:8080', event)`
         );
         this.code.line();
+
+        /* fix issue with content */
+        if(fieldName === "eventProducer") {
+          this.code.indent(`
+          const eventBridge = new AWS.EventBridge({ region: "us-east-2" });
+
+          eventBridge
+            .putEvents({
+              Entries: [
+                {
+                  EventBusName: "default",
+                  Source: "mutationFunction",
+                  DetailType: "mutation",
+                  Detail: {"mutationName": event.info.fieldName},
+                },
+              ],
+            })
+            .promise();
+          `);
+        }
         this.code.line(`}`);
       } else if (lambdaStyle === LAMBDASTYLE.single) {
         this.code.line(`exports.handler = async (event:Event) => {`);

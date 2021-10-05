@@ -45,7 +45,7 @@ class EventBridgeConstruct {
 
         cdk.initializeConstruct(`${CONSTRUCTS.eventBridge}`, "EventBridgeConstructProps", () => {
             mutationFields?.forEach((key: string) => {
-                eventBridge.createEventBridgeRule(key);
+                eventBridge.createEventBridgeRule(key, apiName);
             })
         }, ConstructProps)
 

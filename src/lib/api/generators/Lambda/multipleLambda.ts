@@ -1,6 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-import { ApiModel, APITYPE } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 const _ = require("lodash");
@@ -22,7 +22,7 @@ class MultipleLambda {
 
   async MultipleLambdaFile() {
     const {
-      api: { lambdaStyle, apiType, mockApi },
+      api: { lambdaStyle, apiType, mockApi, architecture },
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
@@ -37,23 +37,45 @@ class MultipleLambda {
       mutationsAndQueries.forEach(async (key: string) => {
         this.outputFile = "index.ts";
         this.code.openFile(this.outputFile);
-        
+
         const imp = new Imports(this.code);
         const lambda = new LambdaFunction(this.code);
-        
+
         if (mockApi) {
           this.code.line(`const data = require("/opt/testCollections")`);
         } else {
           imp.importAxios();
           this.code.line();
         }
-        
+
         lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
-        
+
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;
         await this.code.save(this.outputDir);
       });
+
+      if (architecture === ARCHITECTURE.eventDriven) {
+        this.outputFile = "index.ts";
+        this.code.openFile(this.outputFile);
+
+        const imp = new Imports(this.code);
+        const lambda = new LambdaFunction(this.code);
+
+        imp.importAxios();
+        this.code.line();
+
+        lambda.initializeLambdaFunction(
+          lambdaStyle,
+          apiType,
+          mockApi,
+          "eventProducer"
+        );
+
+        this.code.closeFile(this.outputFile);
+        this.outputDir = `lambda/eventProducer`;
+        await this.code.save(this.outputDir);
+      }
     }
   }
 }

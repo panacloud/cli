@@ -1,5 +1,8 @@
 import { CodeMaker } from "codemaker";
 import {
+  API,
+  ApiModel,
+  ARCHITECTURE,
   CONSTRUCTS,
   DATABASE,
   LAMBDASTYLE,
@@ -62,12 +65,8 @@ export class Appsync {
     })`);
   }
 
-  public appsyncConstructInitializer(
-    apiName: string,
-    lambdaStyle: string,
-    database: string,
-    mutationsAndQueries: any
-  ) {
+  public appsyncConstructInitializer(config: API) {
+    const { apiName } = config;
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -77,13 +76,7 @@ export class Appsync {
           this.code.line(
             `new ${CONSTRUCTS.appsync}(this,"${apiName}${CONSTRUCTS.appsync}",{`
           );
-          this.appsyncDatabasePropsHandler(
-            apiName,
-            lambdaStyle,
-            database,
-            mutationsAndQueries,
-            this.code
-          );
+          this.appsyncDatabasePropsHandler(config, this.code);
           this.code.line("})");
         },
       },
@@ -91,31 +84,49 @@ export class Appsync {
     );
   }
 
-  public appsyncDatabasePropsHandler(
-    apiName: string,
-    lambdaStyle: string,
-    database: string,
-    mutationsAndQueries: any,
-    code: CodeMaker
-  ) {
+  public appsyncDatabasePropsHandler(config: API, code: CodeMaker) {
+    const {
+      apiName,
+      lambdaStyle,
+      queiresFields,
+      mutationFields,
+      architecture,
+    } = config;
+    const mutationsAndQueries: string[] = [
+      ...queiresFields!,
+      ...mutationFields!,
+    ];
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
-    if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
-      code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn`);
-    }
-    if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
-      mutationsAndQueries.forEach((key: string) => {
-        lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
-      });
-    } else if (lambdaStyle === LAMBDASTYLE.single) {
+    // if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
+    //   code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn`);
+    // }
+    // if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
+    //   mutationsAndQueries.forEach((key: string) => {
+    //     lambdafunc = `${apiName}_lambdaFn_${key}`;
+    //     code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
+    //   });
+    // }
+    if (lambdaStyle === LAMBDASTYLE.single) {
       lambdafunc = `${apiName}_lambdaFnArn`;
       code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
     } else if (lambdaStyle === LAMBDASTYLE.multi) {
-      mutationsAndQueries.forEach((key: string) => {
-        lambdafunc = `${apiName}_lambdaFn_${key}`;
+      if (architecture === ARCHITECTURE.eventDriven) {
+        queiresFields!.forEach((key: string) => {
+          lambdafunc = `${apiName}_lambdaFn_${key}`;
+          code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
+        });
+
+        lambdafunc = `${apiName}_lambdaFn_eventProducer`;
         code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
-      });
+      } else {
+        mutationsAndQueries.forEach((key: string) => {
+          lambdafunc = `${apiName}_lambdaFn_${key}`;
+          code.line(
+            `${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`
+          );
+        });
+      }
     }
   }
 

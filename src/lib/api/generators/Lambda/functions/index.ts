@@ -1,9 +1,14 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, DATABASE, LAMBDASTYLE } from "../../../../../utils/constants";
+import {
+  APITYPE,
+  ARCHITECTURE,
+  LAMBDASTYLE,
+} from "../../../../../utils/constants";
 import {
   Property,
   TypeScriptWriter,
 } from "../../../../../utils/typescriptWriter";
+import { EventBridge } from "../../../constructs/EventBridge";
 import { Lambda } from "../../../constructs/Lambda";
 
 export const lambdaPropsHandlerForNeptunedb = () => {
@@ -45,7 +50,7 @@ export const lambdaPropsHandlerForAuroradb = () => {
 export const lambdaHandlerForAuroradb = (
   code: CodeMaker,
   lambdaStyle: LAMBDASTYLE,
-  database: DATABASE,
+  architecture: ARCHITECTURE,
   apiType: string,
   apiName: string,
   mutationsAndQueries: any
@@ -57,11 +62,49 @@ export const lambdaHandlerForAuroradb = (
     (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
     apiType === APITYPE.rest
   ) {
-    if (database === DATABASE.auroraDB) {
+    lambda.initializeLambda(
+      apiName,
+      lambdaStyle,
+      undefined,
+      `props!.vpcRef`,
+      undefined,
+      [
+        {
+          name: "INSTANCE_CREDENTIALS",
+          value: `props!.secretRef`,
+        },
+      ],
+      undefined,
+      `props!.serviceRole`
+    );
+    code.line();
+    code.line(`this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`);
+    if (apiType === APITYPE.rest)
+      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
+    code.line();
+  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+    if (architecture === ARCHITECTURE.eventDriven) {
+      const eventBridge = new EventBridge(code);
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        "eventProducer",
         undefined,
+        undefined,
+        undefined
+      );
+      code.line();
+      eventBridge.grantPutEvents(apiName);
+      code.line(
+        `this.${apiName}_lambdaFn_eventProducerArn = ${apiName}_lambdaFn_eventProducer.functionArn`
+      );
+      code.line();
+    }
+    mutationsAndQueries.forEach((key: string) => {
+      lambda.initializeLambda(
+        apiName,
+        lambdaStyle,
+        key,
         `props!.vpcRef`,
         undefined,
         [
@@ -75,46 +118,17 @@ export const lambdaHandlerForAuroradb = (
       );
       code.line();
       code.line(
-        `this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`
+        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
       );
-      if (apiType === APITYPE.rest)
-        code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
       code.line();
-    }
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
-    if (database === DATABASE.auroraDB) {
-      mutationsAndQueries.forEach((key: string) => {
-        lambda.initializeLambda(
-          apiName,
-          lambdaStyle,
-          key,
-          `props!.vpcRef`,
-          undefined,
-          [
-            {
-              name: "INSTANCE_CREDENTIALS",
-              value: `props!.secretRef`,
-            },
-          ],
-          undefined,
-          `props!.serviceRole`
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        );
-        code.line();
-      });
-    } else {
-      code.line();
-    }
+    });
   }
 };
 
 export const lambdaHandlerForNeptunedb = (
   code: CodeMaker,
   lambdaStyle: LAMBDASTYLE,
-  database: DATABASE,
+  architecture: ARCHITECTURE,
   apiType: string,
   apiName: string,
   mutationsAndQueries: any
@@ -126,11 +140,48 @@ export const lambdaHandlerForNeptunedb = (
     (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
     apiType === APITYPE.rest
   ) {
-    if (database === DATABASE.neptuneDB) {
+    lambda.initializeLambda(
+      apiName,
+      lambdaStyle,
+      undefined,
+      `props!.VPCRef`,
+      `props!.SGRef`,
+      [
+        {
+          name: "NEPTUNE_ENDPOINT",
+          value: `props!.neptuneReaderEndpoint`,
+        },
+      ],
+      `ec2.SubnetType.PRIVATE_ISOLATED`
+    );
+    code.line();
+    code.line(`this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`);
+    if (apiType === APITYPE.rest)
+      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
+    code.line();
+  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+    if (architecture === ARCHITECTURE.eventDriven) {
+      const eventBridge = new EventBridge(code);
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        "eventProducer",
         undefined,
+        undefined,
+        undefined
+      );
+      code.line();
+      eventBridge.grantPutEvents(apiName);
+      code.line(
+        `this.${apiName}_lambdaFn_eventProducerArn = ${apiName}_lambdaFn_eventProducer.functionArn`
+      );
+      code.line();
+    }
+    mutationsAndQueries.forEach((key: string) => {
+      lambda.initializeLambda(
+        apiName,
+        lambdaStyle,
+        key,
         `props!.VPCRef`,
         `props!.SGRef`,
         [
@@ -143,38 +194,10 @@ export const lambdaHandlerForNeptunedb = (
       );
       code.line();
       code.line(
-        `this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`
+        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
       );
-      if (apiType === APITYPE.rest)
-        code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
       code.line();
-    }
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
-    if (database === DATABASE.neptuneDB) {
-      mutationsAndQueries.forEach((key: string) => {
-        lambda.initializeLambda(
-          apiName,
-          lambdaStyle,
-          key,
-          `props!.VPCRef`,
-          `props!.SGRef`,
-          [
-            {
-              name: "NEPTUNE_ENDPOINT",
-              value: `props!.neptuneReaderEndpoint`,
-            },
-          ],
-          `ec2.SubnetType.PRIVATE_ISOLATED`
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        );
-        code.line();
-      });
-    } else {
-      code.line();
-    }
+    });
   }
 };
 
@@ -182,7 +205,7 @@ export const lambdaProperiesHandlerForAuroraDb = (
   apiName: string,
   apiType: string,
   lambdaStyle: string,
-  database: DATABASE,
+  architecture: ARCHITECTURE,
   mutationsAndQueries?: any
 ) => {
   let properties: Property[] = [
@@ -199,31 +222,28 @@ export const lambdaProperiesHandlerForAuroraDb = (
       isReadonly: false,
     },
   ];
-  if (
-    ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-      apiType === APITYPE.rest) &&
-    database === DATABASE.auroraDB
-  ) {
-    properties = [
-      {
-        name: `${apiName}_lambdaFnArn`,
-        typeName: "string",
-        accessModifier: "public",
-        isReadonly: true,
-      },
-      {
-        name: `${apiName}_lambdaFn`,
-        typeName: "lambda.Function",
-        accessModifier: "public",
-        isReadonly: false,
-      },
-    ];
-    return properties;
-  } else if (
-    lambdaStyle === LAMBDASTYLE.multi &&
-    apiType === APITYPE.graphql &&
-    database === DATABASE.auroraDB
-  ) {
+  // if (
+  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
+  //     apiType === APITYPE.rest) &&
+  //   database === DATABASE.auroraDB
+  // ) {
+  //   properties = [
+  //     {
+  //       name: `${apiName}_lambdaFnArn`,
+  //       typeName: "string",
+  //       accessModifier: "public",
+  //       isReadonly: true,
+  //     },
+  //     {
+  //       name: `${apiName}_lambdaFn`,
+  //       typeName: "lambda.Function",
+  //       accessModifier: "public",
+  //       isReadonly: false,
+  //     },
+  //   ];
+  //   return properties;
+  // }
+  if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
@@ -232,15 +252,23 @@ export const lambdaProperiesHandlerForAuroraDb = (
         isReadonly: true,
       };
     });
-    return properties;
+    if (architecture === ARCHITECTURE.eventDriven) {
+      properties.push({
+        name: `${apiName}_lambdaFn_eventProducerArn`,
+        typeName: "string",
+        accessModifier: "public",
+        isReadonly: true,
+      });
+    }
   }
+  return properties;
 };
 
 export const lambdaProperiesHandlerForNeptuneDb = (
   apiName: string,
   apiType: string,
   lambdaStyle: string,
-  database: DATABASE,
+  architecture: ARCHITECTURE,
   mutationsAndQueries: any
 ) => {
   let properties: Property[] = [
@@ -257,31 +285,28 @@ export const lambdaProperiesHandlerForNeptuneDb = (
       isReadonly: false,
     },
   ];
-  if (
-    ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-      apiType === APITYPE.rest) &&
-    database === DATABASE.neptuneDB
-  ) {
-    properties = [
-      {
-        name: `${apiName}_lambdaFnArn`,
-        typeName: "string",
-        accessModifier: "public",
-        isReadonly: true,
-      },
-      {
-        name: `${apiName}_lambdaFn`,
-        typeName: "lambda.Function",
-        accessModifier: "public",
-        isReadonly: false,
-      },
-    ];
-    return properties;
-  } else if (
-    lambdaStyle === LAMBDASTYLE.multi &&
-    apiType === APITYPE.graphql &&
-    database === DATABASE.neptuneDB
-  ) {
+  // if (
+  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
+  //     apiType === APITYPE.rest) &&
+  //   database === DATABASE.neptuneDB
+  // ) {
+  //   properties = [
+  //     {
+  //       name: `${apiName}_lambdaFnArn`,
+  //       typeName: "string",
+  //       accessModifier: "public",
+  //       isReadonly: true,
+  //     },
+  //     {
+  //       name: `${apiName}_lambdaFn`,
+  //       typeName: "lambda.Function",
+  //       accessModifier: "public",
+  //       isReadonly: false,
+  //     },
+  //   ];
+  //   return properties;
+  // }
+  if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
@@ -290,14 +315,23 @@ export const lambdaProperiesHandlerForNeptuneDb = (
         isReadonly: true,
       };
     });
-    return properties;
+    if (architecture === ARCHITECTURE.eventDriven) {
+      properties.push({
+        name: `${apiName}_lambdaFn_eventProducerArn`,
+        typeName: "string",
+        accessModifier: "public",
+        isReadonly: true,
+      });
+    }
   }
+  return properties;
 };
 
 export const lambdaProperiesHandlerForMockApi = (
   apiName: string,
   apiType: string,
   lambdaStyle: string,
+  architecture: ARCHITECTURE,
   mutationsAndQueries: any
 ) => {
   if (lambdaStyle) {
@@ -315,15 +349,14 @@ export const lambdaProperiesHandlerForMockApi = (
         isReadonly: false,
       },
     ];
-    if (
-      (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-      apiType === APITYPE.rest
-    ) {
-      return properties;
-    } else if (
-      lambdaStyle === LAMBDASTYLE.multi &&
-      apiType === APITYPE.graphql
-    ) {
+    // if (
+    //   (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
+    //   apiType === APITYPE.rest
+    // ) {
+    //   return properties;
+    // }
+
+    if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
       mutationsAndQueries.forEach((key: string, index: number) => {
         properties[index] = {
           name: `${apiName}_lambdaFn_${key}Arn`,
@@ -332,8 +365,31 @@ export const lambdaProperiesHandlerForMockApi = (
           isReadonly: true,
         };
       });
-      return properties;
+      if (architecture === ARCHITECTURE.eventDriven) {
+        properties.push({
+          name: `${apiName}_lambdaFn_eventProducerArn`,
+          typeName: "string",
+          accessModifier: "public",
+          isReadonly: true,
+        });
+      }
     }
+    return properties;
+
+    // if (
+    //   lambdaStyle === LAMBDASTYLE.multi &&
+    //   apiType === APITYPE.graphql
+    // ) {
+    //   mutationsAndQueries.forEach((key: string, index: number) => {
+    //     properties[index] = {
+    //       name: `${apiName}_lambdaFn_${key}Arn`,
+    //       typeName: "string",
+    //       accessModifier: "public",
+    //       isReadonly: true,
+    //     };
+    //   });
+    //   return properties;
+    // }
   }
 };
 
@@ -341,6 +397,7 @@ export const lambdaProperiesHandlerForDynoDb = (
   lambdaStyle: string,
   apiName: string,
   apiType: string,
+  architecture: ARCHITECTURE,
   mutationsAndQueries: any
 ) => {
   let properties: Property[] = [
@@ -351,20 +408,21 @@ export const lambdaProperiesHandlerForDynoDb = (
       isReadonly: false,
     },
   ];
-  if (
-    (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
-    apiType === APITYPE.rest
-  ) {
-    properties = [
-      {
-        name: `${apiName}_lambdaFn`,
-        typeName: "lambda.Function",
-        accessModifier: "public",
-        isReadonly: false,
-      },
-    ];
-    return properties;
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+  // if (
+  //   (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
+  //   apiType === APITYPE.rest
+  // ) {
+  //   properties = [
+  //     {
+  //       name: `${apiName}_lambdaFn`,
+  //       typeName: "lambda.Function",
+  //       accessModifier: "public",
+  //       isReadonly: false,
+  //     },
+  //   ];
+  //   return properties;
+  // }
+  if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}`,
@@ -373,8 +431,16 @@ export const lambdaProperiesHandlerForDynoDb = (
         isReadonly: false,
       };
     });
-    return properties;
+    if (architecture === ARCHITECTURE.eventDriven) {
+      properties.push({
+        name: `${apiName}_lambdaFn_eventProducer`,
+        typeName: "lambda.Function",
+        accessModifier: "public",
+        isReadonly: false,
+      });
+    }
   }
+  return properties;
 };
 
 export const lambdaHandlerForDynamodb = (
@@ -382,7 +448,7 @@ export const lambdaHandlerForDynamodb = (
   apiName: string,
   apiType: string,
   lambdaStyle: string,
-  database: DATABASE,
+  architecture: ARCHITECTURE,
   mutationsAndQueries?: any
 ) => {
   const lambda = new Lambda(code);
@@ -391,36 +457,42 @@ export const lambdaHandlerForDynamodb = (
     (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
     apiType === APITYPE.rest
   ) {
-    if (database === DATABASE.dynamoDB) {
+    lambda.initializeLambda(
+      apiName,
+      lambdaStyle,
+      undefined,
+      undefined,
+      undefined,
+      [{ name: "TableName", value: "props!.tableName" }]
+    );
+    code.line();
+    code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
+  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+    if (architecture === ARCHITECTURE.eventDriven) {
+      const eventBridge = new EventBridge(code)
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        "eventProducer",
         undefined,
         undefined,
-        undefined,
-        [{ name: "TableName", value: "props!.tableName" }]
+        undefined
       );
       code.line();
-      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
+      eventBridge.grantPutEvents(apiName);
+      code.line(
+        `this.${apiName}_lambdaFn_eventProducerArn = ${apiName}_lambdaFn_eventProducer.functionArn`
+      );
+      code.line();
     }
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
-    if (database === DATABASE.dynamoDB) {
-      mutationsAndQueries.forEach((key: string) => {
-        lambda.initializeLambda(
-          apiName,
-          lambdaStyle,
-          key,
-          undefined,
-          undefined,
-          [{ name: "TableName", value: "props!.tableName" }]
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`
-        );
-        code.line();
-      });
-    }
+    mutationsAndQueries.forEach((key: string) => {
+      lambda.initializeLambda(apiName, lambdaStyle, key, undefined, undefined, [
+        { name: "TableName", value: "props!.tableName" },
+      ]);
+      code.line();
+      code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+      code.line();
+    });
   } else {
     code.line();
   }

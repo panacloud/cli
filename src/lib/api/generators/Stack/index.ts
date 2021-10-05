@@ -87,10 +87,7 @@ export class CdkStack {
 
         if (apiType === APITYPE.graphql) {
           appsync.appsyncConstructInitializer(
-            apiName,
-            lambdaStyle,
-            database,
-            mutationsAndQueries
+            this.config.api
           );
         }
         if (apiType === APITYPE.rest) {

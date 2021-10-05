@@ -7,7 +7,11 @@ export class EventBridge {
       this.code = _code;
     }
 
-    public createEventBridgeRule(name: string) {
+    public grantPutEvents(name: string) {
+      this.code.line(`events.EventBus.grantAllPutEvents(${name}_lambdaFn_eventProducer);`)
+    }
+
+    public createEventBridgeRule(name: string, apiName: string) {
         const ts = new TypeScriptWriter(this.code);
         ts.writeVariableDeclaration(
           {
@@ -15,7 +19,7 @@ export class EventBridge {
             typeName: "events.Rule",
             initializer: () => {
               this.code.line(`new events.Rule(this, "EventBridgeApiRule_${name}", {
-                targets: [new targets.LambdaFunction(props!.eventBridge_lambdaFn_${name})],
+                targets: [new targets.LambdaFunction(props!.${apiName}_lambdaFn_${name})],
                 description: "Filter events based on mutationType and call relevant lambda",
                 eventPattern: {
                     detail: {
