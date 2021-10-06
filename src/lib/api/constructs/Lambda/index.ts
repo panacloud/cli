@@ -2,8 +2,7 @@ import { CodeMaker } from "codemaker";
 import {
   CONSTRUCTS,
   DATABASE,
-  LAMBDASTYLE,
-  TEMPLATE,
+  LAMBDASTYLE
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 

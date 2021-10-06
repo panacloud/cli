@@ -1,10 +1,7 @@
 import { CodeMaker } from "codemaker";
-import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
-const _ = require("lodash");
-const SwaggerParser = require("@apidevtools/swagger-parser");
 
 type StackBuilderProps = {
   config: ApiModel;

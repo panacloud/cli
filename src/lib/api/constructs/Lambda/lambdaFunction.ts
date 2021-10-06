@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE, APITYPE, TEMPLATE, ARCHITECTURE } from "../../../../utils/constants";
+import { LAMBDASTYLE, APITYPE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class LambdaFunction {
@@ -35,13 +35,23 @@ export class LambdaFunction {
       }
       else if (lambdaStyle === LAMBDASTYLE.multi) {
         this.code.line(`var AWS = require('aws-sdk')`);
-        this.code.line;
-
+        this.code.line();
         this.code.line(`exports.handler = async (event: any) => {`);
-        if(!mockApi){
-        this.code.line(
-          `const data = await axios.post('http://sandbox:8080', event)`
-        );
+        if (!mockApi) {
+          this.code.line(
+            `const data = await axios.post('http://sandbox:8080', event)`
+          );
+        } else {
+          this.code.line(`
+          let response = {}
+          data.testCollections.fields.${fieldName}.forEach((item:any) => {
+             if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){
+                response = item.response
+             }  
+          })
+         
+        return response
+        `);
         }
         this.code.line();
 

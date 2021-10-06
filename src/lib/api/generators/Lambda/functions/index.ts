@@ -54,7 +54,7 @@ export const lambdaHandlerForAuroradb = (
   apiType: string,
   apiName: string,
   mutationsAndQueries: any,
-  mockApi?:boolean,
+  mockApi?: boolean
 ) => {
   const lambda = new Lambda(code);
   const ts = new TypeScriptWriter(code);
