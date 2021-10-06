@@ -62,7 +62,7 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
-    if (database === DATABASE.dynamoDB) {
+    else if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
           name: "tableName",
@@ -78,7 +78,7 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
-    if (database === DATABASE.neptuneDB) {
+    else if (database === DATABASE.neptuneDB) {
       imp.importEc2();
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForNeptunedb();
@@ -90,7 +90,7 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
-    if (database === DATABASE.auroraDB) {
+    else if (database === DATABASE.auroraDB) {
       imp.importEc2();
       imp.importIam();
       lambdaPropsWithName = "handlerProps";
@@ -118,7 +118,7 @@ class lambdaConstruct {
             this.code.line();
           });
         }
-        if (database === DATABASE.dynamoDB) {
+        else if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
             apiName,
@@ -129,7 +129,7 @@ class lambdaConstruct {
             mockApi
           );
         }
-        if (database === DATABASE.neptuneDB) {
+        else if (database === DATABASE.neptuneDB) {
           lambdaHandlerForNeptunedb(
             this.code,
             lambdaStyle,
@@ -140,7 +140,7 @@ class lambdaConstruct {
             mockApi
           );
         }
-        if (database === DATABASE.auroraDB) {
+        else if (database === DATABASE.auroraDB) {
           lambdaHandlerForAuroradb(
             this.code,
             lambdaStyle,
