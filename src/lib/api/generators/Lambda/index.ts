@@ -38,7 +38,7 @@ class lambdaConstruct {
 
   async LambdaConstructFile() {
     const {
-      api: { apiName, lambdaStyle, apiType, database , mockApi },
+      api: { apiName, lambdaStyle, apiType, database, mockApi },
     } = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
@@ -107,8 +107,9 @@ class lambdaConstruct {
       lambdaPropsWithName,
       () => {
         if (mockApi) {
+          lambda.lambdaLayer(apiName);
           mutationsAndQueries.forEach((key: string) => {
-            lambda.initializeLambda(apiName, lambdaStyle, key);
+            lambda.initializeLambda(apiName, lambdaStyle, mockApi, key);
             this.code.line();
             this.code.line(
               `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
@@ -123,7 +124,8 @@ class lambdaConstruct {
             apiType,
             lambdaStyle,
             database,
-            mutationsAndQueries
+            mutationsAndQueries,
+            mockApi
           );
         }
         if (database === DATABASE.neptuneDB) {
@@ -133,7 +135,8 @@ class lambdaConstruct {
             database,
             apiType,
             apiName,
-            mutationsAndQueries
+            mutationsAndQueries,
+            mockApi
           );
         }
         if (database === DATABASE.auroraDB) {
@@ -143,7 +146,8 @@ class lambdaConstruct {
             database,
             apiType,
             apiName,
-            mutationsAndQueries
+            mutationsAndQueries,
+            mockApi
           );
         }
       },

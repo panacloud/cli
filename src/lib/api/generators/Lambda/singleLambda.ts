@@ -3,7 +3,7 @@ import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { ApiModel, APITYPE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
-const _ = require("lodash");
+const upperCase = require("lodash/upperCase");
 const SwaggerParser = require("@apidevtools/swagger-parser");
 
 type StackBuilderProps = {
@@ -120,14 +120,14 @@ class SingleLambda {
                       api.paths[`${path}`][`${methodName}`][`operationId`];
                     isFirstIf
                       ? this.code.indent(`
-                          if (method === "${_.upperCase(
+                          if (method === "${upperCase(
                             methodName
                           )}" && requestName === "${path.substring(1)}") {
                             return await ${lambdaFunctionFile}();
                           }
                         `)
                       : this.code.indent(`
-                          else if (method === "${_.upperCase(
+                          else if (method === "${upperCase(
                             methodName
                           )}" && requestName === "${path.substring(1)}") {
                             return await ${lambdaFunctionFile}();
@@ -146,13 +146,13 @@ class SingleLambda {
               for (var methodName in api.paths[`${path}`]) {
                 let lambdaFunctionFile =
                   api.paths[`${path}`][`${methodName}`][`operationId`];
-                
+
                 this.outputFile = `${lambdaFunctionFile}.ts`;
                 this.code.openFile(this.outputFile);
-                
+
                 const lambda = new LambdaFunction(this.code);
                 lambda.helloWorldFunction(lambdaFunctionFile);
-                
+
                 this.code.closeFile(this.outputFile);
                 await this.code.save(this.outputDir);
               }
