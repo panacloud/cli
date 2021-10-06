@@ -59,7 +59,7 @@ export class CdkStack {
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
       () => {
-        if (mockApi) {
+        if (!mockApi) {
           manager.apiManagerInitializer(apiName);
           this.code.line();
         }

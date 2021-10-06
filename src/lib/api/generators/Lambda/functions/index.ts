@@ -53,7 +53,8 @@ export const lambdaHandlerForAuroradb = (
   architecture: ARCHITECTURE,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: any,
+  mockApi?:boolean,
 ) => {
   const lambda = new Lambda(code);
   const ts = new TypeScriptWriter(code);
@@ -65,6 +66,7 @@ export const lambdaHandlerForAuroradb = (
     lambda.initializeLambda(
       apiName,
       lambdaStyle,
+      mockApi,
       undefined,
       `props!.vpcRef`,
       undefined,
@@ -88,6 +90,7 @@ export const lambdaHandlerForAuroradb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         "eventProducer",
         undefined,
         undefined,
@@ -104,6 +107,7 @@ export const lambdaHandlerForAuroradb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         key,
         `props!.vpcRef`,
         undefined,
@@ -131,7 +135,8 @@ export const lambdaHandlerForNeptunedb = (
   architecture: ARCHITECTURE,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: any,
+  mockApi?:boolean,
 ) => {
   const lambda = new Lambda(code);
   const ts = new TypeScriptWriter(code);
@@ -143,6 +148,7 @@ export const lambdaHandlerForNeptunedb = (
     lambda.initializeLambda(
       apiName,
       lambdaStyle,
+      mockApi,
       undefined,
       `props!.VPCRef`,
       `props!.SGRef`,
@@ -165,6 +171,7 @@ export const lambdaHandlerForNeptunedb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         "eventProducer",
         undefined,
         undefined,
@@ -181,6 +188,7 @@ export const lambdaHandlerForNeptunedb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         key,
         `props!.VPCRef`,
         `props!.SGRef`,
@@ -449,7 +457,8 @@ export const lambdaHandlerForDynamodb = (
   apiType: string,
   lambdaStyle: string,
   architecture: ARCHITECTURE,
-  mutationsAndQueries?: any
+  mutationsAndQueries?: any,
+  mockApi?: boolean
 ) => {
   const lambda = new Lambda(code);
   lambda.lambdaLayer(apiName);
@@ -460,6 +469,7 @@ export const lambdaHandlerForDynamodb = (
     lambda.initializeLambda(
       apiName,
       lambdaStyle,
+      mockApi,
       undefined,
       undefined,
       undefined,
@@ -473,6 +483,7 @@ export const lambdaHandlerForDynamodb = (
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
+        mockApi,
         "eventProducer",
         undefined,
         undefined,
@@ -484,15 +495,25 @@ export const lambdaHandlerForDynamodb = (
         `this.${apiName}_lambdaFn_eventProducerArn = ${apiName}_lambdaFn_eventProducer.functionArn`
       );
       code.line();
+      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
     }
-    mutationsAndQueries.forEach((key: string) => {
-      lambda.initializeLambda(apiName, lambdaStyle, key, undefined, undefined, [
-        { name: "TableName", value: "props!.tableName" },
-      ]);
-      code.line();
-      code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-      code.line();
-    });
+  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+      mutationsAndQueries.forEach((key: string) => {
+        lambda.initializeLambda(
+          apiName,
+          lambdaStyle,
+          mockApi,
+          key,
+          undefined,
+          undefined,
+          [{ name: "TableName", value: "props!.tableName" }]
+        );
+        code.line();
+        code.line(
+          `this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`
+        );
+        code.line();
+      });
   } else {
     code.line();
   }

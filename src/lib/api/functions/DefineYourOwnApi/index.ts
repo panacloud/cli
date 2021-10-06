@@ -5,7 +5,12 @@ import {
   mkdirRecursiveAsync,
 } from "../../../fs";
 import { contextInfo } from "../../info";
-import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
+import {
+  Config,
+  APITYPE,
+  ApiModel,
+  LAMBDASTYLE,
+} from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -162,6 +167,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     if (mockApi) {
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
+      model.api.lambdaStyle = LAMBDASTYLE.multi;
     }
   } else {
     copyFileAsync(

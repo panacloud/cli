@@ -42,7 +42,8 @@ class MultipleLambda {
         const lambda = new LambdaFunction(this.code);
 
         if (mockApi) {
-          this.code.line(`const data = require("/opt/testCollections")`);
+          this.code.line(`var data = require("/opt/testCollections")`);
+          this.code.line();
         } else {
           imp.importAxios();
           this.code.line();

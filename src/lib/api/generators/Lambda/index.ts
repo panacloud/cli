@@ -3,7 +3,6 @@ import {
   APITYPE,
   DATABASE,
   ApiModel,
-  TEMPLATE,
 } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -109,8 +108,9 @@ class lambdaConstruct {
       lambdaPropsWithName,
       () => {
         if (mockApi) {
+          lambda.lambdaLayer(apiName);
           mutationsAndQueries.forEach((key: string) => {
-            lambda.initializeLambda(apiName, lambdaStyle, key);
+            lambda.initializeLambda(apiName, lambdaStyle, mockApi , key);
             this.code.line();
             this.code.line(
               `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
@@ -125,7 +125,8 @@ class lambdaConstruct {
             apiType,
             lambdaStyle,
             architecture,
-            mutationsAndQueries
+            mutationsAndQueries,
+            mockApi
           );
         }
         if (database === DATABASE.neptuneDB) {
@@ -135,7 +136,8 @@ class lambdaConstruct {
             architecture,
             apiType,
             apiName,
-            mutationsAndQueries
+            mutationsAndQueries,
+            mockApi
           );
         }
         if (database === DATABASE.auroraDB) {
@@ -145,7 +147,8 @@ class lambdaConstruct {
             architecture,
             apiType,
             apiName,
-            mutationsAndQueries
+            mutationsAndQueries,
+            mockApi
           );
         }
       },
