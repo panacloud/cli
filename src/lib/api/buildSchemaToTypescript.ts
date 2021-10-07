@@ -28,7 +28,7 @@ export const buildSchemaToTypescript = (gqlSchema: any) => {
           ? (typeStr += `${type}: [{arguments: ${description}${upperFirst(
               type
             )}Args; response: ${responseTypeName} }];\n`)
-          : `${type}: [{ response: ${responseTypeName} }];\n`;
+          : (typeStr += `${type}: [{ response: ${responseTypeName} }];\n`);
 
         if (
           (responseTypeName === "String" ||
