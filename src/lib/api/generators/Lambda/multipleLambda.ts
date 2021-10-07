@@ -13,8 +13,6 @@ type StackBuilderProps = {
 class MultipleLambda {
   outputFile: string = `main.ts`;
   outputDir: string = `lambda`;
-  customOutputFile: string = `main.ts`;
-  customOutputDir: string = `lambda`;
   config: ApiModel;
   code: CodeMaker;
   constructor(props: StackBuilderProps) {
@@ -55,10 +53,6 @@ class MultipleLambda {
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;
         await this.code.save(this.outputDir);
-
-
-
-
 
       });
 

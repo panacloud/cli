@@ -189,7 +189,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
-
   await mkdirRecursiveAsync(`custom_src`);
   await mkdirRecursiveAsync(`custom_src/aspects`);
 

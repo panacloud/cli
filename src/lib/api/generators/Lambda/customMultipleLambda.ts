@@ -11,10 +11,8 @@ type StackBuilderProps = {
 };
 
 class CustomMultipleLambda {
-  outputFile: string = `main.ts`;
+  outputFile: string = `handler.ts`;
   outputDir: string = `lambda`;
-  customOutputFile: string = `main.ts`;
-  customOutputDir: string = `lambda`;
   config: ApiModel;
   code: CodeMaker;
   constructor(props: StackBuilderProps) {
@@ -38,23 +36,17 @@ class CustomMultipleLambda {
 
       mutationsAndQueries.forEach(async (key: string) => {
        
-                // custom code
-                const lambda = new LambdaFunction(this.code);
+        const lambda = new LambdaFunction(this.code);
 
-                this.customOutputFile = "handler.ts";
-                this.code.openFile(this.customOutputFile);
-                        
-                lambda.helloWorldFunction(key);
-        
-
+        this.code.openFile(this.outputFile);
                 
-                this.code.closeFile(this.customOutputFile);
-                this.customOutputDir = `custom_src/lambda/${key}`;
-                await this.code.save(this.customOutputDir);
-        
-                console.log('create 1 file')
-        
+        lambda.helloWorldFunction(key);
 
+        this.code.closeFile(this.outputFile);
+        this.outputDir = `custom_src/lambda/${key}`;
+        await this.code.save(this.outputDir);
+
+        console.log('create 1 file')
       });
 
    
