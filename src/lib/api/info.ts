@@ -17,11 +17,9 @@ export const generatePanacloudConfig = async (
 ) => {
   let mutationsAndQueries: string[] = [...queiresFields!, ...mutationFields!];
 
-  let configJson: { lambda: any } = {
-    lambda: {},
-  };
+  let configJson: any = {};
   mutationsAndQueries.forEach((key: string) => {
-    configJson.lambda[key] = `lambda/${key}/index.ts`;
+    configJson[key] = `lambda/${key}/index.ts`;
   });
   await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
 };
