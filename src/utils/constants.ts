@@ -13,6 +13,7 @@ export enum DATABASE {
   neptuneDB = "Neptune (Graph)",
   auroraDB = "Aurora Serverless (Relational)",
   documentDB = "DocumentDB (NoSQL MongoDB)",
+  none = "None"
 }
 
 export enum SAASTYPE {

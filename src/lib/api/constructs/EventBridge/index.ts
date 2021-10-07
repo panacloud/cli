@@ -7,8 +7,8 @@ export class EventBridge {
       this.code = _code;
     }
 
-    public grantPutEvents(name: string) {
-      this.code.line(`events.EventBus.grantAllPutEvents(${name}_lambdaFn_eventProducer);`)
+    public grantPutEvents(name: string, functionName: string) {
+      this.code.line(`events.EventBus.grantAllPutEvents(${name}_lambdaFn_${functionName});`)
     }
 
     public createEventBridgeRule(name: string, apiName: string) {
@@ -19,7 +19,7 @@ export class EventBridge {
             typeName: "events.Rule",
             initializer: () => {
               this.code.line(`new events.Rule(this, "EventBridgeApiRule_${name}", {
-                targets: [new targets.LambdaFunction(props!.${apiName}_lambdaFn_${name})],
+                targets: [new targets.LambdaFunction(props!.${apiName}_lambdaFn_${name}_consumer)],
                 description: "Filter events based on mutationType and call relevant lambda",
                 eventPattern: {
                     detail: {

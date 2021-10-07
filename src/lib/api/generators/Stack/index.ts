@@ -3,8 +3,7 @@ import {
   ApiModel,
   APITYPE,
   CONSTRUCTS,
-  DATABASE,
-  TEMPLATE,
+  DATABASE
 } from "../../../../utils/constants";
 import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
@@ -90,7 +89,7 @@ export class CdkStack {
             this.config.api
           );
         }
-        if (apiType === APITYPE.rest) {
+        else if (apiType === APITYPE.rest) {
           this.code.line(
             `const ${apiName} = new ${CONSTRUCTS.apigateway}(this,"${apiName}${CONSTRUCTS.apigateway}",{`
           );

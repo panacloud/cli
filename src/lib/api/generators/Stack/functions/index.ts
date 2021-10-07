@@ -35,10 +35,10 @@ export const databaseImportHandler = (database: string, code: CodeMaker) => {
   if (database === DATABASE.dynamoDB) {
     imp.importForDynamodbConstruct();
   }
-  if (database === DATABASE.neptuneDB) {
+  else if (database === DATABASE.neptuneDB) {
     imp.importForNeptuneConstruct();
   }
-  if (database === DATABASE.auroraDB) {
+  else if (database === DATABASE.auroraDB) {
     imp.importForAuroraDbConstruct();
   }
 };

@@ -21,6 +21,8 @@ class MultipleLambda {
     const {
       api: { lambdaStyle, apiType, mockApi, architecture },
     } = this.config;
+    const imp = new Imports(this.code);
+    const lambda = new LambdaFunction(this.code);
 
     if (apiType === APITYPE.graphql) {
       const {
@@ -31,12 +33,10 @@ class MultipleLambda {
         ...mutationFields!,
       ];
 
-      mutationsAndQueries.forEach(async (key: string) => {
+      for (let i = 0; i < mutationsAndQueries.length; i++) {
+        const key = mutationsAndQueries[i];
         this.outputFile = "index.ts";
         this.code.openFile(this.outputFile);
-
-        const imp = new Imports(this.code);
-        const lambda = new LambdaFunction(this.code);
 
         if (mockApi) {
           this.code.line(`var data = require("/opt/testCollections")`);
@@ -45,33 +45,36 @@ class MultipleLambda {
           imp.importAxios();
           this.code.line();
         }
+        if (architecture === ARCHITECTURE.eventDriven)
+          lambda.initializeLambdaFunction(
+            lambdaStyle,
+            apiType,
+            mockApi,
+            key,
+            () => {
+              this.code.indent(`
+                const eventBridge = new AWS.EventBridge({ region: "us-east-2" });
 
-        lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
+                eventBridge
+                  .putEvents({
+                    Entries: [
+                      {
+                        EventBusName: "default",
+                        Source: "mutationFunction",
+                        DetailType: "mutation",
+                        Detail: {"mutationName": event.info.fieldName},
+                      },
+                    ],
+                  })
+                  .promise();
+          `);
+            }
+          );
+        else
+          lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
 
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;
-        await this.code.save(this.outputDir);
-      });
-
-      if (architecture === ARCHITECTURE.eventDriven) {
-        this.outputFile = "index.ts";
-        this.code.openFile(this.outputFile);
-
-        const imp = new Imports(this.code);
-        const lambda = new LambdaFunction(this.code);
-
-        imp.importAxios();
-        this.code.line();
-
-        lambda.initializeLambdaFunction(
-          lambdaStyle,
-          apiType,
-          mockApi,
-          "eventProducer"
-        );
-
-        this.code.closeFile(this.outputFile);
-        this.outputDir = `lambda/eventProducer`;
         await this.code.save(this.outputDir);
       }
     }

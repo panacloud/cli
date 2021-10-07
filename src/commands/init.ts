@@ -6,7 +6,7 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE, Config } from "../utils/constants";
+import { TEMPLATE, SAASTYPE, Config, DATABASE } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -44,7 +44,7 @@ export default class Create extends Command {
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
         lambdaStyle: usrInput.lambda,
-        database: usrInput.database,
+        database: usrInput.database === DATABASE.none? undefined : usrInput.database,
         mockApi: usrInput.mockApi,
       },
     };

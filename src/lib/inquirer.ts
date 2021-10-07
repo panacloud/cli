@@ -121,9 +121,9 @@ export const userInput = async () => {
       type: "list",
       name: "database",
       message: "Select Database?",
-      choices: [DATABASE.dynamoDB, DATABASE.neptuneDB, DATABASE.auroraDB],
+      choices: [DATABASE.dynamoDB, DATABASE.neptuneDB, DATABASE.auroraDB, DATABASE.none],
       default: DATABASE.auroraDB,
-      when: (answers: any) => answers.mockApi === false ,
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
   ]);
