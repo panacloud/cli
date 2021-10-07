@@ -7,7 +7,6 @@ import {
   validateSchemaFile,
 } from "../lib/api/errorHandling";
 import { TEMPLATE, SAASTYPE, Config } from "../utils/constants";
-import { copyFileSync } from "fs";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -15,7 +14,6 @@ const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
 const camelCase = require("lodash/camelCase");
-const fse = require ('fs-extra')
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
@@ -85,8 +83,6 @@ export default class Create extends Command {
       process.exit(1);
     }
     stopSpinner(generatingTypes, "Generating Types", false);
-
-    fse.copyFileAsync()
 
     const formatting = startSpinner("Formatting Code");
     // Formatting files.

@@ -4,7 +4,7 @@ import {
   copyFileAsync,
   mkdirRecursiveAsync,
 } from "../../../fs";
-import { contextInfo } from "../../info";
+import { contextInfo, generatePanacloudConfig } from "../../info";
 import {
   Config,
   APITYPE,
@@ -108,6 +108,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   if (apiType === APITYPE.graphql) {
     await mkdirRecursiveAsync(`graphql`);
     await mkdirRecursiveAsync(`graphql/schema`);
+    await mkdirRecursiveAsync(`custom_src`);
+    await mkdirRecursiveAsync(`custom_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -164,6 +166,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
+    await generatePanacloudConfig(
+      model.api.queiresFields,
+      model.api.mutationFields
+    );
+
     if (mockApi) {
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
@@ -189,9 +196,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
-  await mkdirRecursiveAsync(`custom_src`);
-  await mkdirRecursiveAsync(`custom_src/aspects`);
-
   // Codegenerator Function
   await generator(model);
 
@@ -214,8 +218,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   }
-
-
 
   stopSpinner(installingModules, "Modules installed", false);
 }
