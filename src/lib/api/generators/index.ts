@@ -16,6 +16,8 @@ import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
 import { LambdaConstruct } from "./Lambda";
 import { multipleLambda } from "./Lambda/multipleLambda";
+import { customMultipleLambda } from "./Lambda/customMultipleLambda";
+
 import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
@@ -64,6 +66,7 @@ export const generator = async (config: ApiModel) => {
   }
   if (config.api.lambdaStyle === LAMBDASTYLE.multi) {
     multipleLambda({ config });
+    customMultipleLambda({ config });
   }
 
   if (config.api.mockApi) {

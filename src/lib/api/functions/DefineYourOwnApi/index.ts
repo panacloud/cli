@@ -189,6 +189,10 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
+
+  await mkdirRecursiveAsync(`custom_src`);
+  await mkdirRecursiveAsync(`custom_src/aspects`);
+
   // Codegenerator Function
   await generator(model);
 
@@ -211,6 +215,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   }
+
+
 
   stopSpinner(installingModules, "Modules installed", false);
 }

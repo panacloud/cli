@@ -10,7 +10,7 @@ type StackBuilderProps = {
   config: ApiModel;
 };
 
-class MultipleLambda {
+class CustomMultipleLambda {
   outputFile: string = `main.ts`;
   outputDir: string = `lambda`;
   customOutputFile: string = `main.ts`;
@@ -37,28 +37,23 @@ class MultipleLambda {
       ];
 
       mutationsAndQueries.forEach(async (key: string) => {
-        this.outputFile = "index.ts";
-        this.code.openFile(this.outputFile);
-        
-        const imp = new Imports(this.code);
-        const lambda = new LambdaFunction(this.code);
-        
-        if (mockApi) {
-          this.code.line(`const data = require("/opt/testCollections")`);
-        } else {
-          imp.importAxios();
-          this.code.line();
-        }
-        
-        lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
-        
-        this.code.closeFile(this.outputFile);
-        this.outputDir = `lambda/${key}`;
-        await this.code.save(this.outputDir);
+       
+                // custom code
+                const lambda = new LambdaFunction(this.code);
 
+                this.customOutputFile = "handler.ts";
+                this.code.openFile(this.customOutputFile);
+                        
+                lambda.helloWorldFunction(key);
+        
 
-
-
+                
+                this.code.closeFile(this.customOutputFile);
+                this.customOutputDir = `custom_src/lambda/${key}`;
+                await this.code.save(this.customOutputDir);
+        
+                console.log('create 1 file')
+        
 
       });
 
@@ -67,9 +62,9 @@ class MultipleLambda {
   }
 }
 
-export const multipleLambda = async (
+export const customMultipleLambda = async (
   props: StackBuilderProps
 ): Promise<void> => {
-  const builder = new MultipleLambda(props);
+  const builder = new CustomMultipleLambda(props);
   await builder.MultipleLambdaFile();
 };
