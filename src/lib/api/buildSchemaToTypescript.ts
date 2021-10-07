@@ -18,10 +18,18 @@ export const buildSchemaToTypescript = (gqlSchema: any) => {
       const field = gqlSchema.getType(description).getFields()[type];
       if (includeDeprecatedFields || !field.isDeprecated) {
         const responseTypeName = field.type.inspect().replace(/[[\]!]/g, "");
-
+        let res;
+        if (responseTypeName === "String" || responseTypeName === "ID") {
+          res = "";
+        } else if (responseTypeName === "Int") {
+          res = 0;
+        } else {
+          res = {};
+        }
+        
         collectionsObject.fields[type] =
           field.args.length > 0
-            ? [{ arguments: {}, response: {} }]
+            ? [{ arguments: {}, response: res }]
             : [{ response: {} }];
 
         field.args.length > 0
