@@ -22,6 +22,7 @@ import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
+import { panacloudConfig } from "./PanacloudConfig";
 
 export const generator = async (config: ApiModel) => {
   // bin file
@@ -67,6 +68,7 @@ export const generator = async (config: ApiModel) => {
   if (config.api.lambdaStyle === LAMBDASTYLE.multi) {
     multipleLambda({ config });
     customMultipleLambda({ config });
+    panacloudConfig({config})
   }
 
   if (config.api.mockApi) {
