@@ -18,7 +18,7 @@ class CustomLambda {
 
   async LambdaFile() {
     const {
-      api: { apiType, lambdaStyle, mockApi },
+      api: { apiType },
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
@@ -34,7 +34,7 @@ class CustomLambda {
       mutationsAndQueries.forEach(async (key: string) => {
         this.code.openFile(this.outputFile);
 
-        lambda.initializeLambdaFunction(lambdaStyle, apiType);
+        lambda.emptyLambdaHandler();
 
         this.code.closeFile(this.outputFile);
         this.outputDir = `custom_src/lambda/${key}`;

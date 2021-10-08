@@ -11,15 +11,24 @@ export const contextInfo = (apiToken: string, entityId: string) => {
   };
 };
 
+type configFile = {
+  lambdas:any
+}
+
+type lambdaConfig = {
+  asset_path:string
+}
+
 export const generatePanacloudConfig = async (
   queiresFields: string[],
   mutationFields: string[]
 ) => {
   let mutationsAndQueries: string[] = [...queiresFields!, ...mutationFields!];
 
-  let configJson: any = {};
+  let configJson:configFile = {lambdas:{}};
   mutationsAndQueries.forEach((key: string) => {
-    configJson[key] = `lambda/${key}/index.ts`;
+    const lambdas = configJson.lambdas[key] = {} as lambdaConfig
+    lambdas.asset_path= `lambda/${key}/index.ts`;
   });
   await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
 };
