@@ -1,5 +1,4 @@
 const fse = require("fs-extra");
-const fs = require("fs");
 
 import { PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
 import { stopSpinner } from "../spinner";
@@ -34,14 +33,16 @@ export const generatePanacloudConfig = async (
 export const updatePanacloudConfig = async (
   queiresFields: string[],
   mutationFields: string[],
-  panacloudConfig: PanacloudconfigFile,
   spinner: any
 ) => {
   let newLambdas: string[] = [...queiresFields!, ...mutationFields!];
 
-  let prevLambdas = Object.keys(panacloudConfig.lambdas)
+  const configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudConfig.json')
 
-  let panacloudConfigNew = panacloudConfig;
+
+  let prevLambdas = Object.keys(configPanacloud.lambdas)
+
+  let panacloudConfigNew = configPanacloud;
 
   let difference = newLambdas
     .filter(val => !prevLambdas.includes(val))
@@ -59,10 +60,6 @@ export const updatePanacloudConfig = async (
 
     }
   }
-
-  console.log('new config', panacloudConfigNew)
-
-
 
   fse.removeSync('custom_src/panacloudConfig.json')
 

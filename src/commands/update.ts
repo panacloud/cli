@@ -9,13 +9,11 @@ import {
 import { TEMPLATE, SAASTYPE, Config, APITYPE } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
-const fs = require("fs");
+const fse = require("fs-extra");
 const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
 const camelCase = require("lodash/camelCase");
-
-import { PanacloudconfigFile } from "../utils/constants";
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
@@ -27,28 +25,19 @@ export default class Create extends Command {
   async run() {
     const { flags } = this.parse(Create);
 
-    let templateDir;
 
 
    const validating = startSpinner("Validating files");
-
-     let cliConfigRawData = fs.readFileSync('codegenconfig.json', (err: string) => {
-      if (err) {
-        stopSpinner(validating, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    });
-
-    let config:Config = JSON.parse(cliConfigRawData);
-
-    if (config.saasType === SAASTYPE.api) {
-      templateDir = path.resolve(__dirname, "../lib/api/template");
-      if (config.api.apiType === APITYPE.graphql){
-      if (config.api?.template === TEMPLATE.defineApi) {
+   
+    const configCli:Config = fse.readJsonSync('codegenconfig.json')
+  
+    if (configCli.saasType === SAASTYPE.api) {
+      if (configCli.api.apiType === APITYPE.graphql){
+      if (configCli.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
-          config.api?.schemaPath,
+          configCli.api?.schemaPath,
           validating,
-          config.api?.apiType
+          configCli.api?.apiType
         );
       }
 
@@ -70,21 +59,12 @@ export default class Create extends Command {
     const updatingCode = startSpinner("Updating Code");
 
 
-    fs.rmdirSync('lambda', { recursive: true });
-    fs.rmdirSync('lib', { recursive: true });
+    fse.removeSync('lambda', { recursive: true });
+    fse.removeSync('lib', { recursive: true });
 
-    const panacloudConfigRawData = fs.readFileSync('custom_src/panacloudConfig.json', (err: string) => {
-      if (err) {
-        stopSpinner(updatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    });
-    
-    let panacloudConfig:PanacloudconfigFile = JSON.parse(panacloudConfigRawData);
-
-    if (config.saasType === SAASTYPE.api) {
-       if (config.api?.template === TEMPLATE.defineApi) {
-        await updateYourOwnApi(config, panacloudConfig);
+    if (configCli.saasType === SAASTYPE.api) {
+       if (configCli.api?.template === TEMPLATE.defineApi) {
+       await updateYourOwnApi(configCli,updatingCode);
       } 
     }
 
@@ -98,7 +78,7 @@ export default class Create extends Command {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
-    stopSpinner(generatingTypes, "Generating Types", false);
+    stopSpinner(generatingTypes, "Types generated", false);
 
     // const formatting = startSpinner("Formatting Code");
     // // Formatting files.
