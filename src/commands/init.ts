@@ -63,6 +63,17 @@ export default class Create extends Command {
       }
     }
 
+    writeFileAsync(
+      `./codegenconfig.json`,
+      JSON.stringify(config),
+      (err: string) => {
+        if (err) {
+          stopSpinner(validating, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      }
+    );
+
     stopSpinner(validating, "Everything's fine", false);
 
     if (config.saasType === SAASTYPE.api) {

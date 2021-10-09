@@ -76,6 +76,7 @@ export class LambdaFunction {
   }
 
   public helloWorldFunction(name: string) {
+
     this.code.line(`
     const AWS = require('aws-sdk');
     
