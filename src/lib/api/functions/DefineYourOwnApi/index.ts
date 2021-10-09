@@ -5,11 +5,7 @@ import {
   mkdirRecursiveAsync,
 } from "../../../fs";
 import { contextInfo, generatePanacloudConfig } from "../../info";
-import {
-  Config,
-  APITYPE,
-  ApiModel
-} from "../../../../utils/constants";
+import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -160,10 +156,10 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
     if (apiType === APITYPE.graphql) {
-    await generatePanacloudConfig(
-      model.api.queiresFields,
-      model.api.mutationFields
-    );
+      await generatePanacloudConfig(
+        model.api.queiresFields,
+        model.api.mutationFields
+      );
 
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
@@ -202,13 +198,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     process.exit(1);
   }
 
-  // if (apiType === APITYPE.rest) {
-    try {
-      await exec(`cd lambdaLayer/nodejs && npm install`);
-    } catch (error) {
-      stopSpinner(installingModules, `Error: ${error}`, true);
-      process.exit(1);
-    // }
+  try {
+    await exec(`cd lambdaLayer/nodejs && npm install`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
   }
 
   stopSpinner(installingModules, "Modules installed", false);

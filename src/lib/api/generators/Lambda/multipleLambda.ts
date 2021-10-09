@@ -38,13 +38,13 @@ class MultipleLambda {
         this.outputFile = "index.ts";
         this.code.openFile(this.outputFile);
 
-          this.code.line(`var testCollections = require("/opt/testCollections")`);
+          this.code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
           this.code.line();
-          imp.importAxios();
-          this.code.line();
+          // imp.importAxios();
+          // this.code.line();
         
 
-        lambda.initializeLambdaFunction(apiType);
+        lambda.initializeLambdaFunction(apiType, undefined, key);
 
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;

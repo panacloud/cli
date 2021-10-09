@@ -8,21 +8,22 @@ export class LambdaFunction {
   }
   public initializeLambdaFunction(
     apiType: APITYPE,
-    content?: any
+    content?: any,
+    fieldName?: string
   ) {
     if (apiType === APITYPE.graphql) {
       this.code.line(`var AWS = require('aws-sdk');`);
-      this.code.line(`var isEqual = require('lodash.isequal');`)
+      this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
       this.code.line(`exports.handler = async (event: any) => {`);
 
-      this.code.line(
-        `const data = await axios.post('http://sandbox:8080', event)`
-      );
+      // this.code.line(
+      //   `const data = await axios.post('http://sandbox:8080', event)`
+      // );
 
       this.code.line(`
           let response = {};
-          testCollections.fields.listTodos.forEach((v) => {
+          testCollections.fields.${fieldName}.forEach((v: any) => {
             if (v.arguments) {
               let equal = isEqual(
                 Object.values(v.arguments)[0],
@@ -64,7 +65,6 @@ export class LambdaFunction {
   }
 
   public helloWorldFunction(name: string) {
-
     this.code.line(`
     const AWS = require('aws-sdk');
     
@@ -72,5 +72,16 @@ export class LambdaFunction {
       // write your code here
     }
     `);
+  }
+
+  public emptyLambdaFunction() {
+    this.code.line(`var AWS = require('aws-sdk');`);
+    this.code.line();
+    this.code.line(`exports.handler = async (event: any) => {`);
+
+    this.code.indent(
+      `const data = await axios.post('http://sandbox:8080', event)`
+    );
+    this.code.line(`}`);
   }
 }

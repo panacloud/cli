@@ -1,6 +1,7 @@
 import { CodeMaker } from "codemaker";
 import { ApiModel, APITYPE } from "../../../../utils/constants";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
+import { Imports } from "../../constructs/ConstructsImports";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -18,7 +19,7 @@ class CustomLambda {
 
   async LambdaFile() {
     const {
-      api: { apiType, lambdaStyle },
+      api: { apiType },
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
@@ -30,11 +31,15 @@ class CustomLambda {
         ...mutationFields!,
       ];
       const lambda = new LambdaFunction(this.code);
+      const imp = new Imports(this.code);
 
       mutationsAndQueries.forEach(async (key: string) => {
         this.code.openFile(this.outputFile);
 
-        lambda.initializeLambdaFunction(lambdaStyle, apiType);
+        imp.importAxios();
+        this.code.line();
+
+        lambda.emptyLambdaFunction();
 
         this.code.closeFile(this.outputFile);
         this.outputDir = `custom_src/lambda/${key}`;
