@@ -26,17 +26,30 @@ export const buildSchemaToTypescript = (gqlSchema: any) => {
         } else {
           res = {};
         }
-        
+
         collectionsObject.fields[type] =
           field.args.length > 0
             ? [{ arguments: {}, response: res }]
-            : [{ response: {} }];
+            : [
+                {
+                  ...(field.type.inspect().includes("[") &&
+                  field.type.inspect().includes("]")
+                    ? { response: [] }
+                    : { response: {} }),
+                },
+              ];
+
+        let responseType =
+          field.type.inspect().includes("[") &&
+          field.type.inspect().includes("]")
+            ? `[${responseTypeName}]`
+            : `${responseTypeName}`;
 
         field.args.length > 0
           ? (typeStr += `${type}: [{arguments: ${description}${upperFirst(
               type
-            )}Args; response: ${responseTypeName} }];\n`)
-          : (typeStr += `${type}: [{ response: ${responseTypeName} }];\n`);
+            )}Args; response: ${responseType} }];\n`)
+          : (typeStr += `${type}: [{ response: ${responseType} }];\n`);
 
         if (
           (responseTypeName === "String" ||
