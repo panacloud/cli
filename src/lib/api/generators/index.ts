@@ -1,8 +1,7 @@
 import {
   ApiModel,
   APITYPE,
-  DATABASE,
-  LAMBDASTYLE,
+  DATABASE
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
@@ -28,12 +27,15 @@ export const generator = async (config: ApiModel) => {
   // stack
   CdkStackClass({ config });
 
-  // Appsync or Apigateway
+  // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
     AppsyncApiConstruct({ config });
     AppsyncConstructTest({ config });
+    multipleLambda({ config });
+    mockApiTestCollections({ config });
   } else if (config.api.apiType === APITYPE.rest) {
     ApiGatewayConstruct({ config });
+    singleLambda({ config });
   }
 
   // Databases
@@ -56,17 +58,13 @@ export const generator = async (config: ApiModel) => {
   LambdaConstruct({ config });
 
   // Single or Multi
-  if (
-    config.api.lambdaStyle === LAMBDASTYLE.single ||
-    config.api.apiType === APITYPE.rest
-  ) {
-    singleLambda({ config });
-  }
-  if (config.api.lambdaStyle === LAMBDASTYLE.multi) {
-    multipleLambda({ config });
-  }
-
-  if (config.api.mockApi) {
-    mockApiTestCollections({ config });
-  }
+  // if (
+  //   config.api.apiType === APITYPE.rest
+  // ) {
+  //   singleLambda({ config });
+  // }
+  // else {
+  //   multipleLambda({ config });
+  //   mockApiTestCollections({ config });
+  // }
 };

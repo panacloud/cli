@@ -38,7 +38,7 @@ export class CdkStack {
   async CdkStackFile() {
     this.outputFile = `${this.config.workingDir}-stack.ts`;
     this.code.openFile(this.outputFile);
-    const { apiName, database, lambdaStyle, apiType, mockApi } =
+    const { apiName, database, apiType } =
       this.config.api;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
@@ -58,10 +58,8 @@ export class CdkStack {
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
       () => {
-        if (!mockApi) {
           manager.apiManagerInitializer(apiName);
           this.code.line();
-        }
         if (database == DATABASE.dynamoDB) {
           dynamodb.dynmaodbConstructInitializer(apiName, this.code);
           this.code.line();
@@ -72,7 +70,7 @@ export class CdkStack {
           aurora.auroradbConstructInitializer(apiName, this.code);
           this.code.line();
         }
-        if (lambdaStyle || apiType === APITYPE.rest) {
+        if (apiType === APITYPE.rest) {
           lambda.lambdaConstructInitializer(apiName, database);
         }
         database === DATABASE.dynamoDB &&

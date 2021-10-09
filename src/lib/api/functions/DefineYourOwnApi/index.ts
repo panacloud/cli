@@ -5,12 +5,7 @@ import {
   mkdirRecursiveAsync,
 } from "../../../fs";
 import { contextInfo } from "../../info";
-import {
-  Config,
-  APITYPE,
-  ApiModel,
-  LAMBDASTYLE,
-} from "../../../../utils/constants";
+import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -25,7 +20,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
 
   const {
-    api: { schemaPath, apiType, mockApi },
+    api: { schemaPath, apiType },
   } = config;
 
   const workingDir = _.snakeCase(path.basename(process.cwd()));
@@ -41,11 +36,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   /* copy files from global package dir to cwd */
   fs.readdirSync(templateDir).forEach(async (file: any) => {
-    if (
-      file !== "package.json" &&
-      file !== "cdk.json" &&
-      (mockApi ? file !== "lambdaLayer" : true)
-    ) {
+    if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         fse.copy(`${templateDir}/${file}`, ".gitignore");
       } else {
@@ -92,18 +83,16 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   );
 
-  if (!mockApi) {
-    writeFileAsync(
-      `./cdk.context.json`,
-      JSON.stringify(contextInfo(api_token, entityId)),
-      (err: string) => {
-        if (err) {
-          stopSpinner(generatingCode, `Error: ${err}`, true);
-          process.exit(1);
-        }
+  writeFileAsync(
+    `./cdk.context.json`,
+    JSON.stringify(contextInfo(api_token, entityId)),
+    (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
       }
-    );
-  }
+    }
+  );
 
   if (apiType === APITYPE.graphql) {
     await mkdirRecursiveAsync(`graphql`);
@@ -164,10 +153,9 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
-    if (mockApi) {
+    if (apiType === APITYPE.graphql) {
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
-      model.api.lambdaStyle = LAMBDASTYLE.multi;
     }
   } else {
     copyFileAsync(
@@ -203,7 +191,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     process.exit(1);
   }
 
-  if (!mockApi) {
+  if (apiType === APITYPE.rest) {
     try {
       await exec(`cd lambdaLayer/nodejs && npm install`);
     } catch (error) {

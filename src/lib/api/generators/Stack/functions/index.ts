@@ -1,8 +1,7 @@
 import { CodeMaker } from "codemaker";
 import {
   APITYPE,
-  DATABASE,
-  LAMBDASTYLE,
+  DATABASE
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";

@@ -3,11 +3,6 @@ export enum APITYPE {
   rest = "REST OpenAPI",
 }
 
-export enum LAMBDASTYLE {
-  single = "Single",
-  multi = "Multiple",
-}
-
 export enum DATABASE {
   dynamoDB = "DynamoDB (NoSQL)",
   neptuneDB = "Neptune (Graph)",
@@ -73,8 +68,6 @@ export interface API {
   queiresFields?: string[];
   mutationFields?: string[];
   apiType: APITYPE;
-  lambdaStyle: LAMBDASTYLE;
   database: DATABASE;
   mockApiData?: mockApiData;
-  mockApi?: boolean
 }

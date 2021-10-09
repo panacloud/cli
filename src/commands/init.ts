@@ -42,9 +42,7 @@ export default class Create extends Command {
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
-        lambdaStyle: usrInput.lambda,
         database: usrInput.database === DATABASE.none? undefined : usrInput.database,
-        mockApi: usrInput.mockApi,
       },
     };
 
