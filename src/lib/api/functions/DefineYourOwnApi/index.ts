@@ -106,9 +106,9 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   }
 
   if (apiType === APITYPE.graphql) {
-    await mkdirRecursiveAsync(`graphql`);
-    await mkdirRecursiveAsync(`graphql/schema`);
     await mkdirRecursiveAsync(`custom_src`);
+    await mkdirRecursiveAsync(`custom_src/graphql`);
+    await mkdirRecursiveAsync(`custom_src/graphql/schema`);
     await mkdirRecursiveAsync(`custom_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
@@ -147,7 +147,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     });
 
     fs.writeFileSync(
-      `./graphql/schema/schema.graphql`,
+      `./custom_src/graphql/schema/schema.graphql`,
       `${scalars}\n${schema}`,
       (err: string) => {
         if (err) {

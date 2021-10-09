@@ -1115,9 +1115,9 @@ clone@^1.0.2:
   integrity sha1-2jCcwmPfFZlMaIypAheco8fNfH4=
 
 codemaker@^1.34.0:
-  version "1.37.0"
-  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.37.0.tgz#898fe319c7eb6e832b58e117e895a3d0199f9dd1"
-  integrity sha512-QNQePRSGhV5GX3I0CSDFjg/m2lyOnn9N7sJJicSo9O6ukr7SqjNt2S9GE1fTFScvBguinGuJytW2TPP4ClfgTA==
+  version "1.38.0"
+  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.38.0.tgz#571458cc9f361f5d885e67817a652b4e6ad67470"
+  integrity sha512-X2CsWa6zCc8VnH84neidddw5NC+0CHh7iTzd1arUsVFc6s+vnB4i05py394nzqvY5c/ckeDCOLDix/L6NmqFEw==
   dependencies:
     camelcase "^6.2.0"
     decamelize "^5.0.1"
@@ -1460,9 +1460,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.3.857:
-  version "1.3.861"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.861.tgz#981e37a79af7a7b29bbaeed36376f4795527de13"
-  integrity sha512-GZyflmpMnZRdZ1e2yAyvuFwz1MPSVQelwHX4TJZyXypB8NcxdPvPNwy5lOTxnlkrK13EiQzyTPugRSnj6cBgKg==
+  version "1.3.864"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.864.tgz#6a993bcc196a2b8b3df84d28d5d4dd912393885f"
+  integrity sha512-v4rbad8GO6/yVI92WOeU9Wgxc4NA0n4f6P1FvZTY+jyY7JHEhw3bduYu60v3Q1h81Cg6eo4ApZrFPuycwd5hGw==
 
 emoji-regex@^7.0.1:
   version "7.0.3"
@@ -3516,9 +3516,9 @@ onetime@^5.1.0:
     mimic-fn "^2.1.0"
 
 open@^8.2.1:
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/open/-/open-8.2.1.tgz#82de42da0ccbf429bc12d099dad2e0975e14e8af"
-  integrity sha512-rXILpcQlkF/QuFez2BJDf3GsqpjGKbkUUToAIGo9A0Q6ZkoSGogZJulrUdwRkrAsoQvoZsrjCYt8+zblOk7JQQ==
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/open/-/open-8.3.0.tgz#fdef1cdfe405e60dec8ebd18889e7e812f39c59f"
+  integrity sha512-7INcPWb1UcOwSQxAXTnBJ+FxVV4MPs/X++FWWBtgY69/J5lc+tCteMt/oFK1MnkyHC4VILLa9ntmwKTwDR4Q9w==
   dependencies:
     define-lazy-prop "^2.0.0"
     is-docker "^2.1.1"

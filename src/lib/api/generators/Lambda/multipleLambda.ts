@@ -53,10 +53,7 @@ class MultipleLambda {
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;
         await this.code.save(this.outputDir);
-
       });
-
-   
     }
   }
 }

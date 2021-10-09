@@ -86,17 +86,4 @@ export class LambdaFunction {
     }
     `);
   }
-
-  public emptyLambdaHandler() {
-
-    this.code.line(`
-    const AWS = require('aws-sdk');
-    
-    exports.handler =  async function(event, context) {
-
-      // write your code here
-    }
-    `);
-  }
-
 }
