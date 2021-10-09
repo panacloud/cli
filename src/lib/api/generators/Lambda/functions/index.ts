@@ -1,5 +1,8 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, DATABASE, LAMBDASTYLE } from "../../../../../utils/constants";
+import {
+  APITYPE,
+  LAMBDASTYLE,
+} from "../../../../../utils/constants";
 import {
   Property,
   TypeScriptWriter,
@@ -45,10 +48,10 @@ export const lambdaPropsHandlerForAuroradb = () => {
 export const lambdaHandlerForAuroradb = (
   code: CodeMaker,
   lambdaStyle: LAMBDASTYLE,
-  database: DATABASE,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: any,
+  mockApi?: boolean
 ) => {
   const lambda = new Lambda(code);
   const ts = new TypeScriptWriter(code);
@@ -57,11 +60,34 @@ export const lambdaHandlerForAuroradb = (
     (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
     apiType === APITYPE.rest
   ) {
-    if (database === DATABASE.auroraDB) {
+    lambda.initializeLambda(
+      apiName,
+      lambdaStyle,
+      mockApi,
+      undefined,
+      `props!.vpcRef`,
+      undefined,
+      [
+        {
+          name: "INSTANCE_CREDENTIALS",
+          value: `props!.secretRef`,
+        },
+      ],
+      undefined,
+      `props!.serviceRole`
+    );
+    code.line();
+    code.line(`this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`);
+    if (apiType === APITYPE.rest)
+      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
+    code.line();
+  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+    mutationsAndQueries.forEach((key: string) => {
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
-        undefined,
+        mockApi,
+        key,
         `props!.vpcRef`,
         undefined,
         [
@@ -75,49 +101,20 @@ export const lambdaHandlerForAuroradb = (
       );
       code.line();
       code.line(
-        `this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`
+        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
       );
-      if (apiType === APITYPE.rest)
-        code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
       code.line();
-    }
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
-    if (database === DATABASE.auroraDB) {
-      mutationsAndQueries.forEach((key: string) => {
-        lambda.initializeLambda(
-          apiName,
-          lambdaStyle,
-          key,
-          `props!.vpcRef`,
-          undefined,
-          [
-            {
-              name: "INSTANCE_CREDENTIALS",
-              value: `props!.secretRef`,
-            },
-          ],
-          undefined,
-          `props!.serviceRole`
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        );
-        code.line();
-      });
-    } else {
-      code.line();
-    }
+    });
   }
 };
 
 export const lambdaHandlerForNeptunedb = (
   code: CodeMaker,
   lambdaStyle: LAMBDASTYLE,
-  database: DATABASE,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: any,
+  mockApi?:boolean,
 ) => {
   const lambda = new Lambda(code);
   const ts = new TypeScriptWriter(code);
@@ -126,11 +123,33 @@ export const lambdaHandlerForNeptunedb = (
     (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
     apiType === APITYPE.rest
   ) {
-    if (database === DATABASE.neptuneDB) {
+    lambda.initializeLambda(
+      apiName,
+      lambdaStyle,
+      mockApi,
+      undefined,
+      `props!.VPCRef`,
+      `props!.SGRef`,
+      [
+        {
+          name: "NEPTUNE_ENDPOINT",
+          value: `props!.neptuneReaderEndpoint`,
+        },
+      ],
+      `ec2.SubnetType.PRIVATE_ISOLATED`
+    );
+    code.line();
+    code.line(`this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`);
+    if (apiType === APITYPE.rest)
+      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
+    code.line();
+  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+    mutationsAndQueries.forEach((key: string) => {
       lambda.initializeLambda(
         apiName,
         lambdaStyle,
-        undefined,
+        mockApi,
+        key,
         `props!.VPCRef`,
         `props!.SGRef`,
         [
@@ -143,38 +162,10 @@ export const lambdaHandlerForNeptunedb = (
       );
       code.line();
       code.line(
-        `this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`
+        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
       );
-      if (apiType === APITYPE.rest)
-        code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
       code.line();
-    }
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
-    if (database === DATABASE.neptuneDB) {
-      mutationsAndQueries.forEach((key: string) => {
-        lambda.initializeLambda(
-          apiName,
-          lambdaStyle,
-          key,
-          `props!.VPCRef`,
-          `props!.SGRef`,
-          [
-            {
-              name: "NEPTUNE_ENDPOINT",
-              value: `props!.neptuneReaderEndpoint`,
-            },
-          ],
-          `ec2.SubnetType.PRIVATE_ISOLATED`
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        );
-        code.line();
-      });
-    } else {
-      code.line();
-    }
+    });
   }
 };
 
@@ -182,7 +173,6 @@ export const lambdaProperiesHandlerForAuroraDb = (
   apiName: string,
   apiType: string,
   lambdaStyle: string,
-  database: DATABASE,
   mutationsAndQueries?: any
 ) => {
   let properties: Property[] = [
@@ -199,31 +189,28 @@ export const lambdaProperiesHandlerForAuroraDb = (
       isReadonly: false,
     },
   ];
-  if (
-    ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-      apiType === APITYPE.rest) &&
-    database === DATABASE.auroraDB
-  ) {
-    properties = [
-      {
-        name: `${apiName}_lambdaFnArn`,
-        typeName: "string",
-        accessModifier: "public",
-        isReadonly: true,
-      },
-      {
-        name: `${apiName}_lambdaFn`,
-        typeName: "lambda.Function",
-        accessModifier: "public",
-        isReadonly: false,
-      },
-    ];
-    return properties;
-  } else if (
-    lambdaStyle === LAMBDASTYLE.multi &&
-    apiType === APITYPE.graphql &&
-    database === DATABASE.auroraDB
-  ) {
+  // if (
+  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
+  //     apiType === APITYPE.rest) &&
+  //   database === DATABASE.auroraDB
+  // ) {
+  //   properties = [
+  //     {
+  //       name: `${apiName}_lambdaFnArn`,
+  //       typeName: "string",
+  //       accessModifier: "public",
+  //       isReadonly: true,
+  //     },
+  //     {
+  //       name: `${apiName}_lambdaFn`,
+  //       typeName: "lambda.Function",
+  //       accessModifier: "public",
+  //       isReadonly: false,
+  //     },
+  //   ];
+  //   return properties;
+  // }
+  if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
@@ -232,15 +219,14 @@ export const lambdaProperiesHandlerForAuroraDb = (
         isReadonly: true,
       };
     });
-    return properties;
   }
+  return properties;
 };
 
 export const lambdaProperiesHandlerForNeptuneDb = (
   apiName: string,
   apiType: string,
   lambdaStyle: string,
-  database: DATABASE,
   mutationsAndQueries: any
 ) => {
   let properties: Property[] = [
@@ -257,31 +243,28 @@ export const lambdaProperiesHandlerForNeptuneDb = (
       isReadonly: false,
     },
   ];
-  if (
-    ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-      apiType === APITYPE.rest) &&
-    database === DATABASE.neptuneDB
-  ) {
-    properties = [
-      {
-        name: `${apiName}_lambdaFnArn`,
-        typeName: "string",
-        accessModifier: "public",
-        isReadonly: true,
-      },
-      {
-        name: `${apiName}_lambdaFn`,
-        typeName: "lambda.Function",
-        accessModifier: "public",
-        isReadonly: false,
-      },
-    ];
-    return properties;
-  } else if (
-    lambdaStyle === LAMBDASTYLE.multi &&
-    apiType === APITYPE.graphql &&
-    database === DATABASE.neptuneDB
-  ) {
+  // if (
+  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
+  //     apiType === APITYPE.rest) &&
+  //   database === DATABASE.neptuneDB
+  // ) {
+  //   properties = [
+  //     {
+  //       name: `${apiName}_lambdaFnArn`,
+  //       typeName: "string",
+  //       accessModifier: "public",
+  //       isReadonly: true,
+  //     },
+  //     {
+  //       name: `${apiName}_lambdaFn`,
+  //       typeName: "lambda.Function",
+  //       accessModifier: "public",
+  //       isReadonly: false,
+  //     },
+  //   ];
+  //   return properties;
+  // }
+  if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
@@ -290,8 +273,8 @@ export const lambdaProperiesHandlerForNeptuneDb = (
         isReadonly: true,
       };
     });
-    return properties;
   }
+  return properties;
 };
 
 export const lambdaProperiesHandlerForMockApi = (
@@ -315,15 +298,14 @@ export const lambdaProperiesHandlerForMockApi = (
         isReadonly: false,
       },
     ];
-    if (
-      (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-      apiType === APITYPE.rest
-    ) {
-      return properties;
-    } else if (
-      lambdaStyle === LAMBDASTYLE.multi &&
-      apiType === APITYPE.graphql
-    ) {
+    // if (
+    //   (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
+    //   apiType === APITYPE.rest
+    // ) {
+    //   return properties;
+    // }
+
+    if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
       mutationsAndQueries.forEach((key: string, index: number) => {
         properties[index] = {
           name: `${apiName}_lambdaFn_${key}Arn`,
@@ -332,8 +314,23 @@ export const lambdaProperiesHandlerForMockApi = (
           isReadonly: true,
         };
       });
-      return properties;
     }
+    return properties;
+
+    // if (
+    //   lambdaStyle === LAMBDASTYLE.multi &&
+    //   apiType === APITYPE.graphql
+    // ) {
+    //   mutationsAndQueries.forEach((key: string, index: number) => {
+    //     properties[index] = {
+    //       name: `${apiName}_lambdaFn_${key}Arn`,
+    //       typeName: "string",
+    //       accessModifier: "public",
+    //       isReadonly: true,
+    //     };
+    //   });
+    //   return properties;
+    // }
   }
 };
 
@@ -351,20 +348,21 @@ export const lambdaProperiesHandlerForDynoDb = (
       isReadonly: false,
     },
   ];
-  if (
-    (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
-    apiType === APITYPE.rest
-  ) {
-    properties = [
-      {
-        name: `${apiName}_lambdaFn`,
-        typeName: "lambda.Function",
-        accessModifier: "public",
-        isReadonly: false,
-      },
-    ];
-    return properties;
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
+  // if (
+  //   (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
+  //   apiType === APITYPE.rest
+  // ) {
+  //   properties = [
+  //     {
+  //       name: `${apiName}_lambdaFn`,
+  //       typeName: "lambda.Function",
+  //       accessModifier: "public",
+  //       isReadonly: false,
+  //     },
+  //   ];
+  //   return properties;
+  // }
+  if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}`,
@@ -373,8 +371,8 @@ export const lambdaProperiesHandlerForDynoDb = (
         isReadonly: false,
       };
     });
-    return properties;
   }
+  return properties;
 };
 
 export const lambdaHandlerForDynamodb = (
@@ -382,8 +380,8 @@ export const lambdaHandlerForDynamodb = (
   apiName: string,
   apiType: string,
   lambdaStyle: string,
-  database: DATABASE,
-  mutationsAndQueries?: any
+  mutationsAndQueries?: any,
+  mockApi?: boolean
 ) => {
   const lambda = new Lambda(code);
   lambda.lambdaLayer(apiName);
@@ -391,24 +389,23 @@ export const lambdaHandlerForDynamodb = (
     (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
     apiType === APITYPE.rest
   ) {
-    if (database === DATABASE.dynamoDB) {
-      lambda.initializeLambda(
-        apiName,
-        lambdaStyle,
-        undefined,
-        undefined,
-        undefined,
-        [{ name: "TableName", value: "props!.tableName" }]
-      );
-      code.line();
-      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
-    }
-  } else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
-    if (database === DATABASE.dynamoDB) {
+    lambda.initializeLambda(
+      apiName,
+      lambdaStyle,
+      mockApi,
+      undefined,
+      undefined,
+      undefined,
+      [{ name: "TableName", value: "props!.tableName" }]
+    );
+    code.line();
+    code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
+  }  else if (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.multi) {
       mutationsAndQueries.forEach((key: string) => {
         lambda.initializeLambda(
           apiName,
           lambdaStyle,
+          mockApi,
           key,
           undefined,
           undefined,
@@ -420,7 +417,6 @@ export const lambdaHandlerForDynamodb = (
         );
         code.line();
       });
-    }
   } else {
     code.line();
   }

@@ -13,6 +13,7 @@ export enum DATABASE {
   neptuneDB = "Neptune (Graph)",
   auroraDB = "Aurora Serverless (Relational)",
   documentDB = "DocumentDB (NoSQL MongoDB)",
+  none = "None"
 }
 
 export enum SAASTYPE {
@@ -27,6 +28,7 @@ export enum CONSTRUCTS {
   neptuneDB = "VpcNeptuneConstruct",
   auroraDB = "AuroraDBConstruct",
   apigateway = "ApiGatewayConstruct",
+  eventBridge = "EventBridgeConstruct"
 }
 
 export enum TEMPLATE {

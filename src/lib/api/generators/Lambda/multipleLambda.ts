@@ -1,10 +1,7 @@
 import { CodeMaker } from "codemaker";
-import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { ApiModel, APITYPE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
-const _ = require("lodash");
-const SwaggerParser = require("@apidevtools/swagger-parser");
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -24,6 +21,8 @@ class MultipleLambda {
     const {
       api: { lambdaStyle, apiType, mockApi },
     } = this.config;
+    const imp = new Imports(this.code);
+    const lambda = new LambdaFunction(this.code);
 
     if (apiType === APITYPE.graphql) {
       const {
@@ -34,26 +33,25 @@ class MultipleLambda {
         ...mutationFields!,
       ];
 
-      mutationsAndQueries.forEach(async (key: string) => {
+      for (let i = 0; i < mutationsAndQueries.length; i++) {
+        const key = mutationsAndQueries[i];
         this.outputFile = "index.ts";
         this.code.openFile(this.outputFile);
-        
-        const imp = new Imports(this.code);
-        const lambda = new LambdaFunction(this.code);
-        
+
         if (mockApi) {
-          this.code.line(`const data = require("/opt/testCollections")`);
+          this.code.line(`var data = require("/opt/testCollections")`);
+          this.code.line();
         } else {
           imp.importAxios();
           this.code.line();
         }
-        
+
         lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
-        
+
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;
         await this.code.save(this.outputDir);
-      });
+      }
     }
   }
 }

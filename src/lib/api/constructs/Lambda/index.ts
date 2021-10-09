@@ -2,8 +2,7 @@ import { CodeMaker } from "codemaker";
 import {
   CONSTRUCTS,
   DATABASE,
-  LAMBDASTYLE,
-  TEMPLATE,
+  LAMBDASTYLE
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
@@ -21,6 +20,7 @@ export class Lambda {
   public initializeLambda(
     apiName: string,
     lambdaStyle: string,
+    mockApi?:boolean,
     functionName?: string,
     vpcName?: string,
     securityGroupsName?: string,
@@ -45,19 +45,14 @@ export class Lambda {
       ? `vpcSubnets: { subnetType: ${vpcSubnets} },`
       : "";
     let role = roleName ? `role: ${roleName},` : "";
-    let lambdaLayer = `layers:[${apiName}_lambdaLayer]`;
+    let lambdaLayer = `layers:[${apiName}_lambdaLayer],`;
+
     if (lambdaStyle === LAMBDASTYLE.multi) {
       lambdaConstructName = `${apiName}Lambda${functionName}`;
       lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
       funcName = `${apiName}Lambda${functionName}`;
-      handlerName = `${functionName}.handler`;
-      handlerAsset = `lambda/${functionName}`;
-    }
-
-    if (lambdaStyle === LAMBDASTYLE.multi) {
-      lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
-      funcName = `${apiName}Lambda${functionName}`;
       handlerName = `index.handler`;
+      handlerAsset = `lambda/${functionName}`;
     }
 
     ts.writeVariableDeclaration(
@@ -70,7 +65,7 @@ export class Lambda {
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
         code: lambda.Code.fromAsset("${handlerAsset}"),
-        ${lambdaLayer},
+        ${lambdaLayer}
         ${role}
         ${vpc}
         ${securityGroups}
