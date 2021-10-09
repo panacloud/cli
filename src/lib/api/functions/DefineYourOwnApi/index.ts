@@ -4,8 +4,12 @@ import {
   copyFileAsync,
   mkdirRecursiveAsync,
 } from "../../../fs";
-import { contextInfo } from "../../info";
-import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
+import { contextInfo, generatePanacloudConfig } from "../../info";
+import {
+  Config,
+  APITYPE,
+  ApiModel
+} from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -95,8 +99,10 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   );
 
   if (apiType === APITYPE.graphql) {
-    await mkdirRecursiveAsync(`graphql`);
-    await mkdirRecursiveAsync(`graphql/schema`);
+    await mkdirRecursiveAsync(`custom_src`);
+    await mkdirRecursiveAsync(`custom_src/graphql`);
+    await mkdirRecursiveAsync(`custom_src/graphql/schema`);
+    await mkdirRecursiveAsync(`custom_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -134,7 +140,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     });
 
     fs.writeFileSync(
-      `./graphql/schema/schema.graphql`,
+      `./custom_src/graphql/schema/schema.graphql`,
       `${scalars}\n${schema}`,
       (err: string) => {
         if (err) {
@@ -154,6 +160,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
     if (apiType === APITYPE.graphql) {
+    await generatePanacloudConfig(
+      model.api.queiresFields,
+      model.api.mutationFields
+    );
+
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
     }

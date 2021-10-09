@@ -1,3 +1,5 @@
+const fse = require("fs-extra");
+
 export const contextInfo = (apiToken: string, entityId: string) => {
   return {
     api_token: apiToken,
@@ -9,19 +11,24 @@ export const contextInfo = (apiToken: string, entityId: string) => {
   };
 };
 
-// export const lambdaLayerPackageJsonInfo = () => {
-//   return {
-//     name: "lambda-layer",
-//     version: "1.0.0",
-//     description: "",
-//     main: "index.js",
-//     scripts: {
-//       "test": "echo \"Error: no test specified\" && exit 1"
-//     },
-//     author: "",
-//     license: "ISC",
-//     dependencies: {
-//       "axios": "^0.21.1"
-//     }
-// }
-// }
+type configFile = {
+  lambdas:any
+}
+
+type lambdaConfig = {
+  asset_path:string
+}
+
+export const generatePanacloudConfig = async (
+  queiresFields: string[],
+  mutationFields: string[]
+) => {
+  let mutationsAndQueries: string[] = [...queiresFields!, ...mutationFields!];
+
+  let configJson:configFile = {lambdas:{}};
+  mutationsAndQueries.forEach((key: string) => {
+    const lambdas = configJson.lambdas[key] = {} as lambdaConfig
+    lambdas.asset_path= `lambda/${key}/index.ts`;
+  });
+  await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
+};
