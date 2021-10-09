@@ -191,13 +191,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     process.exit(1);
   }
 
-  if (apiType === APITYPE.rest) {
+  // if (apiType === APITYPE.rest) {
     try {
       await exec(`cd lambdaLayer/nodejs && npm install`);
     } catch (error) {
       stopSpinner(installingModules, `Error: ${error}`, true);
       process.exit(1);
-    }
+    // }
   }
 
   stopSpinner(installingModules, "Modules installed", false);

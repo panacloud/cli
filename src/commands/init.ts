@@ -6,7 +6,7 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE, Config, DATABASE } from "../utils/constants";
+import { TEMPLATE, SAASTYPE, Config, DATABASE, LANGUAGE, CLOUDPROVIDER, APITYPE } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -28,21 +28,35 @@ export default class Create extends Command {
     let templateDir;
 
     // Questions
-    let usrInput = await userInput();
+    // let usrInput = await userInput();
 
     // Config to generate code.
+    // const config: Config = {
+    //   entityId: usrInput.entityId,
+    //   api_token: usrInput.api_token,
+    //   saasType: usrInput.saas_type,
+    //   api: {
+    //     template: usrInput.template,
+    //     language: usrInput.language,
+    //     cloudprovider: usrInput.cloud_provider,
+    //     apiName: camelCase(usrInput.api_name),
+    //     schemaPath: usrInput.schema_path,
+    //     apiType: usrInput.api_type,
+    //     database: usrInput.database === DATABASE.none? undefined : usrInput.database,
+    //   },
+    // };
     const config: Config = {
-      entityId: usrInput.entityId,
-      api_token: usrInput.api_token,
-      saasType: usrInput.saas_type,
+      entityId: "S",
+      api_token: "S",
+      saasType: SAASTYPE.api,
       api: {
-        template: usrInput.template,
-        language: usrInput.language,
-        cloudprovider: usrInput.cloud_provider,
-        apiName: camelCase(usrInput.api_name),
-        schemaPath: usrInput.schema_path,
-        apiType: usrInput.api_type,
-        database: usrInput.database === DATABASE.none? undefined : usrInput.database,
+        template: TEMPLATE.defineApi,
+        language: LANGUAGE.typescript,
+        cloudprovider: CLOUDPROVIDER.aws,
+        apiName: camelCase("myApi"),
+        schemaPath: "../schema.graphql",
+        apiType: APITYPE.graphql,
+        database: DATABASE.neptuneDB,
       },
     };
 

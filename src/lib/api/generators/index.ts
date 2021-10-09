@@ -30,41 +30,39 @@ export const generator = async (config: ApiModel) => {
   // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
     AppsyncApiConstruct({ config });
-    AppsyncConstructTest({ config });
-    multipleLambda({ config });
-    mockApiTestCollections({ config });
+    // AppsyncConstructTest({ config });
+
   } else if (config.api.apiType === APITYPE.rest) {
     ApiGatewayConstruct({ config });
-    singleLambda({ config });
   }
 
   // Databases
   if (config.api.database === DATABASE.auroraDB) {
     auroraDBConstruct({ config });
-    auroraDBConstructTest({ config });
+    // auroraDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.neptuneDB) {
     neptuneDBConstruct({ config });
-    neptuneDBConstructTest({ config });
+    // neptuneDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.dynamoDB) {
     dynamoDBConstruct({ config });
-    dynamodbConstructTest({ config });
+    // dynamodbConstructTest({ config });
   }
 
   // lambda Test
-  lambdaConstructTest({ config });
+  // lambdaConstructTest({ config });
   // lambda Construct
   LambdaConstruct({ config });
 
   // Single or Multi
-  // if (
-  //   config.api.apiType === APITYPE.rest
-  // ) {
-  //   singleLambda({ config });
-  // }
-  // else {
-  //   multipleLambda({ config });
-  //   mockApiTestCollections({ config });
-  // }
+  if (
+    config.api.apiType === APITYPE.rest
+  ) {
+    singleLambda({ config });
+  }
+  else {
+    multipleLambda({ config });
+    mockApiTestCollections({ config });
+  }
 };

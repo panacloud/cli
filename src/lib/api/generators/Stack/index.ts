@@ -52,7 +52,7 @@ export class CdkStack {
     const aurora = new AuroraServerless(this.code);
     const lambda = new Lambda(this.code);
     const appsync = new Appsync(this.code);
-    importHandlerForStack(database, apiType, mockApi!, this.code);
+    importHandlerForStack(database, apiType, this.code);
     this.code.line();
 
     cdk.initializeStack(
@@ -70,14 +70,13 @@ export class CdkStack {
           aurora.auroradbConstructInitializer(apiName, this.code);
           this.code.line();
         }
-        if (apiType === APITYPE.rest) {
-          lambda.lambdaConstructInitializer(apiName, database);
-        }
+        
+        lambda.lambdaConstructInitializer(apiName, database);
+        
         database === DATABASE.dynamoDB &&
           LambdaAccessHandler(
             this.code,
             apiName,
-            lambdaStyle,
             apiType,
             mutationsAndQueries
           );

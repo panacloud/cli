@@ -1,6 +1,7 @@
 import { CodeMaker } from "codemaker";
 import { ApiModel } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+import fse = require("fs-extra");
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -8,7 +9,7 @@ type StackBuilderProps = {
 
 class MockApiTestCollectionsFile {
   outputFile: string = `testCollections.ts`;
-  outputDir: string = `lambdaLayer`;
+  outputDir: string = `types`;
   config: ApiModel;
   code: CodeMaker;
 
@@ -45,6 +46,12 @@ class MockApiTestCollectionsFile {
 
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);
+
+    fse.copy("./types", "./lambdaLayer/mockApi").then(() => {
+      fse.remove("./types").then(() => {})
+    })
+
+
   }
 }
 

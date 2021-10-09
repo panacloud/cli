@@ -1,8 +1,8 @@
 import { CodeMaker } from "codemaker";
 import {
+  APITYPE,
   CONSTRUCTS,
-  DATABASE,
-  LAMBDASTYLE
+  DATABASE
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
@@ -19,8 +19,6 @@ export class Lambda {
 
   public initializeLambda(
     apiName: string,
-    lambdaStyle: string,
-    mockApi?:boolean,
     functionName?: string,
     vpcName?: string,
     securityGroupsName?: string,
@@ -29,11 +27,11 @@ export class Lambda {
     roleName?: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-    let lambdaConstructName: string = `${apiName}Lambda`;
-    let lambdaVariable: string = `${apiName}_lambdaFn`;
-    let funcName: string = `${apiName}Lambda`;
-    let handlerName: string = "main.handler";
-    let handlerAsset: string = "lambda";
+    let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
+    let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
+    let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
+    let handlerName: string = functionName? "index.handler" : "main.handler";
+    let handlerAsset: string = functionName? `lambda/${functionName}` : "lambda";
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`
@@ -46,14 +44,6 @@ export class Lambda {
       : "";
     let role = roleName ? `role: ${roleName},` : "";
     let lambdaLayer = `layers:[${apiName}_lambdaLayer],`;
-
-    if (lambdaStyle === LAMBDASTYLE.multi) {
-      lambdaConstructName = `${apiName}Lambda${functionName}`;
-      lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
-      funcName = `${apiName}Lambda${functionName}`;
-      handlerName = `index.handler`;
-      handlerAsset = `lambda/${functionName}`;
-    }
 
     ts.writeVariableDeclaration(
       {
@@ -132,7 +122,6 @@ export class Lambda {
   }
 
   public lambdaTestConstructInitializer(
-    apiName: string,
     database: string,
     code: CodeMaker
   ) {
@@ -177,18 +166,12 @@ export class Lambda {
     lambda: string,
     envName: string,
     value: string,
-    lambdaStyle: string,
-    functionName?: string
+    functionName: string
   ) {
-    if (lambdaStyle === LAMBDASTYLE.single) {
-      this.code.line(
-        `${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`
-      );
-    } else if (lambdaStyle === LAMBDASTYLE.multi) {
       this.code.line(
         `${lambda}_lambdaFn_${functionName}.addEnvironment("${envName}", ${value});`
       );
-    }
+    
   }
 
   public initializeTestForLambdaWithDynamoDB(

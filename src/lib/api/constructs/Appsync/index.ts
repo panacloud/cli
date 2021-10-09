@@ -1,12 +1,5 @@
 import { CodeMaker } from "codemaker";
-import {
-  API,
-  ApiModel,
-  CONSTRUCTS,
-  DATABASE,
-  LAMBDASTYLE,
-  TEMPLATE,
-} from "../../../../utils/constants";
+import { API, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -84,7 +77,7 @@ export class Appsync {
   }
 
   public appsyncDatabasePropsHandler(config: API, code: CodeMaker) {
-    const { apiName, lambdaStyle, queiresFields, mutationFields } = config;
+    const { apiName, queiresFields, mutationFields, database } = config;
     const mutationsAndQueries: string[] = [
       ...queiresFields!,
       ...mutationFields!,
@@ -92,10 +85,12 @@ export class Appsync {
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
 
-    if (lambdaStyle === LAMBDASTYLE.single) {
-      lambdafunc = `${apiName}_lambdaFnArn`;
-      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
-    } else if (lambdaStyle === LAMBDASTYLE.multi) {
+    if (database === DATABASE.dynamoDB) {
+      mutationsAndQueries.forEach((key: string) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
+      });
+    } else {
       mutationsAndQueries.forEach((key: string) => {
         lambdafunc = `${apiName}_lambdaFn_${key}Arn`;
         code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc},`);
@@ -106,21 +101,15 @@ export class Appsync {
   public appsyncLambdaDataSource(
     dataSourceName: string,
     serviceRole: string,
-    lambdaStyle: string,
-    functionName?: string
+    functionName: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-    let ds_initializerName = this.apiName + "dataSourceGraphql";
-    let ds_variable = `ds_${dataSourceName}`;
-    let ds_name = `${dataSourceName}_dataSource`;
-    let lambdaFunctionArn = `props!.${this.apiName}_lambdaFnArn`;
 
-    if (lambdaStyle === LAMBDASTYLE.multi) {
-      ds_initializerName = this.apiName + "dataSourceGraphql" + functionName;
-      ds_variable = `ds_${dataSourceName}_${functionName}`;
-      ds_name = `${this.apiName}_dataSource_${functionName}`;
-      lambdaFunctionArn = `props!.${this.apiName}_lambdaFn_${functionName}Arn`;
-    }
+    const ds_initializerName =
+      this.apiName + "dataSourceGraphql" + functionName;
+    const ds_variable = `ds_${dataSourceName}_${functionName}`;
+    const ds_name = `${this.apiName}_dataSource_${functionName}`;
+    const lambdaFunctionArn = `props!.${this.apiName}_lambdaFn_${functionName}Arn`;
 
     ts.writeVariableDeclaration(
       {
@@ -166,7 +155,6 @@ export class Appsync {
 
   public appsyncTestConstructInitializer(
     apiName: string,
-    lambdaStyle: string,
     database: string,
     mutationsAndQueries: string[]
   ) {
@@ -174,26 +162,14 @@ export class Appsync {
     this.code.line(
       `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "${CONSTRUCTS.appsync}Test", {`
     );
-    if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
-      this.code.line(
-        `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn`
-      );
-    } else if (
-      lambdaStyle === LAMBDASTYLE.multi &&
-      database === DATABASE.dynamoDB
-    ) {
+    if (database === DATABASE.dynamoDB) {
       mutationsAndQueries.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         this.code.line(
           `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn,`
         );
       });
-    } else if (lambdaStyle === LAMBDASTYLE.single) {
-      lambdafunc = `${apiName}_lambdaFnArn`;
-      this.code.line(
-        `${lambdafunc} : ${CONSTRUCTS.lambda}_stack.${lambdafunc}`
-      );
-    } else if (lambdaStyle === LAMBDASTYLE.multi) {
+    } else {
       mutationsAndQueries.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
         this.code.line(
