@@ -108,7 +108,7 @@
   "scripts": {
     "postpack": "rimraf oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "copy-files": "copyfiles -a -u 1 \"./src/lib/api/template/**/*\" lib",
+    "copy-files": "copyfiles -a -u 1 \"./src/lib/api/template/**/*\" \"./src/utils/*.graphql\" lib",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && yarn copy-files",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"

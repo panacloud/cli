@@ -7,6 +7,7 @@ import {
   validateSchemaFile,
 } from "../lib/api/errorHandling";
 import { TEMPLATE, SAASTYPE, Config, DATABASE } from "../utils/constants";
+import { writeFileAsync } from "../lib/fs";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
