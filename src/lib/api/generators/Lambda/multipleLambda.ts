@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
+import { ApiModel, APITYPE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 
@@ -19,7 +19,7 @@ class MultipleLambda {
 
   async MultipleLambdaFile() {
     const {
-      api: { lambdaStyle, apiType, mockApi, architecture },
+      api: { lambdaStyle, apiType, mockApi },
     } = this.config;
     const imp = new Imports(this.code);
     const lambda = new LambdaFunction(this.code);
@@ -45,33 +45,8 @@ class MultipleLambda {
           imp.importAxios();
           this.code.line();
         }
-        if (architecture === ARCHITECTURE.eventDriven)
-          lambda.initializeLambdaFunction(
-            lambdaStyle,
-            apiType,
-            mockApi,
-            key,
-            () => {
-              this.code.indent(`
-                const eventBridge = new AWS.EventBridge({ region: "us-east-2" });
 
-                eventBridge
-                  .putEvents({
-                    Entries: [
-                      {
-                        EventBusName: "default",
-                        Source: "mutationFunction",
-                        DetailType: "mutation",
-                        Detail: {"mutationName": event.info.fieldName},
-                      },
-                    ],
-                  })
-                  .promise();
-          `);
-            }
-          );
-        else
-          lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
+        lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
 
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;

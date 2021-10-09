@@ -37,11 +37,6 @@ export enum TEMPLATE {
   defineApi = "Define Your Own API",
 }
 
-export enum ARCHITECTURE {
-  requestDriven = "Request-Driven Architecture",
-  eventDriven = "Event-Driven Architecture"
-}
-
 export enum CLOUDPROVIDER {
   aws = "AWS",
 }
@@ -72,7 +67,6 @@ export interface API {
   template: TEMPLATE;
   language: LANGUAGE;
   cloudprovider: CLOUDPROVIDER;
-  architecture: ARCHITECTURE;
   apiName: string;
   schemaPath: string;
   schema?: any;

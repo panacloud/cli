@@ -5,8 +5,7 @@ import {
   DATABASE,
   CLOUDPROVIDER,
   LANGUAGE,
-  SAASTYPE,
-  ARCHITECTURE,
+  SAASTYPE
 } from "../utils/constants";
 import { fileExistsAsync } from "./fs";
 const inquirer = require("inquirer");
@@ -43,14 +42,6 @@ export const userInput = async () => {
       message: "Which Kind of Mutli-Tenant Serverless API?",
       choices: [TEMPLATE.basicApi, TEMPLATE.todoApi, TEMPLATE.defineApi],
       default: TEMPLATE.basicApi,
-      validate: Boolean,
-    },
-    {
-      type: "list",
-      name: "architecture",
-      message: "Select architecture type?",
-      choices: [ARCHITECTURE.requestDriven, ARCHITECTURE.eventDriven],
-      default: ARCHITECTURE.requestDriven,
       validate: Boolean,
     },
     {

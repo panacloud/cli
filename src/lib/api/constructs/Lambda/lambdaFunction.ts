@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
+import { LAMBDASTYLE, APITYPE } from "../../../../utils/constants";
 
 export class LambdaFunction {
   code: CodeMaker;

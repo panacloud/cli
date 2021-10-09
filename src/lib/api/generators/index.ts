@@ -1,7 +1,6 @@
 import {
   ApiModel,
   APITYPE,
-  ARCHITECTURE,
   DATABASE,
   LAMBDASTYLE,
 } from "../../../utils/constants";
@@ -15,7 +14,6 @@ import { dynamodbConstructTest } from "./CdkTests/Dynamodb";
 import { lambdaConstructTest } from "./CdkTests/Lambda";
 import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
-import { eventBridgeConstruct } from "./EventBridge";
 import { LambdaConstruct } from "./Lambda";
 import { multipleLambda } from "./Lambda/multipleLambda";
 import { singleLambda } from "./Lambda/singleLambda";
@@ -70,9 +68,5 @@ export const generator = async (config: ApiModel) => {
 
   if (config.api.mockApi) {
     mockApiTestCollections({ config });
-  }
-
-  if(config.api.architecture === ARCHITECTURE.eventDriven) {
-    eventBridgeConstruct({ config })
   }
 };

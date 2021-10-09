@@ -1,11 +1,5 @@
 import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import {
-  CONSTRUCTS,
-  LAMBDASTYLE,
-  Config,
-  ApiModel,
-  ARCHITECTURE,
-} from "../../../../utils/constants";
+import { CONSTRUCTS, LAMBDASTYLE, ApiModel } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -30,7 +24,7 @@ class AppsyncConstruct {
 
   async AppsyncConstructFile() {
     const {
-      api: { apiName, lambdaStyle, schemaPath, queiresFields, mutationFields, architecture },
+      api: { apiName, lambdaStyle, schemaPath, queiresFields, mutationFields },
     } = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
@@ -54,27 +48,12 @@ class AppsyncConstruct {
     ];
 
     if (lambdaStyle && lambdaStyle === LAMBDASTYLE.multi) {
-      if(architecture === ARCHITECTURE.eventDriven) {
-        queiresFields!.forEach((key: string, index: number) => {
-          ConstructProps[index] = {
-            name: `${apiName}_lambdaFn_${key}Arn`,
-            type: "string",
-          };
-        });
-        ConstructProps.push({
-          name: `${apiName}_lambdaFn_eventProducerArn`,
+      mutationsAndQueries.forEach((key: string, index: number) => {
+        ConstructProps[index] = {
+          name: `${apiName}_lambdaFn_${key}Arn`,
           type: "string",
-        })
-      }
-      else {
-        mutationsAndQueries.forEach((key: string, index: number) => {
-          ConstructProps[index] = {
-            name: `${apiName}_lambdaFn_${key}Arn`,
-            type: "string",
-          };
-        });
-      }
-      
+        };
+      });
     }
 
     cdk.initializeConstruct(
@@ -92,15 +71,9 @@ class AppsyncConstruct {
         this.code.line();
         iam.attachLambdaPolicyToRole(`${apiName}`);
         this.code.line();
-        appsyncDatasourceHandler(
-          this.config,
-          this.code,
-        );
+        appsyncDatasourceHandler(this.config, this.code);
         this.code.line();
-        appsyncResolverhandler(
-          this.config,
-          this.code,
-        );
+        appsyncResolverhandler(this.config, this.code);
       },
       ConstructProps
     );
