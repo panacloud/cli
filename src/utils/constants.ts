@@ -76,3 +76,12 @@ export interface API {
   mockApiData?: mockApiData;
   mockApi?: boolean
 }
+
+
+export type PanacloudconfigFile = {
+  lambdas:any
+}
+
+export type PanacloudConfiglambdaParams = {
+  asset_path:string
+}
