@@ -79,9 +79,10 @@ export class LambdaFunction {
     this.code.line();
     this.code.line(`exports.handler = async (event: any) => {`);
 
-    this.code.indent(
+    this.code.line(
       `const data = await axios.post('http://sandbox:8080', event)`
     );
+    this.code.line();
     this.code.line(`}`);
   }
 }
