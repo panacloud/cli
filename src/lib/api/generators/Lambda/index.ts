@@ -37,7 +37,7 @@ class lambdaConstruct {
 
   async LambdaConstructFile() {
     const {
-      api: { apiName, lambdaStyle, apiType, database , mockApi },
+      api: { apiName, apiType, database },
     } = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
@@ -53,15 +53,14 @@ class lambdaConstruct {
     const lambda = new Lambda(this.code);
     imp.importLambda();
 
-    if (mockApi) {
-      lambdaProperties = lambdaProperiesHandlerForMockApi(
-        apiName,
-        apiType,
-        lambdaStyle,
-        mutationsAndQueries
-      );
-    }
-    else if (database === DATABASE.dynamoDB) {
+    // if (mockApi) {
+    //   lambdaProperties = lambdaProperiesHandlerForMockApi(
+    //     apiName,
+    //     apiType,
+    //     mutationsAndQueries
+    //   );
+    // }
+    if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
           name: "tableName",
@@ -70,7 +69,6 @@ class lambdaConstruct {
       ];
       lambdaPropsWithName = "handlerProps";
       lambdaProperties = lambdaProperiesHandlerForDynoDb(
-        lambdaStyle,
         apiName,
         apiType,
         mutationsAndQueries
@@ -83,7 +81,6 @@ class lambdaConstruct {
       lambdaProperties = lambdaProperiesHandlerForNeptuneDb(
         apiName,
         apiType,
-        lambdaStyle,
         mutationsAndQueries
       );
     }
@@ -95,7 +92,6 @@ class lambdaConstruct {
       lambdaProperties = lambdaProperiesHandlerForAuroraDb(
         apiName,
         apiType,
-        lambdaStyle,
         mutationsAndQueries
       );
     }
@@ -103,45 +99,39 @@ class lambdaConstruct {
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
       () => {
-        if (mockApi) {
-          lambda.lambdaLayer(apiName);
-          mutationsAndQueries.forEach((key: string) => {
-            lambda.initializeLambda(apiName, lambdaStyle, mockApi , key);
-            this.code.line();
-            this.code.line(
-              `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-            );
-            this.code.line();
-          });
-        }
-        else if (database === DATABASE.dynamoDB) {
+        // if (mockApi) {
+        //   lambda.lambdaLayer(apiName);
+        //   mutationsAndQueries.forEach((key: string) => {
+        //     lambda.initializeLambda(apiName , key);
+        //     this.code.line();
+        //     this.code.line(
+        //       `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        //     );
+        //     this.code.line();
+        //   });
+        // }
+        if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
             apiName,
             apiType,
-            lambdaStyle,
             mutationsAndQueries,
-            mockApi
           );
         }
         else if (database === DATABASE.neptuneDB) {
           lambdaHandlerForNeptunedb(
             this.code,
-            lambdaStyle,
             apiType,
             apiName,
             mutationsAndQueries,
-            mockApi
           );
         }
         else if (database === DATABASE.auroraDB) {
           lambdaHandlerForAuroradb(
             this.code,
-            lambdaStyle,
             apiType,
             apiName,
             mutationsAndQueries,
-            mockApi
           );
         }
       },

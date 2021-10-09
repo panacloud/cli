@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { LAMBDASTYLE, APITYPE } from "../../../../utils/constants";
+import { APITYPE } from "../../../../utils/constants";
 
 export class LambdaFunction {
   code: CodeMaker;
@@ -7,51 +7,40 @@ export class LambdaFunction {
     this.code = _code;
   }
   public initializeLambdaFunction(
-    lambdaStyle: string,
     apiType: APITYPE,
-    mockApi?: boolean,
-    fieldName?: string,
-    content?: any
+    content?: any,
+    fieldName?: string
   ) {
-
     if (apiType === APITYPE.graphql) {
-       if (lambdaStyle === LAMBDASTYLE.multi) {
-        this.code.line(`var AWS = require('aws-sdk')`);
-        this.code.line();
-        this.code.line(`exports.handler = async (event: any) => {`);
-        if (!mockApi) {
-          this.code.line(
-            `const data = await axios.post('http://sandbox:8080', event)`
-          );
-        } else {
-          this.code.line(`
-          let response = {}
-          data.testCollections.fields.${fieldName}.forEach((item:any) => {
-             if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){
-                response = item.response
-             }  
-          })
-        return response
+      this.code.line(`var AWS = require('aws-sdk');`);
+      this.code.line(`var isEqual = require('lodash.isequal');`);
+      this.code.line();
+      this.code.line(`exports.handler = async (event: any) => {`);
+
+      // this.code.line(
+      //   `const data = await axios.post('http://sandbox:8080', event)`
+      // );
+
+      this.code.line(`
+          let response = {};
+          testCollections.fields.${fieldName}.forEach((v: any) => {
+            if (v.arguments) {
+              let equal = isEqual(
+                Object.values(v.arguments)[0],
+                Object.values(event.arguments)[0]
+              );
+              if (equal) {
+                response = v.response;
+              }
+            } else {
+              response = v.response;
+            }
+          });
+          return response;
         `);
-        }
-        this.code.line();
-        this.code.line(`}`);
-      } else if (lambdaStyle === LAMBDASTYLE.single) {
-        
-        this.code.line(`exports.handler = async (event:Event) => {`);
-        if(!mockApi){
-          this.code.line(
-            `const data = await axios.post('http://sandbox:8080', event)`
-          );  
-        }
-        this.code.line();
-        this.code.line(`switch (event.info.fieldName) {`);
-        this.code.line();
-        content();
-        this.code.line();
-        this.code.line(`}`);
-        this.code.line(`}`);
-      } 
+
+      this.code.line();
+      this.code.line(`}`);
     } else {
       /* rest api */
       this.code.line(`exports.handler = async (event: any) => {`);
@@ -76,7 +65,6 @@ export class LambdaFunction {
   }
 
   public helloWorldFunction(name: string) {
-
     this.code.line(`
     const AWS = require('aws-sdk');
     
@@ -84,5 +72,17 @@ export class LambdaFunction {
       // write your code here
     }
     `);
+  }
+
+  public emptyLambdaFunction() {
+    this.code.line(`var AWS = require('aws-sdk');`);
+    this.code.line();
+    this.code.line(`exports.handler = async (event: any) => {`);
+
+    this.code.line(
+      `const data = await axios.post('http://sandbox:8080', event)`
+    );
+    this.code.line();
+    this.code.line(`}`);
   }
 }

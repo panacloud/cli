@@ -19,7 +19,7 @@ class MultipleLambda {
 
   async MultipleLambdaFile() {
     const {
-      api: { lambdaStyle, apiType, mockApi },
+      api: { apiType },
     } = this.config;
     const imp = new Imports(this.code);
     const lambda = new LambdaFunction(this.code);
@@ -38,15 +38,13 @@ class MultipleLambda {
         this.outputFile = "index.ts";
         this.code.openFile(this.outputFile);
 
-        if (mockApi) {
-          this.code.line(`var data = require("/opt/testCollections")`);
+          this.code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
           this.code.line();
-        } else {
-          imp.importAxios();
-          this.code.line();
-        }
+          // imp.importAxios();
+          // this.code.line();
+        
 
-        lambda.initializeLambdaFunction(lambdaStyle, apiType, mockApi, key);
+        lambda.initializeLambdaFunction(apiType, undefined, key);
 
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;

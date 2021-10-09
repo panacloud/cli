@@ -1,7 +1,6 @@
 import {
   TEMPLATE,
   APITYPE,
-  LAMBDASTYLE,
   DATABASE,
   CLOUDPROVIDER,
   LANGUAGE,
@@ -45,27 +44,16 @@ export const userInput = async () => {
       validate: Boolean,
     },
     {
-      type: "confirm",
-      name: "mockApi",
-      message: "Mock Server",
-      validate: Boolean,
-      when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi ||
-        answers.template === TEMPLATE.todoApi,
-    },
-    {
       type: "string",
       name: "entityId",
       message: "Enter Your Panacloud Portal User ID",
-      validate: Boolean,
-      when: (answers: any) => !answers.mockApi,
+      validate: Boolean
     },
     {
       type: "string",
       name: "api_token",
       message: "Enter Your Panacloud Portal API Key",
-      validate: Boolean,
-      when: (answers: any) => !answers.mockApi,
+      validate: Boolean
     },
     {
       type: "list",
@@ -96,16 +84,6 @@ export const userInput = async () => {
       message: "API Name",
       default: "myApi",
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
-      validate: Boolean,
-    },
-    {
-      type: "list",
-      name: "lambda",
-      message: "Lambda Handlers?",
-      choices: [LAMBDASTYLE.single, LAMBDASTYLE.multi],
-      default: LAMBDASTYLE.multi,
-      when: (answers: any) =>
-        answers.api_type === APITYPE.graphql && !answers.mockApi,
       validate: Boolean,
     },
     {

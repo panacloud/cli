@@ -6,7 +6,7 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE, Config, DATABASE } from "../utils/constants";
+import { TEMPLATE, SAASTYPE, Config, DATABASE, LANGUAGE, CLOUDPROVIDER, APITYPE } from "../utils/constants";
 import { writeFileAsync } from "../lib/fs";
 const path = require("path");
 const chalk = require("chalk");
@@ -43,9 +43,7 @@ export default class Create extends Command {
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
-        lambdaStyle: usrInput.lambda,
         database: usrInput.database === DATABASE.none? undefined : usrInput.database,
-        mockApi: usrInput.mockApi,
       },
     };
 

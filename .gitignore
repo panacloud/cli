@@ -9,3 +9,4 @@ node_modules
 panacloud
 newPanacloud
 .env
+code*
