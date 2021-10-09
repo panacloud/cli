@@ -1,10 +1,5 @@
 import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import {
-  CONSTRUCTS,
-  LAMBDASTYLE,
-  Config,
-  ApiModel,
-} from "../../../../utils/constants";
+import { CONSTRUCTS, LAMBDASTYLE, ApiModel } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -76,20 +71,9 @@ class AppsyncConstruct {
         this.code.line();
         iam.attachLambdaPolicyToRole(`${apiName}`);
         this.code.line();
-        appsyncDatasourceHandler(
-          apiName,
-          lambdaStyle,
-          this.code,
-          mutationsAndQueries
-        );
+        appsyncDatasourceHandler(this.config, this.code);
         this.code.line();
-        appsyncResolverhandler(
-          apiName,
-          lambdaStyle,
-          this.code,
-          queiresFields!,
-          mutationFields!
-        );
+        appsyncResolverhandler(this.config, this.code);
       },
       ConstructProps
     );

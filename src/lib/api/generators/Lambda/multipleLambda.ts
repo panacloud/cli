@@ -21,6 +21,8 @@ class MultipleLambda {
     const {
       api: { lambdaStyle, apiType, mockApi },
     } = this.config;
+    const imp = new Imports(this.code);
+    const lambda = new LambdaFunction(this.code);
 
     if (apiType === APITYPE.graphql) {
       const {
@@ -31,12 +33,10 @@ class MultipleLambda {
         ...mutationFields!,
       ];
 
-      mutationsAndQueries.forEach(async (key: string) => {
+      for (let i = 0; i < mutationsAndQueries.length; i++) {
+        const key = mutationsAndQueries[i];
         this.outputFile = "index.ts";
         this.code.openFile(this.outputFile);
-
-        const imp = new Imports(this.code);
-        const lambda = new LambdaFunction(this.code);
 
         if (mockApi) {
           this.code.line(`var data = require("/opt/testCollections")`);
@@ -51,7 +51,7 @@ class MultipleLambda {
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;
         await this.code.save(this.outputDir);
-      });
+      }
     }
   }
 }

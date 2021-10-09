@@ -2,8 +2,7 @@ import { CodeMaker } from "codemaker";
 import {
   CONSTRUCTS,
   DATABASE,
-  LAMBDASTYLE,
-  TEMPLATE,
+  LAMBDASTYLE
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
@@ -21,7 +20,7 @@ export class Lambda {
   public initializeLambda(
     apiName: string,
     lambdaStyle: string,
-    mockApi?: boolean,
+    mockApi?:boolean,
     functionName?: string,
     vpcName?: string,
     securityGroupsName?: string,
