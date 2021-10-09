@@ -23,7 +23,7 @@ class MockApiTestCollectionsFile {
     this.code.openFile("testCollectionsTypes.ts");
 
     if (this.config.api.mockApiData?.imports) {
-      ts.writeImports("../graphql/types", [
+      ts.writeImports("../custom_src/graphql/types", [
         ...this.config.api.mockApiData?.imports,
       ]);
     }

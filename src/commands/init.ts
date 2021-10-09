@@ -6,6 +6,7 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
+import { writeFileAsync } from "../lib/fs";
 import { TEMPLATE, SAASTYPE, Config } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
@@ -62,6 +63,17 @@ export default class Create extends Command {
         );
       }
     }
+
+    writeFileAsync(
+      `./codegenconfig.json`,
+      JSON.stringify(config),
+      (err: string) => {
+        if (err) {
+          stopSpinner(validating, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      }
+    );
 
     stopSpinner(validating, "Everything's fine", false);
 
