@@ -5,7 +5,8 @@ import {
     Config,
     APITYPE,
     ApiModel,
-    LAMBDASTYLE,
+    PanacloudconfigFile
+    // LAMBDASTYLE,
 } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
@@ -47,15 +48,14 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
-    await updatePanacloudConfig(
+    const updatedPanacloudConfig = await updatePanacloudConfig(
         model.api.queiresFields,
         model.api.mutationFields,
         spinner
     );
 
-
     // Codegenerator Function
-    await generator(model);
+    await generator(model, updatedPanacloudConfig);
 
 }
 

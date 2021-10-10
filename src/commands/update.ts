@@ -10,6 +10,7 @@ import { TEMPLATE, SAASTYPE, Config, APITYPE } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fse = require("fs-extra");
+const fs = require("fs");
 const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
@@ -81,7 +82,7 @@ export default class Create extends Command {
     stopSpinner(generatingTypes, "Types generated", false);
 
     // const formatting = startSpinner("Formatting Code");
-    // // Formatting files.
+    // // // Formatting files.
     // const files = await globby(
     //   [
     //     "*",
@@ -98,6 +99,8 @@ export default class Create extends Command {
     //     gitignore: true,
     //   }
     // );
+
+    // console.log("files ", files);
     // files.forEach(async (file: any) => {
     //   const data = fs.readFileSync(file, "utf8");
     //   const nextData = prettier.format(data, {

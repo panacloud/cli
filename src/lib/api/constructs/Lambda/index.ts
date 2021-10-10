@@ -2,19 +2,26 @@ import { CodeMaker } from "codemaker";
 import {
   APITYPE,
   CONSTRUCTS,
-  DATABASE
+  DATABASE,
+  PanacloudconfigFile
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+const fse = require("fs-extra");
 
 interface Environment {
   name: string;
   value: string;
 }
 
+
 export class Lambda {
   code: CodeMaker;
-  constructor(_code: CodeMaker) {
+  panacloudConfig: PanacloudconfigFile
+  // configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
+  constructor(_code: CodeMaker, panacloudConfig: PanacloudconfigFile) {
     this.code = _code;
+    this.panacloudConfig = panacloudConfig;
+
   }
 
   public initializeLambda(
@@ -31,7 +38,7 @@ export class Lambda {
     let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     let handlerName: string = functionName? "index.handler" : "main.handler";
-    let handlerAsset: string = functionName? `lambda/${functionName}` : "lambda";
+    let handlerAsset: string = functionName? this.panacloudConfig.lambdas[functionName].asset_path : "lambda";
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`

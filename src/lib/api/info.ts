@@ -36,9 +36,7 @@ export const updatePanacloudConfig = async (
   spinner: any
 ) => {
   let newLambdas: string[] = [...queiresFields!, ...mutationFields!];
-
-  const configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudConfig.json')
-
+  const configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
 
   let prevLambdas = Object.keys(configPanacloud.lambdas)
 
@@ -61,14 +59,15 @@ export const updatePanacloudConfig = async (
     }
   }
 
-  fse.removeSync('custom_src/panacloudConfig.json')
-
-  await fse.writeJson(`./custom_src/panacloudconfig.json`, panacloudConfigNew, (err: string) => {
+  fse.removeSync('custom_src/panacloudconfig.json')
+  fse.writeJson(`./custom_src/panacloudconfig.json`, panacloudConfigNew, (err: string) => {
     if (err) {
       stopSpinner(spinner, `Error: ${err}`, true);
       process.exit(1);
     }
   });
+
+  return panacloudConfigNew;
 
 
 };
