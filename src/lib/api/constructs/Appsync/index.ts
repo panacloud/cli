@@ -1,4 +1,5 @@
 import { CodeMaker } from "codemaker";
+import { IntrospectionQuery } from "graphql";
 import {
   CONSTRUCTS,
   DATABASE,
@@ -35,6 +36,21 @@ export class Appsync {
       },
       "const"
     );
+  }
+
+  public initializeNestedResolver(types:string[]){
+    // schema.__schema.types.map((type)=>{
+    //   if(typesNameFinder(type)){
+    //     if(ScalarAndEnumTypesFinder(type)){
+    //       console.log("typeName ===>",type.name)
+    //       // const fields = schemaAst.getType(type.name) as GraphQLObjectType
+    //       // const typeFields = fields.getFields()
+    
+    //       // console.log("type Fields --------->",Object.keys(typeFields))
+    //       // console.log("fields for types --->",JSON.stringify(fileds.getFields(),null,1))
+    //     }
+    //   }
+    // })
   }
 
   public initializeAppsyncSchema(schema: string) {
@@ -301,5 +317,5 @@ export class Appsync {
       DataSourceName: "${dataSourceName}",
     })
 `);
-  }
+}
 }

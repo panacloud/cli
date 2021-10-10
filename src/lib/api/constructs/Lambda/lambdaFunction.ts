@@ -17,7 +17,24 @@ export class LambdaFunction {
     const ts = new TypeScriptWriter(this.code);
 
     if (apiType === APITYPE.graphql) {
-      if (lambdaStyle === LAMBDASTYLE.multi) {
+      if (mockApi) {
+        this.code.line(`var AWS = require('aws-sdk')`);
+        this.code.line(`
+        exports.handler = async (event: any) => {
+           let response = {}
+           data.testCollections.fields.${fieldName}.forEach((item:any) => {
+              if(JSON.stringify(item.arguments) == JSON.stringify(event.arguments)){
+                 response = item.response
+              }  
+           })
+          
+         return response
+
+        }
+        
+      `);
+      }
+      else if (lambdaStyle === LAMBDASTYLE.multi) {
         this.code.line(`var AWS = require('aws-sdk')`);
         this.code.line;
 
