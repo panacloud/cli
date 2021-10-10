@@ -3,7 +3,6 @@ import {
   APITYPE,
   DATABASE,
   ApiModel,
-  TEMPLATE,
 } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -38,7 +37,7 @@ class lambdaConstruct {
 
   async LambdaConstructFile() {
     const {
-      api: { apiName, lambdaStyle, apiType, database , mockApi },
+      api: { apiName, apiType, database },
     } = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
@@ -54,14 +53,13 @@ class lambdaConstruct {
     const lambda = new Lambda(this.code);
     imp.importLambda();
 
-    if (mockApi) {
-      lambdaProperties = lambdaProperiesHandlerForMockApi(
-        apiName,
-        apiType,
-        lambdaStyle,
-        mutationsAndQueries
-      );
-    }
+    // if (mockApi) {
+    //   lambdaProperties = lambdaProperiesHandlerForMockApi(
+    //     apiName,
+    //     apiType,
+    //     mutationsAndQueries
+    //   );
+    // }
     if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
@@ -71,25 +69,22 @@ class lambdaConstruct {
       ];
       lambdaPropsWithName = "handlerProps";
       lambdaProperties = lambdaProperiesHandlerForDynoDb(
-        lambdaStyle,
         apiName,
         apiType,
         mutationsAndQueries
       );
     }
-    if (database === DATABASE.neptuneDB) {
+    else if (database === DATABASE.neptuneDB) {
       imp.importEc2();
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForNeptunedb();
       lambdaProperties = lambdaProperiesHandlerForNeptuneDb(
         apiName,
         apiType,
-        lambdaStyle,
-        database,
         mutationsAndQueries
       );
     }
-    if (database === DATABASE.auroraDB) {
+    else if (database === DATABASE.auroraDB) {
       imp.importEc2();
       imp.importIam();
       lambdaPropsWithName = "handlerProps";
@@ -97,8 +92,6 @@ class lambdaConstruct {
       lambdaProperties = lambdaProperiesHandlerForAuroraDb(
         apiName,
         apiType,
-        lambdaStyle,
-        database,
         mutationsAndQueries
       );
     }
@@ -106,44 +99,39 @@ class lambdaConstruct {
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
       () => {
-        if (mockApi) {
-          mutationsAndQueries.forEach((key: string) => {
-            lambda.initializeLambda(apiName, lambdaStyle, key);
-            this.code.line();
-            this.code.line(
-              `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-            );
-            this.code.line();
-          });
-        }
+        // if (mockApi) {
+        //   lambda.lambdaLayer(apiName);
+        //   mutationsAndQueries.forEach((key: string) => {
+        //     lambda.initializeLambda(apiName , key);
+        //     this.code.line();
+        //     this.code.line(
+        //       `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        //     );
+        //     this.code.line();
+        //   });
+        // }
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
             apiName,
             apiType,
-            lambdaStyle,
-            database,
-            mutationsAndQueries
+            mutationsAndQueries,
           );
         }
-        if (database === DATABASE.neptuneDB) {
+        else if (database === DATABASE.neptuneDB) {
           lambdaHandlerForNeptunedb(
             this.code,
-            lambdaStyle,
-            database,
             apiType,
             apiName,
-            mutationsAndQueries
+            mutationsAndQueries,
           );
         }
-        if (database === DATABASE.auroraDB) {
+        else if (database === DATABASE.auroraDB) {
           lambdaHandlerForAuroradb(
             this.code,
-            lambdaStyle,
-            database,
             apiType,
             apiName,
-            mutationsAndQueries
+            mutationsAndQueries,
           );
         }
       },

@@ -6,7 +6,8 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE, Config } from "../utils/constants";
+import { TEMPLATE, SAASTYPE, Config, DATABASE, LANGUAGE, CLOUDPROVIDER, APITYPE } from "../utils/constants";
+import { writeFileAsync } from "../lib/fs";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -42,9 +43,7 @@ export default class Create extends Command {
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
-        lambdaStyle: usrInput.lambda,
-        database: usrInput.database,
-        mockApi: usrInput.mockApi,
+        database: usrInput.database === DATABASE.none? undefined : usrInput.database,
       },
     };
 
@@ -62,6 +61,17 @@ export default class Create extends Command {
         );
       }
     }
+
+    writeFileAsync(
+      `./codegenconfig.json`,
+      JSON.stringify(config),
+      (err: string) => {
+        if (err) {
+          stopSpinner(validating, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      }
+    );
 
     stopSpinner(validating, "Everything's fine", false);
 

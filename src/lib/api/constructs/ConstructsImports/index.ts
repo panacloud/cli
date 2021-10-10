@@ -42,6 +42,12 @@ export class Imports {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_iam as iam"]);
   }
+  
+  public importEventBridge() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["aws_events as events"])
+    ts.writeImports("aws-cdk-lib", ["aws_events_targets as targets"])
+  } 
 
   public importLambda() {
     const ts = new TypeScriptWriter(this.code);

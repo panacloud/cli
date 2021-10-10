@@ -4,13 +4,8 @@ import {
   copyFileAsync,
   mkdirRecursiveAsync,
 } from "../../../fs";
-import { contextInfo } from "../../info";
-import {
-  Config,
-  APITYPE,
-  ApiModel,
-  LAMBDASTYLE,
-} from "../../../../utils/constants";
+import { contextInfo, generatePanacloudConfig } from "../../info";
+import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -25,7 +20,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
 
   const {
-    api: { schemaPath, apiType, mockApi },
+    api: { schemaPath, apiType },
   } = config;
 
   const workingDir = _.snakeCase(path.basename(process.cwd()));
@@ -41,11 +36,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   /* copy files from global package dir to cwd */
   fs.readdirSync(templateDir).forEach(async (file: any) => {
-    if (
-      file !== "package.json" &&
-      file !== "cdk.json" &&
-      (mockApi ? file !== "lambdaLayer" : true)
-    ) {
+    if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         fse.copy(`${templateDir}/${file}`, ".gitignore");
       } else {
@@ -92,22 +83,22 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   );
 
-  if (!mockApi) {
-    writeFileAsync(
-      `./cdk.context.json`,
-      JSON.stringify(contextInfo(api_token, entityId)),
-      (err: string) => {
-        if (err) {
-          stopSpinner(generatingCode, `Error: ${err}`, true);
-          process.exit(1);
-        }
+  writeFileAsync(
+    `./cdk.context.json`,
+    JSON.stringify(contextInfo(api_token, entityId)),
+    (err: string) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
       }
-    );
-  }
+    }
+  );
 
   if (apiType === APITYPE.graphql) {
-    await mkdirRecursiveAsync(`graphql`);
-    await mkdirRecursiveAsync(`graphql/schema`);
+    await mkdirRecursiveAsync(`custom_src`);
+    await mkdirRecursiveAsync(`custom_src/graphql`);
+    await mkdirRecursiveAsync(`custom_src/graphql/schema`);
+    await mkdirRecursiveAsync(`custom_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -145,7 +136,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     });
 
     fs.writeFileSync(
-      `./graphql/schema/schema.graphql`,
+      `./custom_src/graphql/schema/schema.graphql`,
       `${scalars}\n${schema}`,
       (err: string) => {
         if (err) {
@@ -164,10 +155,14 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
-    if (mockApi) {
+    if (apiType === APITYPE.graphql) {
+      await generatePanacloudConfig(
+        model.api.queiresFields,
+        model.api.mutationFields
+      );
+
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
-      model.api.lambdaStyle = LAMBDASTYLE.multi;
     }
   } else {
     copyFileAsync(
@@ -203,13 +198,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     process.exit(1);
   }
 
-  if (!mockApi) {
-    try {
-      await exec(`cd lambdaLayer/nodejs && npm install`);
-    } catch (error) {
-      stopSpinner(installingModules, `Error: ${error}`, true);
-      process.exit(1);
-    }
+  try {
+    await exec(`cd lambdaLayer/nodejs && npm install`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
   }
 
   stopSpinner(installingModules, "Modules installed", false);

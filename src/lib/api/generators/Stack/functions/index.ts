@@ -1,8 +1,7 @@
 import { CodeMaker } from "codemaker";
 import {
   APITYPE,
-  DATABASE,
-  LAMBDASTYLE,
+  DATABASE
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
@@ -11,10 +10,8 @@ import { DynamoDB } from "../../../constructs/Dynamodb";
 export const importHandlerForStack = (
   database: string,
   apiType: string,
-  mockApi: boolean,
   code: CodeMaker
 ) => {
-  const cdk = new Cdk(code);
   const imp = new Imports(code);
   imp.importsForStack();
   imp.importsForConstructs();
@@ -25,9 +22,7 @@ export const importHandlerForStack = (
   }
   imp.importForLambdaConstruct();
   databaseImportHandler(database, code);
-  if (!mockApi) {
-    imp.importApiManager();
-  }
+  imp.importApiManager();
 };
 
 export const databaseImportHandler = (database: string, code: CodeMaker) => {
@@ -35,10 +30,10 @@ export const databaseImportHandler = (database: string, code: CodeMaker) => {
   if (database === DATABASE.dynamoDB) {
     imp.importForDynamodbConstruct();
   }
-  if (database === DATABASE.neptuneDB) {
+  else if (database === DATABASE.neptuneDB) {
     imp.importForNeptuneConstruct();
   }
-  if (database === DATABASE.auroraDB) {
+  else if (database === DATABASE.auroraDB) {
     imp.importForAuroraDbConstruct();
   }
 };
@@ -46,27 +41,24 @@ export const databaseImportHandler = (database: string, code: CodeMaker) => {
 export const LambdaAccessHandler = (
   code: CodeMaker,
   apiName: string,
-  lambdaStyle: LAMBDASTYLE,
   apiType: string,
   mutationsAndQueries: any
 ) => {
   const dynamodb = new DynamoDB(code);
-  if (lambdaStyle === LAMBDASTYLE.single || apiType === APITYPE.rest) {
+  if (apiType === APITYPE.rest) {
     dynamodb.dbConstructLambdaAccess(
       apiName,
       `${apiName}_table`,
       `${apiName}Lambda`,
-      lambdaStyle,
       apiType
     );
     code.line();
-  } else if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
+  } else {
     mutationsAndQueries.forEach((key: string) => {
       dynamodb.dbConstructLambdaAccess(
         apiName,
         `${apiName}_table`,
         `${apiName}Lambda`,
-        lambdaStyle,
         apiType,
         key
       );

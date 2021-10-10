@@ -1,10 +1,5 @@
 import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import {
-  CONSTRUCTS,
-  LAMBDASTYLE,
-  Config,
-  ApiModel,
-} from "../../../../utils/constants";
+import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -16,6 +11,10 @@ import * as path from "path";
 type StackBuilderProps = {
   config: ApiModel;
 };
+interface ConstructPropsType {
+  name: string;
+  type: string;
+}
 
 class AppsyncConstruct {
   outputFile: string = `index.ts`;
@@ -29,7 +28,7 @@ class AppsyncConstruct {
 
   async AppsyncConstructFile() {
     const {
-      api: { apiName, lambdaStyle, schemaPath, queiresFields, mutationFields },
+      api: { apiName, schemaPath, queiresFields, mutationFields },
     } = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
@@ -45,21 +44,14 @@ class AppsyncConstruct {
     imp.importAppsync();
     imp.importIam();
 
-    let ConstructProps = [
-      {
-        name: `${apiName}_lambdaFnArn`,
-        type: "string",
-      },
-    ];
+    let ConstructProps: ConstructPropsType[] = [];
 
-    if (lambdaStyle && lambdaStyle === LAMBDASTYLE.multi) {
-      mutationsAndQueries.forEach((key: string, index: number) => {
-        ConstructProps[index] = {
-          name: `${apiName}_lambdaFn_${key}Arn`,
-          type: "string",
-        };
-      });
-    }
+    mutationsAndQueries.forEach((key: string, index: number) => {
+      ConstructProps[index] = {
+        name: `${apiName}_lambdaFn_${key}Arn`,
+        type: "string",
+      };
+    });
 
     cdk.initializeConstruct(
       `${CONSTRUCTS.appsync}`,
@@ -76,20 +68,9 @@ class AppsyncConstruct {
         this.code.line();
         iam.attachLambdaPolicyToRole(`${apiName}`);
         this.code.line();
-        appsyncDatasourceHandler(
-          apiName,
-          lambdaStyle,
-          this.code,
-          mutationsAndQueries
-        );
+        appsyncDatasourceHandler(this.config, this.code);
         this.code.line();
-        appsyncResolverhandler(
-          apiName,
-          lambdaStyle,
-          this.code,
-          queiresFields!,
-          mutationFields!
-        );
+        appsyncResolverhandler(this.config, this.code);
       },
       ConstructProps
     );

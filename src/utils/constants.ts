@@ -3,16 +3,12 @@ export enum APITYPE {
   rest = "REST OpenAPI",
 }
 
-export enum LAMBDASTYLE {
-  single = "Single",
-  multi = "Multiple",
-}
-
 export enum DATABASE {
   dynamoDB = "DynamoDB (NoSQL)",
   neptuneDB = "Neptune (Graph)",
   auroraDB = "Aurora Serverless (Relational)",
   documentDB = "DocumentDB (NoSQL MongoDB)",
+  none = "None"
 }
 
 export enum SAASTYPE {
@@ -27,6 +23,7 @@ export enum CONSTRUCTS {
   neptuneDB = "VpcNeptuneConstruct",
   auroraDB = "AuroraDBConstruct",
   apigateway = "ApiGatewayConstruct",
+  eventBridge = "EventBridgeConstruct"
 }
 
 export enum TEMPLATE {
@@ -71,8 +68,6 @@ export interface API {
   queiresFields?: string[];
   mutationFields?: string[];
   apiType: APITYPE;
-  lambdaStyle: LAMBDASTYLE;
   database: DATABASE;
   mockApiData?: mockApiData;
-  mockApi?: boolean
 }

@@ -39,9 +39,9 @@ export class Cdk {
     imp.importsForConstructs();
     if (!constructProps) {
       imp.importsForStack();
+      this.code.line();
     }
-    this.code.line();
-    if (constructProps) {
+    else {
       ts.writeInterfaceBlock(propsName, constructProps);
       this.code.line();
     }

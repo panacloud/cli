@@ -1,5 +1,5 @@
-schema: ./graphql/schema/schema.graphql
+schema: ./custom_src/graphql/schema/schema.graphql
 generates:
-  ./graphql/types.ts:
+  ./custom_src/graphql/types.ts:
     plugins:
       - typescript

@@ -1,8 +1,7 @@
 import {
   ApiModel,
   APITYPE,
-  DATABASE,
-  LAMBDASTYLE,
+  DATABASE
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
@@ -16,6 +15,7 @@ import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
 import { LambdaConstruct } from "./Lambda";
 import { multipleLambda } from "./Lambda/multipleLambda";
+import { customLambda } from "./Lambda/customLambda";
 import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
@@ -28,10 +28,11 @@ export const generator = async (config: ApiModel) => {
   // stack
   CdkStackClass({ config });
 
-  // Appsync or Apigateway
+  // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
     AppsyncApiConstruct({ config });
-    AppsyncConstructTest({ config });
+    // AppsyncConstructTest({ config });
+
   } else if (config.api.apiType === APITYPE.rest) {
     ApiGatewayConstruct({ config });
   }
@@ -39,34 +40,35 @@ export const generator = async (config: ApiModel) => {
   // Databases
   if (config.api.database === DATABASE.auroraDB) {
     auroraDBConstruct({ config });
-    auroraDBConstructTest({ config });
+    // auroraDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.neptuneDB) {
     neptuneDBConstruct({ config });
-    neptuneDBConstructTest({ config });
+    // neptuneDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.dynamoDB) {
     dynamoDBConstruct({ config });
-    dynamodbConstructTest({ config });
+    // dynamodbConstructTest({ config });
   }
 
   // lambda Test
-  lambdaConstructTest({ config });
+  // lambdaConstructTest({ config });
   // lambda Construct
   LambdaConstruct({ config });
 
   // Single or Multi
   if (
-    config.api.lambdaStyle === LAMBDASTYLE.single ||
     config.api.apiType === APITYPE.rest
   ) {
     singleLambda({ config });
   }
-  if (config.api.lambdaStyle === LAMBDASTYLE.multi) {
+  else {
     multipleLambda({ config });
+    mockApiTestCollections({ config });
+    customLambda({ config });
   }
 
-  if (config.api.mockApi) {
-    mockApiTestCollections({ config });
-  }
+
+    
+
 };
