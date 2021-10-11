@@ -3,6 +3,7 @@ import {
   APITYPE,
   DATABASE,
   ApiModel,
+  PanacloudconfigFile
 } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -23,15 +24,18 @@ import { Lambda } from "../../constructs/Lambda";
 
 type StackBuilderProps = {
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile
 };
 
 class lambdaConstruct {
   outputFile: string = `index.ts`;
   outputDir: string = `lib/${CONSTRUCTS.lambda}`;
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile;
   code: CodeMaker;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
+    this.panacloudConfig = props.panacloudConfig;
     this.code = new CodeMaker();
   }
 
@@ -50,7 +54,7 @@ class lambdaConstruct {
     this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
-    const lambda = new Lambda(this.code);
+    const lambda = new Lambda(this.code, this.panacloudConfig);
     imp.importLambda();
 
     // if (mockApi) {
@@ -99,20 +103,21 @@ class lambdaConstruct {
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
       () => {
-        // if (mockApi) {
-        //   lambda.lambdaLayer(apiName);
-        //   mutationsAndQueries.forEach((key: string) => {
-        //     lambda.initializeLambda(apiName , key);
-        //     this.code.line();
-        //     this.code.line(
-        //       `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        //     );
-        //     this.code.line();
-        //   });
-        // }
+        if (!database) {
+          lambda.lambdaLayer(apiName);
+          mutationsAndQueries.forEach((key: string) => {
+            lambda.initializeLambda(apiName , key);
+            this.code.line();
+            this.code.line(
+              `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+            );
+            this.code.line();
+          });
+        }
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
+            this.panacloudConfig,
             apiName,
             apiType,
             mutationsAndQueries,
@@ -121,6 +126,7 @@ class lambdaConstruct {
         else if (database === DATABASE.neptuneDB) {
           lambdaHandlerForNeptunedb(
             this.code,
+            this.panacloudConfig,
             apiType,
             apiName,
             mutationsAndQueries,
@@ -129,6 +135,7 @@ class lambdaConstruct {
         else if (database === DATABASE.auroraDB) {
           lambdaHandlerForAuroradb(
             this.code,
+            this.panacloudConfig,
             apiType,
             apiName,
             mutationsAndQueries,

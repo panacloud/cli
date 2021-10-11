@@ -16,13 +16,7 @@ export class LambdaFunction {
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
       this.code.line(`exports.handler = async (event: any) => {`);
-
-      // this.code.line(
-      //   `const data = await axios.post('http://sandbox:8080', event)`
-      // );
-
-      this.code.line(`
-          let response = {};
+      this.code.line(`let response = {};
           testCollections.fields.${fieldName}.forEach((v: any) => {
             if (v.arguments) {
               let equal = isEqual(
@@ -37,10 +31,13 @@ export class LambdaFunction {
             }
           });
           return response;
-        `);
-
+        `)
+      // this.code.line(
+      //   `const data = await axios.post('http://sandbox:8080', event)`
+      // );
+      // this.code.line(`}`);
       this.code.line();
-      this.code.line(`}`);
+      this.code.line(`};`);
     } else {
       /* rest api */
       this.code.line(`exports.handler = async (event: any) => {`);
@@ -86,3 +83,4 @@ export class LambdaFunction {
     this.code.line(`}`);
   }
 }
+
