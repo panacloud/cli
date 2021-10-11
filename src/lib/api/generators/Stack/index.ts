@@ -62,6 +62,7 @@ export class CdkStack {
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
       () => {
+        this.code.line(`new AspectBaseClass({scope:this})`)
           manager.apiManagerInitializer(apiName);
           this.code.line();
         if (database == DATABASE.dynamoDB) {

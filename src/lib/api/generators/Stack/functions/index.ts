@@ -23,6 +23,7 @@ export const importHandlerForStack = (
   imp.importForLambdaConstruct();
   databaseImportHandler(database, code);
   imp.importApiManager();
+  imp.importAspectBaseClass();
 };
 
 export const databaseImportHandler = (database: string, code: CodeMaker) => {

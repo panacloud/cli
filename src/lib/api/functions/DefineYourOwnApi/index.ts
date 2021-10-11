@@ -9,6 +9,7 @@ import { Config, APITYPE, ApiModel, PanacloudconfigFile } from "../../../../util
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
+import { CreateAspects } from "../../generators/Aspects";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -98,7 +99,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     await mkdirRecursiveAsync(`custom_src`);
     await mkdirRecursiveAsync(`custom_src/graphql`);
     await mkdirRecursiveAsync(`custom_src/graphql/schema`);
-    await mkdirRecursiveAsync(`custom_src/aspects`);
+//    await mkdirRecursiveAsync(`custom_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -184,6 +185,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       model.api.schema = schema;
     }
   }
+
+  await CreateAspects({config:model});
 
   // Codegenerator Function
   await generator(model, updatedPanacloudConfig);
