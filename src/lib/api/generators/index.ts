@@ -68,8 +68,4 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
     mockApiTestCollections({ config });
     customLambda({ config });
   }
-
-
-    
-
 };
