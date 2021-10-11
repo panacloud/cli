@@ -22,7 +22,6 @@ class MultipleLambda {
       api: { apiType },
     } = this.config;
     const imp = new Imports(this.code);
-    const lambda = new LambdaFunction(this.code);
 
     if (apiType === APITYPE.graphql) {
       const {
@@ -37,14 +36,54 @@ class MultipleLambda {
         const key = mutationsAndQueries[i];
         this.outputFile = "index.ts";
         this.code.openFile(this.outputFile);
+        const lambda = new LambdaFunction(this.code);
 
           this.code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
           this.code.line();
           // imp.importAxios();
           // this.code.line();
-        
 
-        lambda.initializeLambdaFunction(apiType, undefined, key);
+         const lambdaText = lambda.lambdaUzair(
+            `
+            let response = {};
+            testCollections.fields.${key}.forEach((v: any) => {
+              if (v.arguments) {
+                let equal = isEqual(
+                  Object.values(v.arguments)[0],
+                  Object.values(event.arguments)[0]
+                );
+                if (equal) {
+                  response = v.response;
+                }
+              } else {
+                response = v.response;
+              }
+            });
+            return response;
+
+            `
+          )
+                    
+          this.code.line(lambdaText)
+
+        // lambda.initializeLambdaFunction(apiType, ()=>{
+        //   this.code.line(`let response = {};
+          // testCollections.fields.${key}.forEach((v: any) => {
+          //   if (v.arguments) {
+          //     let equal = isEqual(
+          //       Object.values(v.arguments)[0],
+          //       Object.values(event.arguments)[0]
+          //     );
+          //     if (equal) {
+          //       response = v.response;
+          //     }
+          //   } else {
+          //     response = v.response;
+          //   }
+          // });
+          // return response;
+        // `)
+        // }, key);
 
         this.code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;

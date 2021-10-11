@@ -57,10 +57,8 @@ export const generator = async (config: ApiModel) => {
   LambdaConstruct({ config });
 
   // Single or Multi
-  if (
-    config.api.apiType === APITYPE.rest
-  ) {
-    singleLambda({ config });
+  if (config.api.apiType === APITYPE.rest) {
+        singleLambda({ config });
   }
   else {
     multipleLambda({ config });
