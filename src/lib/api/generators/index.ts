@@ -60,10 +60,8 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   LambdaConstruct({ config, panacloudConfig });
 
   // Single or Multi
-  if (
-    config.api.apiType === APITYPE.rest
-  ) {
-    singleLambda({ config });
+  if (config.api.apiType === APITYPE.rest) {
+        singleLambda({ config });
   }
   else if (config.api.apiType === APITYPE.graphql) {
     multipleLambda({ config });

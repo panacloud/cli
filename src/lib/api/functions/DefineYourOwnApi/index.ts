@@ -162,7 +162,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       );
 
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
-      console.log('mockApiCollection 165 ----->',mockApiCollection);
       model.api.mockApiData = mockApiCollection;
       
     }
