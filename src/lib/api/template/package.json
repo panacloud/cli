@@ -22,7 +22,8 @@
     "@types/jest": "^27.0.1",
     "@types/node": "16.7.5",
     "@graphql-codegen/cli": "^2.2.0",
-    "@graphql-codegen/typescript": "^2.2.2"
+    "@graphql-codegen/typescript": "^2.2.2",
+    "graphql": "^15.6.0" 
   },
   "dependencies": {
     "aws-cdk-lib": "^2.0.0-rc.19",

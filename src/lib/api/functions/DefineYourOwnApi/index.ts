@@ -164,6 +164,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
+      
     }
   } else {
     copyFileAsync(

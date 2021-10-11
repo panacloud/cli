@@ -11,18 +11,14 @@ class MultipleLambda {
   outputFile: string = `main.ts`;
   outputDir: string = `lambda`;
   config: ApiModel;
-  code: CodeMaker;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
-    this.code = new CodeMaker();
   }
 
   async MultipleLambdaFile() {
     const {
       api: { apiType },
     } = this.config;
-    const imp = new Imports(this.code);
-    const lambda = new LambdaFunction(this.code);
 
     if (apiType === APITYPE.graphql) {
       const {
@@ -34,21 +30,23 @@ class MultipleLambda {
       ];
 
       for (let i = 0; i < mutationsAndQueries.length; i++) {
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
+        const imp = new Imports(code);
         const key = mutationsAndQueries[i];
         this.outputFile = "index.ts";
-        this.code.openFile(this.outputFile);
+        code.openFile(this.outputFile);
 
-          this.code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
-          this.code.line();
+          code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
+          code.line();
           // imp.importAxios();
           // this.code.line();
-        
 
-        lambda.initializeLambdaFunction(apiType, undefined, key);
+        lambda.initializeLambdaFunction(apiType, undefined , key);
 
-        this.code.closeFile(this.outputFile);
+        code.closeFile(this.outputFile);
         this.outputDir = `lambda/${key}`;
-        await this.code.save(this.outputDir);
+        await code.save(this.outputDir);
       }
     }
   }
