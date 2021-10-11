@@ -40,13 +40,22 @@ export class CdkAppStack {
       "const"
     );
 
-    this.code.indent(
-      `new ${_.upperFirst(
-        _.camelCase(this.config.workingDir)
-      )}Stack(app, "${_.upperFirst(
-        _.camelCase(this.config.workingDir)
-      )}Stack", {});`
-    );
+    ts.writeVariableDeclaration({
+      name:"stack",
+      typeName: "",
+      initializer: () =>{
+        this.code.line(
+          `new ${_.upperFirst(
+            _.camelCase(this.config.workingDir)
+          )}Stack(app, "${_.upperFirst(
+            _.camelCase(this.config.workingDir)
+          )}Stack", {});`
+        );
+    },
+    },"const"
+    )
+
+
 
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);

@@ -148,4 +148,32 @@ export class Imports {
     this.code.line(`import * as cdk from "aws-cdk-lib"`);
     this.code.line(`import "@aws-cdk/assert/jest"`);
   }
+
+
+  public importAspects() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["Aspects"]);
+  }
+
+  public importIaspect() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["IAspect"]);
+  }
+
+  public importStack() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["Stack"]);
+  }
+
+  public importIconstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("constructs/lib/construct", ["IConstruct"]);
+  }
+
+  public importAspectBaseClass() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("../custom_src/aspects", ["AspectBaseClass"]);
+  }
+
+
 }
