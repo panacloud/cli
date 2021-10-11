@@ -1,5 +1,8 @@
 const fse = require("fs-extra");
 
+import { PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
+import { stopSpinner } from "../spinner";
+
 export const contextInfo = (apiToken: string, entityId: string) => {
   return {
     api_token: apiToken,
@@ -11,13 +14,7 @@ export const contextInfo = (apiToken: string, entityId: string) => {
   };
 };
 
-type configFile = {
-  lambdas:any
-}
 
-type lambdaConfig = {
-  asset_path:string
-}
 
 export const generatePanacloudConfig = async (
   queiresFields: string[],
@@ -25,10 +22,54 @@ export const generatePanacloudConfig = async (
 ) => {
   let mutationsAndQueries: string[] = [...queiresFields!, ...mutationFields!];
 
-  let configJson:configFile = {lambdas:{}};
+  let configJson: PanacloudconfigFile = { lambdas: {} };
   mutationsAndQueries.forEach((key: string) => {
-    const lambdas = configJson.lambdas[key] = {} as lambdaConfig
-    lambdas.asset_path= `lambda/${key}/index.ts`;
+    const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
+    lambdas.asset_path = `lambda/${key}/index.ts`;
   });
   await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
+
+  return configJson;
+};
+
+export const updatePanacloudConfig = async (
+  queiresFields: string[],
+  mutationFields: string[],
+  spinner: any
+) => {
+  let newLambdas: string[] = [...queiresFields!, ...mutationFields!];
+  const configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
+
+  let prevLambdas = Object.keys(configPanacloud.lambdas)
+
+  let panacloudConfigNew = configPanacloud;
+
+  let difference = newLambdas
+    .filter(val => !prevLambdas.includes(val))
+    .concat(prevLambdas.filter(val => !newLambdas.includes(val)));
+
+  for (let diff of difference) {
+
+    if (newLambdas.includes(diff)) {
+      panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
+      panacloudConfigNew.lambdas[diff].asset_path = `lambda/${diff}/index.ts`
+
+    }
+    else {
+      delete panacloudConfigNew.lambdas[diff];
+
+    }
+  }
+
+  fse.removeSync('custom_src/panacloudconfig.json')
+  fse.writeJson(`./custom_src/panacloudconfig.json`, panacloudConfigNew, (err: string) => {
+    if (err) {
+      stopSpinner(spinner, `Error: ${err}`, true);
+      process.exit(1);
+    }
+  });
+
+  return panacloudConfigNew;
+
+
 };

@@ -77,3 +77,11 @@ export enum ARCHITECTURE {
   requestDriven = "Request-Driven Architecture",
   eventDriven = "Event-Driven Architecture"
 }
+
+export type PanacloudconfigFile = {
+  lambdas: any
+}
+
+export type PanacloudConfiglambdaParams = {
+  asset_path: string
+}

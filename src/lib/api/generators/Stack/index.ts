@@ -4,7 +4,8 @@ import {
   APITYPE,
   ARCHITECTURE,
   CONSTRUCTS,
-  DATABASE
+  DATABASE,
+  PanacloudconfigFile
 } from "../../../../utils/constants";
 import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
@@ -24,16 +25,19 @@ const camelCase = require("lodash/camelCase");
 
 type StackBuilderProps = {
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile
 };
 
 export class CdkStack {
   outputFile: string = `index.ts`;
   outputDir: string = `lib`;
+  panacloudConfig: PanacloudconfigFile;
   config: ApiModel;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
     this.config = props.config;
+    this.panacloudConfig = props.panacloudConfig;
     this.code = new CodeMaker();
   }
 
@@ -52,7 +56,7 @@ export class CdkStack {
     const dynamodb = new DynamoDB(this.code);
     const neptune = new Neptune(this.code);
     const aurora = new AuroraServerless(this.code);
-    const lambda = new Lambda(this.code);
+    const lambda = new Lambda(this.code, this.panacloudConfig);
     const appsync = new Appsync(this.code);
     const eventBridge = new EventBridge(this.code);
     importHandlerForStack(database, apiType, this.config.api.architecture, this.code);

@@ -12,6 +12,7 @@
     "codegen": "graphql-codegen"
   },
   "devDependencies": {
+    "graphql": "^15.6.0",
     "@aws-cdk/assert": "^2.0.0-rc.19",
     "aws-cdk": "^2.0.0-rc.19",
     "jest": "^27.0.6",
