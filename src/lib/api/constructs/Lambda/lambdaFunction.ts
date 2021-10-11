@@ -36,6 +36,11 @@ export class LambdaFunction {
               response = v.response;
             }
           });
+          `);
+
+      content && content();
+
+      this.code.line(`
           return response;
         `);
 

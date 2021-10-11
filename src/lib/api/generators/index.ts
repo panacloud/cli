@@ -1,7 +1,8 @@
 import {
   ApiModel,
   APITYPE,
-  DATABASE
+  DATABASE,
+  ARCHITECTURE
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
@@ -20,6 +21,7 @@ import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
+import { eventBridgeConstruct } from "./EventBridge";
 
 export const generator = async (config: ApiModel) => {
   // bin file
@@ -68,6 +70,9 @@ export const generator = async (config: ApiModel) => {
     customLambda({ config });
   }
 
+  if(config.api.architecture === ARCHITECTURE.eventDriven) {
+    eventBridgeConstruct({ config })
+  }
 
     
 

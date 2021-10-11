@@ -62,6 +62,7 @@ export interface API {
   template: TEMPLATE;
   language: LANGUAGE;
   cloudprovider: CLOUDPROVIDER;
+  architecture: ARCHITECTURE;
   apiName: string;
   schemaPath: string;
   schema?: any;
@@ -70,4 +71,9 @@ export interface API {
   apiType: APITYPE;
   database: DATABASE;
   mockApiData?: mockApiData;
+}
+
+export enum ARCHITECTURE {
+  requestDriven = "Request-Driven Architecture",
+  eventDriven = "Event-Driven Architecture"
 }
