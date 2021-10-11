@@ -43,9 +43,8 @@ export class LambdaFunction {
       this.code.line(`
           return response;
         `);
-
       this.code.line();
-      this.code.line(`}`);
+      this.code.line(`};`);
     } else {
       /* rest api */
       this.code.line(`exports.handler = async (event: any) => {`);

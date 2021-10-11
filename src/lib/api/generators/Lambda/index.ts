@@ -103,17 +103,17 @@ class lambdaConstruct {
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
       () => {
-        // if (mockApi) {
-        //   lambda.lambdaLayer(apiName);
-        //   mutationsAndQueries.forEach((key: string) => {
-        //     lambda.initializeLambda(apiName , key);
-        //     this.code.line();
-        //     this.code.line(
-        //       `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        //     );
-        //     this.code.line();
-        //   });
-        // }
+        if (!database) {
+          lambda.lambdaLayer(apiName);
+          mutationsAndQueries.forEach((key: string) => {
+            lambda.initializeLambda(apiName , key);
+            this.code.line();
+            this.code.line(
+              `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+            );
+            this.code.line();
+          });
+        }
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
