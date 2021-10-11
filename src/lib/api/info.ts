@@ -28,6 +28,8 @@ export const generatePanacloudConfig = async (
     lambdas.asset_path = `lambda/${key}/index.ts`;
   });
   await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
+
+  return configJson;
 };
 
 export const updatePanacloudConfig = async (

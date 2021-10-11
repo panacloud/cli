@@ -5,7 +5,7 @@ import {
   mkdirRecursiveAsync,
 } from "../../../fs";
 import { contextInfo, generatePanacloudConfig } from "../../info";
-import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
+import { Config, APITYPE, ApiModel, PanacloudconfigFile } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -109,6 +109,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   });
+  let updatedPanacloudConfig: any;
 
   if (apiType === APITYPE.graphql) {
     let directivesPath = path.resolve(
@@ -154,9 +155,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.schema = introspectionFromSchema(gqlSchema);
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
-
     if (apiType === APITYPE.graphql) {
-      await generatePanacloudConfig(
+      updatedPanacloudConfig = await generatePanacloudConfig(
         model.api.queiresFields,
         model.api.mutationFields
       );
@@ -185,7 +185,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   }
 
   // Codegenerator Function
-  await generator(model);
+  await generator(model, updatedPanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
