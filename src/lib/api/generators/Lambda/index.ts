@@ -57,13 +57,13 @@ class lambdaConstruct {
     const lambda = new Lambda(this.code, this.panacloudConfig);
     imp.importLambda();
 
-    // if (mockApi) {
-    //   lambdaProperties = lambdaProperiesHandlerForMockApi(
-    //     apiName,
-    //     apiType,
-    //     mutationsAndQueries
-    //   );
-    // }
+    if (!database) {
+      lambdaProperties = lambdaProperiesHandlerForMockApi(
+        apiName,
+        apiType,
+        mutationsAndQueries
+      );
+    }
     if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
