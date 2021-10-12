@@ -23,6 +23,11 @@ export class Imports {
     ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync"]);
   }
 
+  public importForEventBrideConstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports(`./${CONSTRUCTS.eventBridge}`, [CONSTRUCTS.eventBridge]);
+  }
+
   public importApiGateway() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_apigateway as apigw"]);

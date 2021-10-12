@@ -62,6 +62,7 @@ export interface API {
   template: TEMPLATE;
   language: LANGUAGE;
   cloudprovider: CLOUDPROVIDER;
+  architecture: ARCHITECTURE;
   apiName: string;
   schemaPath: string;
   schema?: any;
@@ -72,11 +73,15 @@ export interface API {
   mockApiData?: mockApiData;
 }
 
+export enum ARCHITECTURE {
+  requestDriven = "Request-Driven Architecture",
+  eventDriven = "Event-Driven Architecture"
+}
 
 export type PanacloudconfigFile = {
-  lambdas:any
+  lambdas: any
 }
 
 export type PanacloudConfiglambdaParams = {
-  asset_path:string
+  asset_path: string
 }
