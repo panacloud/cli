@@ -37,9 +37,9 @@ export const updatePanacloudConfig = async (
   mutationFields: string[],
   spinner: any
 ) => {
+
   let newLambdas: string[] = [...queiresFields!, ...mutationFields!];
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
-
   let prevLambdas = Object.keys(configPanacloud.lambdas)
 
   let panacloudConfigNew = configPanacloud;
@@ -49,7 +49,6 @@ export const updatePanacloudConfig = async (
     .concat(prevLambdas.filter(val => !newLambdas.includes(val)));
 
   for (let diff of difference) {
-
     if (newLambdas.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[diff].asset_path = `lambda/${diff}/index.ts`
@@ -57,7 +56,6 @@ export const updatePanacloudConfig = async (
     }
     else {
       delete panacloudConfigNew.lambdas[diff];
-
     }
   }
 
