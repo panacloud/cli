@@ -20,7 +20,7 @@ export const generatePanacloudConfig = async (
   generalFields: string[],
   microServiceFields: {
     [k: string]: any[];
-}
+  }
 ) => {
 
   let configJson: PanacloudconfigFile = { lambdas: {} };
@@ -34,9 +34,9 @@ export const generatePanacloudConfig = async (
       const key = microServiceFields[microServices[i]][j];
       const microService = microServices[i];
 
-      if (!configJson.lambdas[microService]){
-      configJson.lambdas[microService] = {}
-    }
+      if (!configJson.lambdas[microService]) {
+        configJson.lambdas[microService] = {}
+      }
       const lambdas = configJson.lambdas[microService][key] = {} as PanacloudConfiglambdaParams
       lambdas.asset_path = `lambda/${microService}/${key}/index.ts`;
     }
@@ -44,7 +44,7 @@ export const generatePanacloudConfig = async (
   }
 
 
-  
+
 
   for (let i = 0; i < generalFields.length; i++) {
 
@@ -52,7 +52,7 @@ export const generatePanacloudConfig = async (
 
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
     lambdas.asset_path = `lambda/${key}/index.ts`;
-   
+
   }
 
 
@@ -62,24 +62,78 @@ export const generatePanacloudConfig = async (
 };
 
 export const updatePanacloudConfig = async (
-  queiresFields: string[],
-  mutationFields: string[],
+  generalFields: string[],
+  microServiceFields: {
+    [k: string]: any[];
+  },
   spinner: any
 ) => {
-  let newLambdas: string[] = [...queiresFields!, ...mutationFields!];
+
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
-
-  let prevLambdas = Object.keys(configPanacloud.lambdas)
-
   let panacloudConfigNew = configPanacloud;
 
-  let difference = newLambdas
-    .filter(val => !prevLambdas.includes(val))
-    .concat(prevLambdas.filter(val => !newLambdas.includes(val)));
+  let prevItems = Object.keys(configPanacloud.lambdas)
+
+  const prevMicroServices = prevItems.filter((val: any) => configPanacloud.lambdas[val].asset_path ? false : true)
+
+  const prevGeneralLambdas = prevItems.filter((val: any) => configPanacloud.lambdas[val].asset_path ? true : false)
+
+  const newMicroServices = Object.keys(microServiceFields);
+
+
+
+  let differenceMicroServices = newMicroServices
+    .filter(val => !prevMicroServices.includes(val))
+    .concat(prevMicroServices.filter(val => !newMicroServices.includes(val)));
+
+
+  for (let diff of differenceMicroServices) {
+
+    if (newMicroServices.includes(diff)) {
+      panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
+      panacloudConfigNew.lambdas[diff] = {}
+    }
+    else {
+      delete panacloudConfigNew.lambdas[diff];
+
+    }
+  }
+
+
+  for (let service of newMicroServices) {
+
+    const prevMicroServicesLambdas = Object.keys(configPanacloud.lambdas[service])
+
+    let differenceMicroServicesLambdas = microServiceFields[service]
+      .filter(val => !prevMicroServicesLambdas.includes(val))
+      .concat(prevMicroServicesLambdas.filter(val => !microServiceFields[service].includes(val)));
+
+
+
+    for (let diff of differenceMicroServicesLambdas) {
+
+      if (microServiceFields[service].includes(diff)) {
+        panacloudConfigNew.lambdas[service][diff] = {} as PanacloudConfiglambdaParams
+        panacloudConfigNew.lambdas[service][diff].asset_path = `lambda/${service}/${diff}/index.ts`
+      }
+      else {
+        delete panacloudConfigNew.lambdas[service][diff];
+
+      }
+    }
+
+  }
+
+
+
+
+  let difference = generalFields
+    .filter(val => !prevGeneralLambdas.includes(val))
+    .concat(prevGeneralLambdas.filter(val => !generalFields.includes(val)));
 
   for (let diff of difference) {
 
-    if (newLambdas.includes(diff)) {
+    if (generalFields.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[diff].asset_path = `lambda/${diff}/index.ts`
 
