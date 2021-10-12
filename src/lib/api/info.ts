@@ -26,14 +26,14 @@ export const generatePanacloudConfig = async (
   let configJson: PanacloudconfigFile = { lambdas: {} };
   mutationsAndQueries.forEach((key: string) => {
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-    lambdas.asset_path = `lambda/${key}/index.ts`;
+    lambdas.asset_path = `mock_lambda/${key}/index.ts`;
   });
 
   if (architecture === ARCHITECTURE.eventDriven) {
     mutationFields.forEach((key: string) => {
       key = `${key}_consumer`;
       const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `lambda/${key}/index.ts`;
+      lambdas.asset_path = `mock_lambda/${key}/index.ts`;
     });
   }
 
@@ -61,7 +61,7 @@ export const updatePanacloudConfig = async (
   for (let diff of difference) {
     if (newLambdas.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
-      panacloudConfigNew.lambdas[diff].asset_path = `lambda/${diff}/index.ts`
+      panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
 
     }
     else {

@@ -45,7 +45,7 @@ class MultipleLambda {
         lambda.initializeLambdaFunction(apiType, apiName, undefined, key, isMutation ? architecture : undefined,);
 
         code.closeFile(this.outputFile);
-        this.outputDir = `lambda/${key}`;
+        this.outputDir = `mock_lambda/${key}`;
         await code.save(this.outputDir);
       }
 
@@ -64,7 +64,7 @@ class MultipleLambda {
           lambda.helloWorldFunction(apiType);
 
           code.closeFile(this.outputFile);
-          this.outputDir = `lambda/${key}`;
+          this.outputDir = `mock_lambda/${key}`;
           await code.save(this.outputDir);
         }
       }
