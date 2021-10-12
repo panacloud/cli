@@ -3,7 +3,8 @@ import {
   APITYPE,
   DATABASE,
   ApiModel,
-  PanacloudconfigFile
+  PanacloudconfigFile,
+  ARCHITECTURE
 } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -41,7 +42,7 @@ class lambdaConstruct {
 
   async LambdaConstructFile() {
     const {
-      api: { apiName, apiType, database },
+      api: { apiName, apiType, database, architecture },
     } = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
@@ -50,7 +51,7 @@ class lambdaConstruct {
     }
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
-    let lambdaProperties: Property[] | undefined;
+    let lambdaProperties: Property[] = [];
     this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
@@ -99,6 +100,19 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
+
+    if (architecture === ARCHITECTURE.eventDriven && apiType === APITYPE.graphql) {
+      this.config.api.mutationFields?.forEach(key => {
+        lambdaProperties.push({
+          name: `${apiName}_lambdaFn_${key}_consumerArn`,
+          typeName: 'string',
+          accessModifier: "public",
+          isReadonly: true,
+        })
+      })
+    }
+
+
     cdk.initializeConstruct(
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
@@ -106,13 +120,25 @@ class lambdaConstruct {
         if (!database) {
           lambda.lambdaLayer(apiName);
           mutationsAndQueries.forEach((key: string) => {
-            lambda.initializeLambda(apiName , key);
+            lambda.initializeLambda(apiName, key);
             this.code.line();
             this.code.line(
               `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
             );
             this.code.line();
           });
+
+          if (architecture === ARCHITECTURE.eventDriven) {
+            (this.config.api.mutationFields || []).forEach((key: string) => {
+              lambda.initializeLambda(apiName, `${key}_consumer`);
+              this.code.line();
+              this.code.line( //myApi_lambdaFn_createApi_consumerArn
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );
+              this.code.line();
+            })
+          }
+
         }
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(

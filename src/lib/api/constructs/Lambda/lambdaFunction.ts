@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE } from "../../../../utils/constants";
+import { APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 
 export class LambdaFunction {
   code: CodeMaker;
@@ -8,11 +8,16 @@ export class LambdaFunction {
   }
   public initializeLambdaFunction(
     apiType: APITYPE,
+    apiName: string,
     content?: any,
-    fieldName?: string
+    fieldName?: string,
+    architecture?: ARCHITECTURE,
   ) {
     if (apiType === APITYPE.graphql) {
       this.code.line(`var AWS = require('aws-sdk');`);
+      if (architecture === ARCHITECTURE.eventDriven) {
+        this.code.line(`const eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
+      }
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
       this.code.line(`exports.handler = async (event: any) => {`);
@@ -32,7 +37,21 @@ export class LambdaFunction {
           });
           `);
 
-      content && content();
+      if (architecture === ARCHITECTURE.eventDriven) {
+        this.code.line(`
+          await eventBridge
+            .putEvents({
+              Entries: [
+                {
+                  EventBusName: "default",
+                  Source: "${apiName}",
+                  Detail: JSON.stringify({ mutation: "${fieldName}" }),
+                },
+              ],
+            })
+            .promise();
+            `)
+      }
 
       this.code.line(`
           return response;
@@ -70,8 +89,9 @@ export class LambdaFunction {
     this.code.line(`
     const AWS = require('aws-sdk');
     
-    export const ${name} = async() => {
+    export const ${name} = async(events:any) => {
       // write your code here
+      console.log(JSON.stringify(events, null, 2));
     }
     `);
   }

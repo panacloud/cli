@@ -3,6 +3,9 @@ import { ApiModel, CONSTRUCTS, ARCHITECTURE } from "../../../../utils/constants"
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { EventBridge } from "../../constructs/EventBridge";
+import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
+import { Lambda } from "../../constructs/Lambda";
+import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 type StackBuilderProps = {
     config: ApiModel;
@@ -31,21 +34,29 @@ class EventBridgeConstruct {
         const cdk = new Cdk(this.code);
         const imp = new Imports(this.code);
         const eventBridge = new EventBridge(this.code);
+        const ts = new TypeScriptWriter(this.code);
+        // const lambda = new LambdaFunction(this.code);
+        // const lambda = new Lambda(this.code, this.panacloudConfig);
 
         imp.importEventBridge();
         imp.importLambda();
 
         let ConstructProps: ConstructPropsType[] = [];
         mutationFields?.forEach((key: string, index: number) => {
-            ConstructProps[index] = {
-                name: `${apiName}_lambdaFn_${key}`,
-                type: "lambda.Function"
-            }
+            ConstructProps.push({
+                name: `${apiName}_lambdaFn_${key}Arn`,
+                type: "string"
+            })
+            ConstructProps.push({
+                name: `${apiName}_lambdaFn_${key}_consumerArn`,
+                type: "string"
+            })
         })
 
         cdk.initializeConstruct(`${CONSTRUCTS.eventBridge}`, "EventBridgeConstructProps", () => {
             mutationFields?.forEach((key: string) => {
-                eventBridge.createEventBridgeRule(key, apiName);
+                eventBridge.grantPutEvents(apiName, key);
+                eventBridge.createEventBridgeRule(apiName, key);
             })
         }, ConstructProps)
 
