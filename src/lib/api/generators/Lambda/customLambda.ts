@@ -41,7 +41,7 @@ class CustomLambda {
         lambda.emptyLambdaFunction();
 
         code.closeFile(this.outputFile);
-        this.outputDir = `custom_src/lambda/${key}`;
+        this.outputDir = `editable_src/lambda/${key}`;
         await code.save(this.outputDir);
       });
 
@@ -60,7 +60,7 @@ class CustomLambda {
           lambda.helloWorldFunction(apiType);
 
           code.closeFile(this.outputFile);
-          this.outputDir = `custom_src/lambda/${key}`;
+          this.outputDir = `editable_src/lambda/${key}`;
           await code.save(this.outputDir);
         }
       }

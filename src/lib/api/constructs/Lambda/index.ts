@@ -17,7 +17,7 @@ interface Environment {
 export class Lambda {
   code: CodeMaker;
   panacloudConfig: PanacloudconfigFile
-  // configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
+  // configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   constructor(_code: CodeMaker, panacloudConfig: PanacloudconfigFile) {
     this.code = _code;
     this.panacloudConfig = panacloudConfig;

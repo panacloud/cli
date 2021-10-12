@@ -31,7 +31,7 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         workingDir: workingDir,
     };
 
-    let schema = fs.readFileSync("custom_src/graphql/schema/schema.graphql", "utf8", (err: string) => {
+    let schema = fs.readFileSync("editable_src/graphql/schema/schema.graphql", "utf8", (err: string) => {
         if (err) {
             stopSpinner(spinner, `Error: ${err}`, true);
             process.exit(1);
