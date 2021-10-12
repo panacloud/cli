@@ -104,7 +104,7 @@ export class TypeScriptWriter {
   public writeBasicClassBlock(
     classDefinition: ClassDefinition,
     properties?: Property[],
-    propsName?:string,
+    props?:string,
     constructorContent?: any,
     functions?:classMethodDefinition[]
   ) {
@@ -121,10 +121,9 @@ export class TypeScriptWriter {
       );
     });
 
-  propsName? propsName = `${propsName}:${propsName}` : propsName = "";
 
     this.code.line(` 
-    constructor(${propsName}) {
+    constructor(${props? props : ""}) {
     `);
     constructorContent();
     this.code.line(`}`);
