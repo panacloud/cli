@@ -70,6 +70,11 @@ export interface API {
   apiType: APITYPE;
   database: DATABASE;
   mockApiData?: mockApiData;
+  microServiceFields:  {
+    [k: string]: any[];
+
+};
+  generalFields: string[]
 }
 
 

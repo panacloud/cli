@@ -10,6 +10,7 @@ import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { CreateAspects } from "../../generators/Aspects";
+import { microServicesDirectiveFieldSplitter } from "../../../../utils/microServicesDirective";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -156,6 +157,12 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.schema = introspectionFromSchema(gqlSchema);
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
+  
+    const fieldSplitterOutput = microServicesDirectiveFieldSplitter(queriesFields,mutationsFields);
+    
+    model.api.generalFields = fieldSplitterOutput.generalFields;
+    model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+
     if (apiType === APITYPE.graphql) {
       updatedPanacloudConfig = await generatePanacloudConfig(
         model.api.queiresFields,
@@ -185,6 +192,9 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       model.api.schema = schema;
     }
   }
+
+
+
 
   await CreateAspects({config:model});
 

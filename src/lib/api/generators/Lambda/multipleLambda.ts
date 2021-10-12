@@ -17,24 +17,21 @@ class MultipleLambda {
 
   async MultipleLambdaFile() {
     const {
-      api: { apiType },
+      api: { apiType,generalFields,microServiceFields },
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
-      const {
-        api: { queiresFields, mutationFields },
-      } = this.config;
-      let mutationsAndQueries: string[] = [
-        ...queiresFields!,
-        ...mutationFields!,
-      ];
+      
 
-      for (let i = 0; i < mutationsAndQueries.length; i++) {
+      const microServices = Object.keys(microServiceFields);
+
+      for (let i = 0; i < microServices.length; i++) {
+      for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
         const code = new CodeMaker();
         const lambda = new LambdaFunction(code);
         const imp = new Imports(code);
-        const key = mutationsAndQueries[i];
-        this.outputFile = "index.ts";
+        const key = microServiceFields[microServices[i]][j];
+        this.outputFile = `index.ts`;
         code.openFile(this.outputFile);
 
           code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
@@ -45,9 +42,39 @@ class MultipleLambda {
         lambda.initializeLambdaFunction(apiType, undefined , key);
 
         code.closeFile(this.outputFile);
-        this.outputDir = `lambda/${key}`;
+        this.outputDir = `lambda/${microServices[i]}/${key}`;
         await code.save(this.outputDir);
       }
+
+    }
+
+
+
+
+
+    for (let i = 0; i < generalFields.length; i++) {
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
+      const key = generalFields[i];
+      this.outputFile = "index.ts";
+      code.openFile(this.outputFile);
+
+        code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
+        code.line();
+        // imp.importAxios();
+        // this.code.line();
+
+      lambda.initializeLambdaFunction(apiType, undefined , key);
+
+      code.closeFile(this.outputFile);
+      this.outputDir = `lambda/${key}`;
+      await code.save(this.outputDir);
+    }
+
+
+
+
     }
   }
 }

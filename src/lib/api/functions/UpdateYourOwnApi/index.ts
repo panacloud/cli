@@ -75,6 +75,10 @@ async function updateYourOwnApi(config: Config, spinner:any) {
    
     const fieldSplitterOutput = microServicesDirectiveFieldSplitter(queriesFields,mutationsFields);
 
+        
+    model.api.generalFields = fieldSplitterOutput.generalFields;
+    model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+    
     const updatedPanacloudConfig = await updatePanacloudConfig(
         model.api.queiresFields,
         model.api.mutationFields,
