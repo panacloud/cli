@@ -175,9 +175,14 @@ export class Imports {
     ts.writeImports("constructs/lib/construct", ["IConstruct"]);
   }
 
-  public importAspectBaseClass() {
+  public importAspectController() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports("../custom_src/aspects", ["AspectBaseClass"]);
+    ts.writeImports("../custom_src/aspects", ["AspectController"]);
+  }
+
+  public importContructVisitor() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("./constructVisitor", ["ConstructVisitor"]);
   }
 
 
