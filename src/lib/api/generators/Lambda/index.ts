@@ -44,9 +44,15 @@ class lambdaConstruct {
       api: { apiName, apiType, database },
     } = this.config;
     let mutationsAndQueries: string[] = [];
+    let general_Fields: string[] = [];
+    let microService_Fields: {[k: string]: any[]} = {};
+
     if (apiType === APITYPE.graphql) {
-      const { queiresFields, mutationFields } = this.config.api;
+      const { queiresFields, mutationFields,generalFields,microServiceFields } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
+      general_Fields = generalFields;
+      microService_Fields = microServiceFields;
+
     }
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
@@ -56,7 +62,6 @@ class lambdaConstruct {
     const imp = new Imports(this.code);
     const lambda = new Lambda(this.code, this.panacloudConfig);
     imp.importLambda();
-
     if (!database) {
       lambdaProperties = lambdaProperiesHandlerForMockApi(
         apiName,
@@ -64,6 +69,7 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
+
     if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
@@ -105,14 +111,41 @@ class lambdaConstruct {
       () => {
         if (!database) {
           lambda.lambdaLayer(apiName);
-          mutationsAndQueries.forEach((key: string) => {
-            lambda.initializeLambda(apiName , key);
+          
+          const microServices = Object.keys(microService_Fields);
+
+          for (let i = 0; i < microServices.length; i++) {
+            for (let j = 0; j < microService_Fields[microServices[i]].length; j++) {
+
+              const key = microService_Fields[microServices[i]][j];
+              const microService = microServices[i];
+
+              lambda.initializeLambda(apiName , key ,undefined,undefined,undefined,undefined,undefined,microService);
             this.code.line();
             this.code.line(
               `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
             );
             this.code.line();
-          });
+
+            }
+
+          }
+
+
+          
+  for (let i = 0; i < general_Fields.length; i++) {
+
+    const key = general_Fields[i];
+
+    lambda.initializeLambda(apiName , key );
+    this.code.line();
+    this.code.line(
+      `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+    );
+    this.code.line();
+
+  }
+         
         }
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
@@ -120,7 +153,8 @@ class lambdaConstruct {
             this.panacloudConfig,
             apiName,
             apiType,
-            mutationsAndQueries,
+            general_Fields,
+            microService_Fields
           );
         }
         else if (database === DATABASE.neptuneDB) {
@@ -129,7 +163,8 @@ class lambdaConstruct {
             this.panacloudConfig,
             apiType,
             apiName,
-            mutationsAndQueries,
+            general_Fields,
+            microService_Fields
           );
         }
         else if (database === DATABASE.auroraDB) {
@@ -138,7 +173,8 @@ class lambdaConstruct {
             this.panacloudConfig,
             apiType,
             apiName,
-            mutationsAndQueries,
+            general_Fields,
+            microService_Fields
           );
         }
       },

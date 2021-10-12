@@ -111,7 +111,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   });
-  let updatedPanacloudConfig: any;
+  let PanacloudConfig: any;
 
   if (apiType === APITYPE.graphql) {
     let directivesPath = path.resolve(
@@ -164,9 +164,9 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
     if (apiType === APITYPE.graphql) {
-      updatedPanacloudConfig = await generatePanacloudConfig(
-        model.api.queiresFields,
-        model.api.mutationFields
+      PanacloudConfig = await generatePanacloudConfig(
+        model.api.generalFields,
+        model.api.microServiceFields
       );
 
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
@@ -199,7 +199,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   await CreateAspects({config:model});
 
   // Codegenerator Function
-  await generator(model, updatedPanacloudConfig);
+  await generator(model, PanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

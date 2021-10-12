@@ -31,7 +31,9 @@ export class Lambda {
     securityGroupsName?: string,
     environments?: Environment[],
     vpcSubnets?: string,
-    roleName?: string
+    roleName?: string,
+    microServiceName?:string
+
   ) {
     const ts = new TypeScriptWriter(this.code);
     let handlerName: string
@@ -41,11 +43,24 @@ export class Lambda {
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     if(functionName){
       const {lambdas} = this.panacloudConfig;
+
+      if (microServiceName){
+        const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
+        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+        const splitPath = lambdas[microServiceName][functionName].asset_path.split("/");
+        splitPath.pop();
+        handlerAsset = functionName? splitPath.join("/") : "lambda";
+
+      }
+
+      else{
       const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
       handlerName = functionName? `${handlerfile}.handler` : "main.handler";
       const splitPath = lambdas[functionName].asset_path.split("/");
       splitPath.pop();
       handlerAsset = functionName? splitPath.join("/") : "lambda";
+
+    }
     }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName

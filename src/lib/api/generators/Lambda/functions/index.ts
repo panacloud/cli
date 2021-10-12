@@ -47,7 +47,10 @@ export const lambdaHandlerForAuroradb = (
   panacloudConfig: PanacloudconfigFile,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  generalFields?: string[],
+  microServiceFields?: {
+    [k: string]: any[];
+  }
 ) => {
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
@@ -69,27 +72,78 @@ export const lambdaHandlerForAuroradb = (
     code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
     code.line();
   } else {
-    mutationsAndQueries.forEach((key: string) => {
-      lambda.initializeLambda(
-        apiName,
-        key,
-        `props!.vpcRef`,
-        undefined,
-        [
-          {
-            name: "INSTANCE_CREDENTIALS",
-            value: `props!.secretRef`,
-          },
-        ],
-        undefined,
-        `props!.serviceRole`
-      );
-      code.line();
-      code.line(
-        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-      );
-      code.line();
-    });
+
+
+
+
+    
+    if (microServiceFields) {
+      const microServices = Object.keys(microServiceFields);
+
+      for (let i = 0; i < microServices.length; i++) {
+        for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+
+          const key = microServiceFields[microServices[i]][j];
+          const microService = microServices[i];
+
+          lambda.initializeLambda(
+            apiName,
+            key,
+            `props!.vpcRef`,
+            undefined,
+            [
+              {
+                name: "INSTANCE_CREDENTIALS",
+                value: `props!.secretRef`,
+              },
+            ],
+            undefined,
+            `props!.serviceRole`
+            ,microService
+          );
+          code.line();
+          code.line(
+            `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+          );
+          code.line();
+
+        }
+
+      }
+
+
+    }
+
+    if (generalFields) {
+
+      for (let i = 0; i < generalFields.length; i++) {
+
+        const key = generalFields[i];
+
+        lambda.initializeLambda(
+          apiName,
+          key,
+          `props!.vpcRef`,
+          undefined,
+          [
+            {
+              name: "INSTANCE_CREDENTIALS",
+              value: `props!.secretRef`,
+            },
+          ],
+          undefined,
+          `props!.serviceRole`
+        );
+        code.line();
+        code.line(
+          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        );
+        code.line();
+
+      }
+
+    }
+
   }
 };
 
@@ -98,7 +152,11 @@ export const lambdaHandlerForNeptunedb = (
   panacloudConfig: PanacloudconfigFile,
   apiType: string,
   apiName: string,
-  mutationsAndQueries: any
+  generalFields?: string[],
+  microServiceFields?: {
+    [k: string]: any[];
+  }
+
 ) => {
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
@@ -123,26 +181,76 @@ export const lambdaHandlerForNeptunedb = (
       code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
     code.line();
   } else {
-    mutationsAndQueries.forEach((key: string) => {
-      lambda.initializeLambda(
-        apiName,
-        key,
-        `props!.VPCRef`,
-        `props!.SGRef`,
-        [
-          {
-            name: "NEPTUNE_ENDPOINT",
-            value: `props!.neptuneReaderEndpoint`,
-          },
-        ],
-        `ec2.SubnetType.PRIVATE_ISOLATED`
-      );
-      code.line();
-      code.line(
-        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-      );
-      code.line();
-    });
+
+
+
+
+
+    
+    if (microServiceFields) {
+      const microServices = Object.keys(microServiceFields);
+
+      for (let i = 0; i < microServices.length; i++) {
+        for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+
+          const key = microServiceFields[microServices[i]][j];
+          const microService = microServices[i];
+
+          lambda.initializeLambda(
+            apiName,
+            key,
+            `props!.VPCRef`,
+            `props!.SGRef`,
+            [
+              {
+                name: "NEPTUNE_ENDPOINT",
+                value: `props!.neptuneReaderEndpoint`,
+              },
+            ],
+            `ec2.SubnetType.PRIVATE_ISOLATED`
+          ,undefined,microService);
+          code.line();
+          code.line(
+            `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+          );
+          code.line();
+
+        }
+
+      }
+
+
+    }
+
+    if (generalFields) {
+
+      for (let i = 0; i < generalFields.length; i++) {
+
+        const key = generalFields[i];
+
+        lambda.initializeLambda(
+          apiName,
+          key,
+          `props!.VPCRef`,
+          `props!.SGRef`,
+          [
+            {
+              name: "NEPTUNE_ENDPOINT",
+              value: `props!.neptuneReaderEndpoint`,
+            },
+          ],
+          `ec2.SubnetType.PRIVATE_ISOLATED`
+        );
+        code.line();
+        code.line(
+          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        );
+        code.line();
+
+      }
+
+    }
+
   }
 };
 
@@ -351,7 +459,11 @@ export const lambdaHandlerForDynamodb = (
   panacloudConfig: PanacloudconfigFile,
   apiName: string,
   apiType: string,
-  mutationsAndQueries?: any
+  generalFields?: string[],
+  microServiceFields?: {
+    [k: string]: any[];
+  }
+
 ) => {
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
@@ -362,13 +474,51 @@ export const lambdaHandlerForDynamodb = (
     code.line();
     code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
   } else {
-    mutationsAndQueries.forEach((key: string) => {
-      lambda.initializeLambda(apiName, key, undefined, undefined, [
-        { name: "TableName", value: "props!.tableName" },
-      ]);
-      code.line();
-      code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-      code.line();
-    });
+
+
+
+    if (microServiceFields) {
+      const microServices = Object.keys(microServiceFields);
+
+      for (let i = 0; i < microServices.length; i++) {
+        for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+
+          const key = microServiceFields[microServices[i]][j];
+          const microService = microServices[i];
+
+          lambda.initializeLambda(apiName, key, undefined, undefined, [
+            { name: "TableName", value: "props!.tableName" },
+          ], undefined, undefined, microService);
+          code.line();
+          code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+          code.line();
+
+        }
+
+      }
+
+
+    }
+
+    if (generalFields) {
+
+      for (let i = 0; i < generalFields.length; i++) {
+
+        const key = generalFields[i];
+
+        lambda.initializeLambda(apiName, key, undefined, undefined, [
+          { name: "TableName", value: "props!.tableName" },
+        ]);
+        code.line();
+        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+        code.line();
+
+      }
+
+    }
+
+
+
+
   }
 };

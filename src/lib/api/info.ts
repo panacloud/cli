@@ -17,16 +17,45 @@ export const contextInfo = (apiToken: string, entityId: string) => {
 
 
 export const generatePanacloudConfig = async (
-  queiresFields: string[],
-  mutationFields: string[]
+  generalFields: string[],
+  microServiceFields: {
+    [k: string]: any[];
+}
 ) => {
-  let mutationsAndQueries: string[] = [...queiresFields!, ...mutationFields!];
 
   let configJson: PanacloudconfigFile = { lambdas: {} };
-  mutationsAndQueries.forEach((key: string) => {
+
+
+  const microServices = Object.keys(microServiceFields);
+
+  for (let i = 0; i < microServices.length; i++) {
+    for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+
+      const key = microServiceFields[microServices[i]][j];
+      const microService = microServices[i];
+
+      if (!configJson.lambdas[microService]){
+      configJson.lambdas[microService] = {}
+    }
+      const lambdas = configJson.lambdas[microService][key] = {} as PanacloudConfiglambdaParams
+      lambdas.asset_path = `lambda/${microService}/${key}/index.ts`;
+    }
+
+  }
+
+
+  
+
+  for (let i = 0; i < generalFields.length; i++) {
+
+    const key = generalFields[i];
+
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
     lambdas.asset_path = `lambda/${key}/index.ts`;
-  });
+   
+  }
+
+
   await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
 
   return configJson;
