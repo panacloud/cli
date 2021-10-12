@@ -51,10 +51,11 @@ class MultipleLambda {
 
       if (architecture === ARCHITECTURE.eventDriven) {
         for (let i = 0; i < (mutationFields || []).length; i++) {
+          if (!mutationFields) { continue }
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
           const imp = new Imports(code);
-          const key = `${mutationsAndQueries[i]}_consumer`;
+          const key = `${mutationFields[i]}_consumer`;
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
 
