@@ -1,6 +1,6 @@
 const fse = require("fs-extra");
 
-import { PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
+import { ARCHITECTURE, PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
 import { stopSpinner } from "../spinner";
 
 export const contextInfo = (apiToken: string, entityId: string) => {
@@ -18,7 +18,8 @@ export const contextInfo = (apiToken: string, entityId: string) => {
 
 export const generatePanacloudConfig = async (
   queiresFields: string[],
-  mutationFields: string[]
+  mutationFields: string[],
+  architecture: ARCHITECTURE,
 ) => {
   let mutationsAndQueries: string[] = [...queiresFields!, ...mutationFields!];
 
@@ -27,6 +28,15 @@ export const generatePanacloudConfig = async (
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
     lambdas.asset_path = `lambda/${key}/index.ts`;
   });
+
+  if (architecture === ARCHITECTURE.eventDriven) {
+    mutationFields.forEach((key: string) => {
+      key = `${key}_consumer`;
+      const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
+      lambdas.asset_path = `lambda/${key}/index.ts`;
+    });
+  }
+
   await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
 
   return configJson;

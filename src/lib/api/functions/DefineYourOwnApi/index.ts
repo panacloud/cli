@@ -99,7 +99,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     await mkdirRecursiveAsync(`custom_src`);
     await mkdirRecursiveAsync(`custom_src/graphql`);
     await mkdirRecursiveAsync(`custom_src/graphql/schema`);
-//    await mkdirRecursiveAsync(`custom_src/aspects`);
+    //    await mkdirRecursiveAsync(`custom_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -159,12 +159,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     if (apiType === APITYPE.graphql) {
       updatedPanacloudConfig = await generatePanacloudConfig(
         model.api.queiresFields,
-        model.api.mutationFields
+        model.api.mutationFields,
+        model.api.architecture,
       );
 
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
-      
+
     }
   } else {
     copyFileAsync(
@@ -186,7 +187,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
-  await CreateAspects({config:model});
+  await CreateAspects({ config: model });
 
   // Codegenerator Function
   await generator(model, updatedPanacloudConfig);
