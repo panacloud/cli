@@ -22,14 +22,15 @@ class MultipleLambda {
 
     if (apiType === APITYPE.graphql) {
       
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
 
       const microServices = Object.keys(microServiceFields);
 
       for (let i = 0; i < microServices.length; i++) {
       for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
-        const code = new CodeMaker();
-        const lambda = new LambdaFunction(code);
-        const imp = new Imports(code);
+  
         const key = microServiceFields[microServices[i]][j];
         this.outputFile = `index.ts`;
         code.openFile(this.outputFile);
@@ -53,9 +54,7 @@ class MultipleLambda {
 
 
     for (let i = 0; i < generalFields.length; i++) {
-      const code = new CodeMaker();
-      const lambda = new LambdaFunction(code);
-      const imp = new Imports(code);
+
       const key = generalFields[i];
       this.outputFile = "index.ts";
       code.openFile(this.outputFile);

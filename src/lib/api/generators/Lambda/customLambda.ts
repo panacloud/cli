@@ -9,7 +9,6 @@ type StackBuilderProps = {
 
 class CustomLambda {
   outputFile: string = `index.ts`;
-  outputDir: string = `lambda`;
   config: ApiModel;
   code: CodeMaker;
   constructor(props: StackBuilderProps) {
@@ -24,16 +23,20 @@ class CustomLambda {
 
     if (apiType === APITYPE.graphql) {
       const {
-        api: { queiresFields, mutationFields },
+        api: { microServiceFields,generalFields },
       } = this.config;
-      let mutationsAndQueries: string[] = [
-        ...queiresFields!,
-        ...mutationFields!,
-      ];
+
+
       const lambda = new LambdaFunction(this.code);
       const imp = new Imports(this.code);
 
-      mutationsAndQueries.forEach(async (key: string) => {
+      const microServices = Object.keys(microServiceFields);
+
+      for (let i = 0; i < microServices.length; i++) {
+      for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+   
+        const key = microServiceFields[microServices[i]][j];
+
         this.code.openFile(this.outputFile);
 
         imp.importAxios();
@@ -42,9 +45,31 @@ class CustomLambda {
         lambda.emptyLambdaFunction();
 
         this.code.closeFile(this.outputFile);
-        this.outputDir = `custom_src/lambda/${key}`;
-        await this.code.save(this.outputDir);
-      });
+        const outputDir = `custom_src/lambda/${microServices[i]}/${key}`;
+        await this.code.save(outputDir);
+      }
+
+    }
+
+
+    for (let i = 0; i < generalFields.length; i++) {
+
+      const key = generalFields[i];
+      this.outputFile = "index.ts";
+      this.code.openFile(this.outputFile);
+
+      imp.importAxios();
+      this.code.line();
+
+      lambda.emptyLambdaFunction();
+
+      this.code.closeFile(this.outputFile);
+      const outputDir = `custom_src/lambda/${key}`;
+      await this.code.save(outputDir);
+    }
+
+
+
     }
   }
 }
