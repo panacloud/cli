@@ -11,6 +11,7 @@ import {
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
+import { microServicesDirectiveFieldSplitter } from "../../../../utils/microServicesDirective";
 
 const path = require("path");
 const fs = require("fs");
@@ -31,6 +32,16 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         workingDir: workingDir,
     };
 
+    let directivesPath = path.resolve(
+        __dirname,
+        "../../../../utils/awsAppsyncDirectives.graphql"
+      );
+  
+      let scalarPath = path.resolve(
+        __dirname,
+        "../../../../utils/awsAppsyncScalars.graphql"
+      );
+
     let schema = fs.readFileSync("custom_src/graphql/schema/schema.graphql", "utf8", (err: string) => {
         if (err) {
             stopSpinner(spinner, `Error: ${err}`, true);
@@ -38,8 +49,21 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         }
     });
 
+    let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
+        if (err) {
+          stopSpinner(spinner, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      });
+  
+      let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
+        if (err) {
+          stopSpinner(spinner, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      });
 
-    const gqlSchema = buildSchema(`${schema}`);
+    const gqlSchema = buildSchema(`${directives}\n${schema}`);
 
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
@@ -47,6 +71,9 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     model.api.schema = introspectionFromSchema(gqlSchema);
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
+
+   
+    const fieldSplitterOutput = microServicesDirectiveFieldSplitter(queriesFields,mutationsFields);
 
     const updatedPanacloudConfig = await updatePanacloudConfig(
         model.api.queiresFields,
