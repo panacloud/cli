@@ -67,8 +67,4 @@ export const generator = async (config: ApiModel) => {
     mockApiTestCollections({ config });
     customLambda({ config });
   }
-
-
-    
-
 };
