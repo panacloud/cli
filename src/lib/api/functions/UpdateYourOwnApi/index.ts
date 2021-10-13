@@ -51,7 +51,8 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     const updatedPanacloudConfig = await updatePanacloudConfig(
         model.api.queiresFields,
         model.api.mutationFields,
-        spinner
+        spinner,
+        model.api.architecture
     );
 
     // Codegenerator Function

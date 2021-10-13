@@ -33,7 +33,7 @@ export const generatePanacloudConfig = async (
     mutationFields.forEach((key: string) => {
       key = `${key}_consumer`;
       const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `mock_lambda/${key}/index.ts`;
+      lambdas.asset_path = `consumer_lambda/${key}/index.ts`;
     });
   }
 
@@ -45,10 +45,17 @@ export const generatePanacloudConfig = async (
 export const updatePanacloudConfig = async (
   queiresFields: string[],
   mutationFields: string[],
-  spinner: any
+  spinner: any,
+  architecture: ARCHITECTURE,
 ) => {
 
   let newLambdas: string[] = [...queiresFields!, ...mutationFields!];
+  if (architecture === ARCHITECTURE.eventDriven) {
+    mutationFields.forEach((key: string) => {
+      key = `${key}_consumer`;
+      newLambdas = [...newLambdas, key]
+    });
+  }
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   let prevLambdas = Object.keys(configPanacloud.lambdas)
 
