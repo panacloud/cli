@@ -8,7 +8,7 @@ export enum DATABASE {
   neptuneDB = "Neptune (Graph)",
   auroraDB = "Aurora Serverless (Relational)",
   documentDB = "DocumentDB (NoSQL MongoDB)",
-  none = "None"
+  none = "None",
 }
 
 export enum SAASTYPE {
@@ -23,7 +23,7 @@ export enum CONSTRUCTS {
   neptuneDB = "VpcNeptuneConstruct",
   auroraDB = "AuroraDBConstruct",
   apigateway = "ApiGatewayConstruct",
-  eventBridge = "EventBridgeConstruct"
+  eventBridge = "EventBridgeConstruct",
 }
 
 export enum TEMPLATE {
@@ -65,9 +65,12 @@ export interface API {
   apiName: string;
   schemaPath: string;
   schema?: any;
+  schemaTypes?:string[];
+  nestedResolverTypes?: { [key: string]: string[] }
   queiresFields?: string[];
   mutationFields?: string[];
   apiType: APITYPE;
   database: DATABASE;
+  nestedResolver?: boolean;
   mockApiData?: mockApiData;
 }
