@@ -45,6 +45,7 @@ export default class Create extends Command {
         schemaPath: usrInput.schema_path,
         apiType: usrInput.api_type,
         database: usrInput.database === DATABASE.none? undefined : usrInput.database,
+        architecture: usrInput.architecture,
       },
     };
 

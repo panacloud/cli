@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, DATABASE } from "../../../../../utils/constants";
+import { APITYPE, PanacloudconfigFile } from "../../../../../utils/constants";
 import {
   Property,
   TypeScriptWriter,
@@ -44,13 +44,14 @@ export const lambdaPropsHandlerForAuroradb = () => {
 
 export const lambdaHandlerForAuroradb = (
   code: CodeMaker,
+  panacloudConfig: PanacloudconfigFile,
   apiType: string,
   apiName: string,
   mutationsAndQueries: any,
   nestedResolver:boolean,
   schemaTypes:string[]
 ) => {
-  const lambda = new Lambda(code);
+  const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
@@ -99,13 +100,15 @@ export const lambdaHandlerForAuroradb = (
 
 export const lambdaHandlerForNeptunedb = (
   code: CodeMaker,
+  panacloudConfig: PanacloudconfigFile,
   apiType: string,
   apiName: string,
   mutationsAndQueries: any,
   nestedResolver: boolean,
   schemaTypes:string[]
 ) => {
-  const lambda = new Lambda(code);
+  const lambda = new Lambda(code, panacloudConfig);
+  const ts = new TypeScriptWriter(code);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
@@ -345,13 +348,14 @@ export const lambdaProperiesHandlerForNestedResolver = (
 
 export const lambdaHandlerForDynamodb = (
   code: CodeMaker,
+  panacloudConfig: PanacloudconfigFile,
   apiName: string,
   apiType: string,
   mutationsAndQueries: any,
   nestedResolver:boolean,
   schemaTypes:string[]
 ) => {
-  const lambda = new Lambda(code);
+  const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(apiName, undefined, undefined, undefined, [

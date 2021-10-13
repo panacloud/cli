@@ -5,6 +5,7 @@ import {
   APITYPE,
   DATABASE,
   LAMBDASTYLE,
+  PanacloudconfigFile,
   ApiModel,
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
@@ -15,16 +16,19 @@ import { neptuneIdentifierCalls, auroradbIdentifierCalls } from "./functions";
 
 type StackBuilderProps = {
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile
 };
 
 export class LambdaConstructTest {
   outputFile: string = `${CONSTRUCTS.lambda}.test.ts`;
   outputDir: string = `test`;
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
     this.config = props.config;
+    this.panacloudConfig = props.panacloudConfig;
     this.code = new CodeMaker();
   }
 
@@ -34,7 +38,7 @@ export class LambdaConstructTest {
 
     const { apiName, lambdaStyle, database, apiType, schema } = this.config.api;
     const cdk = new Cdk(this.code);
-    const lambda = new Lambda(this.code);
+    const lambda = new Lambda(this.code, this.panacloudConfig);
     const imp = new Imports(this.code);
     const iam = new Iam(this.code);
     let mutationsAndQueries: string[] = [];

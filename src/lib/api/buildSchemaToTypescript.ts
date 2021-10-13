@@ -60,7 +60,7 @@ export const buildSchemaToTypescript = (gqlSchema: any) => {
           allImports.push(responseTypeName);
           allImports.push(`${description}${upperFirst(type)}Args`);
         } else {
-          return;
+          allImports.push(responseTypeName);
         }
       }
     });

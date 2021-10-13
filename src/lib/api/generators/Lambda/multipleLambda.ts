@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 
@@ -11,18 +11,14 @@ class MultipleLambda {
   outputFile: string = `main.ts`;
   outputDir: string = `lambda`;
   config: ApiModel;
-  code: CodeMaker;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
-    this.code = new CodeMaker();
   }
 
   async MultipleLambdaFile() {
     const {
-      api: { apiType },
+      api: { apiType, architecture, apiName },
     } = this.config;
-    const imp = new Imports(this.code);
-    const lambda = new LambdaFunction(this.code);
 
     if (apiType === APITYPE.graphql) {
       const {
@@ -34,22 +30,45 @@ class MultipleLambda {
       ];
 
       for (let i = 0; i < mutationsAndQueries.length; i++) {
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
+        const imp = new Imports(code);
         const key = mutationsAndQueries[i];
+        const isMutation = mutationFields?.includes(key);
         this.outputFile = "index.ts";
-        this.code.openFile(this.outputFile);
+        code.openFile(this.outputFile);
 
-          this.code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
-          this.code.line();
-          // imp.importAxios();
-          // this.code.line();
-        
+        code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
+        code.line();
+        // imp.importAxios();
+        // this.code.line();
+        lambda.initializeLambdaFunction(apiType, apiName, undefined, key, isMutation ? architecture : undefined,);
 
-        lambda.initializeLambdaFunction(apiType, undefined, key);
-
-        this.code.closeFile(this.outputFile);
-        this.outputDir = `lambda/${key}`;
-        await this.code.save(this.outputDir);
+        code.closeFile(this.outputFile);
+        this.outputDir = `mock_lambda/${key}`;
+        await code.save(this.outputDir);
       }
+
+      if (architecture === ARCHITECTURE.eventDriven) {
+        for (let i = 0; i < (mutationFields || []).length; i++) {
+          if (!mutationFields) { continue }
+          const code = new CodeMaker();
+          const lambda = new LambdaFunction(code);
+          const imp = new Imports(code);
+          const key = `${mutationFields[i]}_consumer`;
+          this.outputFile = "index.ts";
+          code.openFile(this.outputFile);
+
+          code.line();
+
+          lambda.helloWorldFunction(apiType);
+
+          code.closeFile(this.outputFile);
+          this.outputDir = `consumer_lambda/${key}`;
+          await code.save(this.outputDir);
+        }
+      }
+
     }
   }
 }

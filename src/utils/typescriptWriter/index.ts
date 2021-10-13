@@ -5,12 +5,23 @@ export type ClassDefinition = {
   export: boolean;
   extends?: string;
   description?: string[];
+  implements?: string;
+};
+
+export type classMethodDefinition = {
+  name: string;
+  static: boolean;
+  visibility: "public" | "private";
+  outputType: string;
+  props?:string;
+  content?:any;
 };
 
 type VariableDefinition = {
   name: string;
   typeName: string;
   initializer?: ((code: TypeScriptWriter) => void) | string
+  export?:boolean
 };
 
 type Element = {
@@ -40,7 +51,7 @@ export class TypeScriptWriter {
     classDefinition: ClassDefinition,
     properties?: Property[],
     propsName?:string,
-    contents?: any
+    contents?: any,
   ) {
     this.code.openBlock(
       `${classDefinition.export ? "export" : null} class ${
@@ -62,7 +73,7 @@ export class TypeScriptWriter {
   }
 
   writeVariableDeclaration(definition: VariableDefinition,kind: "const" | "let") {
-    this.code.line(`${kind} ${definition.name}`);
+    this.code.line(`${definition.export? "export ":""} ${kind} ${definition.name}`);
     if (definition.typeName) {
         this.code.line(`: ${definition.typeName}`);
     }
@@ -88,4 +99,45 @@ export class TypeScriptWriter {
     });
     this.code.closeBlock();
   }
+
+
+  public writeBasicClassBlock(
+    classDefinition: ClassDefinition,
+    properties?: Property[],
+    props?:string,
+    constructorContent?: any,
+    functions?:classMethodDefinition[]
+  ) {
+    this.code.openBlock(
+      `${classDefinition.export ? "export" : ""} class ${
+        ` ${classDefinition.name}`
+      } ${classDefinition.extends ? `extends ${classDefinition.extends}` : ""}
+      ${classDefinition.implements? `implements ${classDefinition.implements}`: ""}`
+    
+    );
+    properties?.forEach((property: Property) => {
+      this.code.line(
+        `${property.accessModifier} ${property.isReadonly? "readonly" : ""} ${property.name}: ${property.typeName};`
+      );
+    });
+
+
+    this.code.line(` 
+    constructor(${props? props : ""}) {
+    `);
+    constructorContent();
+    this.code.line(`}`);
+
+    functions?.forEach((fun)=>{
+ 
+      this.code.openBlock(`${fun.visibility} ${fun.name} (${fun.props}): ${fun.outputType}`)
+      fun.content()
+      this.code.closeBlock();
+})
+
+this.code.closeBlock();
+
+  }
+
+
 }

@@ -2,19 +2,26 @@ import { CodeMaker } from "codemaker";
 import {
   APITYPE,
   CONSTRUCTS,
-  DATABASE
+  DATABASE,
+  PanacloudconfigFile
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+const fse = require("fs-extra");
 
 interface Environment {
   name: string;
   value: string;
 }
 
+
 export class Lambda {
   code: CodeMaker;
-  constructor(_code: CodeMaker) {
+  panacloudConfig: PanacloudconfigFile
+  // configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
+  constructor(_code: CodeMaker, panacloudConfig: PanacloudconfigFile) {
     this.code = _code;
+    this.panacloudConfig = panacloudConfig;
+
   }
 
   public initializeLambda(
@@ -27,11 +34,20 @@ export class Lambda {
     roleName?: string
   ) {
     const ts = new TypeScriptWriter(this.code);
+    let handlerName: string
+    let handlerAsset: string
     let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
-    let handlerName: string = functionName? "index.handler" : "main.handler";
-    let handlerAsset: string = functionName? `lambda/${functionName}` : "lambda";
+    if(functionName){
+      const {lambdas} = this.panacloudConfig;
+      // console.log(lambdas);
+      const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+      handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+      const splitPath = lambdas[functionName].asset_path.split("/");
+      splitPath.pop();
+      handlerAsset = functionName? splitPath.join("/") : "lambda";
+    }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`

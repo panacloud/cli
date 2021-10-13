@@ -23,6 +23,11 @@ export class Imports {
     ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync"]);
   }
 
+  public importForEventBrideConstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports(`./${CONSTRUCTS.eventBridge}`, [CONSTRUCTS.eventBridge]);
+  }
+
   public importApiGateway() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_apigateway as apigw"]);
@@ -147,4 +152,37 @@ export class Imports {
     this.code.line(`import * as cdk from "aws-cdk-lib"`);
     this.code.line(`import "@aws-cdk/assert/jest"`);
   }
+
+
+  public importAspects() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["Aspects"]);
+  }
+
+  public importIaspect() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["IAspect"]);
+  }
+
+  public importStack() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["Stack"]);
+  }
+
+  public importIconstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("constructs/lib/construct", ["IConstruct"]);
+  }
+
+  public importAspectController() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("../editable_src/aspects", ["AspectController"]);
+  }
+
+  public importContructVisitor() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("./constructVisitor", ["ConstructVisitor"]);
+  }
+
+
 }
