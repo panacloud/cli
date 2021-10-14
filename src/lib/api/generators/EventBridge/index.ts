@@ -43,12 +43,12 @@ class EventBridgeConstruct {
         let ConstructProps: ConstructPropsType[] = [];
         mutationFields?.forEach((key: string, index: number) => {
             ConstructProps.push({
-                name: `${apiName}_lambdaFn_${key}`,
-                type: "lambda.Function"
+                name: `${apiName}_lambdaFn_${key}Arn`,
+                type: "string"
             })
             ConstructProps.push({
-                name: `${apiName}_lambdaFn_${key}_consumer`,
-                type: "lambda.Function"
+                name: `${apiName}_lambdaFn_${key}_consumerArn`,
+                type: "string"
             })
         })
 
