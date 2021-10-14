@@ -38,8 +38,32 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         }
     });
 
+    let directivesPath = path.resolve(
+        __dirname,
+        "../../../../utils/awsAppsyncDirectives.graphql"
+      );
+  
+      let scalarPath = path.resolve(
+        __dirname,
+        "../../../../utils/awsAppsyncScalars.graphql"
+      );
+  
+      let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
+        if (err) {
+          stopSpinner(spinner, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      });
+  
+      let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
+        if (err) {
+          stopSpinner(spinner, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      });
 
-    const gqlSchema = buildSchema(`${schema}`);
+
+    const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
 
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
@@ -52,6 +76,9 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         model,
         spinner,
     );
+
+    const mockApiCollection = buildSchemaToTypescript(gqlSchema);
+    model.api.mockApiData = mockApiCollection;
 
     // Codegenerator Function
     await generator(model, updatedPanacloudConfig);

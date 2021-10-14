@@ -80,12 +80,16 @@ export const updatePanacloudConfig = async (
   let difference = newLambdas
     .filter(val => !prevLambdas.includes(val))
     .concat(prevLambdas.filter(val => !newLambdas.includes(val)));
-
+    
   for (let diff of difference) {
-    if (newLambdas.includes(diff)) {
+    if (newLambdas.includes(diff) && diff.includes("_consumer")) {
+      panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
+      panacloudConfigNew.lambdas[diff].asset_path = `consumer_lambda/${diff}/index.ts`
+
+    }
+    else if (newLambdas.includes(diff) && !diff.includes("_consumer")){
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
-
     }
     else {
       delete panacloudConfigNew.lambdas[diff];
