@@ -114,7 +114,7 @@ export default class Create extends Command {
         gitignore: true,
       }
     );
-    console.log(files)
+    
     files.forEach(async (file: any) => {
       const data = fs.readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
