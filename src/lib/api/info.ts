@@ -64,8 +64,6 @@ export const updatePanacloudConfig = async (
   let difference = newLambdas
     .filter(val => !prevLambdas.includes(val))
     .concat(prevLambdas.filter(val => !newLambdas.includes(val)));
-
-    console.log("difference ", difference);
     
   for (let diff of difference) {
     if (newLambdas.includes(diff) && diff.includes("_consumer")) {
