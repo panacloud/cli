@@ -31,6 +31,8 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   // stack
   CdkStackClass({ config, panacloudConfig });
 
+  console.log("panacloud config ---<",panacloudConfig)
+
   // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
     AppsyncApiConstruct({ config });

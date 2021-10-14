@@ -237,7 +237,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   await CreateAspects({ config: model });
 
-
   // Codegenerator Function
   await generator(model, updatedPanacloudConfig);
 
