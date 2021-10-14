@@ -22,19 +22,24 @@ class MultipleLambda {
 
     if (apiType === APITYPE.graphql) {
       
-      const code = new CodeMaker();
-      const lambda = new LambdaFunction(code);
-      const imp = new Imports(code);
+     
 
       const microServices = Object.keys(microServiceFields);
 
       for (let i = 0; i < microServices.length; i++) {
       for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
   
+
+        
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
+        const imp = new Imports(code);
+
         const key = microServiceFields[microServices[i]][j];
         const isMutation = mutationFields?.includes(key);
         this.outputFile = `index.ts`;
         code.openFile(this.outputFile);
+
 
         code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
         code.line();
@@ -48,9 +53,14 @@ class MultipleLambda {
 
 
 
-        if (architecture === ARCHITECTURE.eventDriven) {
-          if (isMutation) {
-            
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+         
+           const code = new CodeMaker();
+           const lambda = new LambdaFunction(code);
+           const imp = new Imports(code);
+
+          console.log("KEY",key,"ISMUTATION",isMutation)
+
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
         
@@ -61,7 +71,7 @@ class MultipleLambda {
             code.closeFile(this.outputFile);
             this.outputDir = `mock_lambda/${microServices[i]}/${key}_consumer`;
             await code.save(this.outputDir);
-          }
+        
         }
 
 
@@ -76,6 +86,11 @@ class MultipleLambda {
 
 
     for (let i = 0; i < generalFields.length; i++) {
+
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
+      
 
       const key = generalFields[i];
       this.outputFile = "index.ts";
@@ -96,8 +111,8 @@ class MultipleLambda {
 
 
       
-      if (architecture === ARCHITECTURE.eventDriven) {
-        if (isMutation) {
+      if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
           
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
@@ -109,7 +124,7 @@ class MultipleLambda {
           code.closeFile(this.outputFile);
           this.outputDir = `mock_lambda/${key}_consumer`;
           await code.save(this.outputDir);
-        }
+        
       }
 
 

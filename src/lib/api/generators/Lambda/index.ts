@@ -134,27 +134,31 @@ class lambdaConstruct {
               const key = microService_Fields[microServices[i]][j];
               const microService = microServices[i];
 
-              lambda.initializeLambda(apiName , key ,undefined,undefined,undefined,undefined,undefined,microService);
-            this.code.line();
-            this.code.line(
-              `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-            );
-            this.code.line();
+              const isMutation = this.config.api.mutationFields?.includes(key);
 
-            
-          if (architecture === ARCHITECTURE.eventDriven) {
 
-            if (this.config.api.mutationFields?.includes(key)){
+          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 
-              lambda.initializeLambda(apiName, `${key}_consumer`,undefined,undefined,undefined,undefined,microService);
+
+              lambda.initializeLambda(apiName, `${key}_consumer`,undefined,undefined,undefined,undefined,undefined,microService);
               this.code.line();
               this.code.line( //myApi_lambdaFn_createApi_consumerArn
                 `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
               );
               this.code.line();
-            }
+        
 
           }
+
+ 
+
+            lambda.initializeLambda(apiName , key ,undefined,undefined,undefined,undefined,undefined,microService);
+            this.code.line();
+            this.code.line(
+              `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+            );
+            this.code.line();
+          
 
             }
 
@@ -165,6 +169,19 @@ class lambdaConstruct {
   for (let i = 0; i < general_Fields.length; i++) {
 
     const key = general_Fields[i];
+
+    const isMutation = this.config.api.mutationFields?.includes(key);
+
+    if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+      lambda.initializeLambda(apiName , `${key}_consumer` );
+      this.code.line();
+      this.code.line(
+        `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+        );
+      this.code.line();
+
+  }
 
     lambda.initializeLambda(apiName , key );
     this.code.line();

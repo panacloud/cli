@@ -27,6 +27,7 @@ class CustomLambda {
       const imp = new Imports(code);
 
       const microServices = Object.keys(microServiceFields);
+      
 
       for (let i = 0; i < microServices.length; i++) {
       for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
@@ -46,20 +47,26 @@ class CustomLambda {
 
 
 
-        if (architecture === ARCHITECTURE.eventDriven) {
-          if (isMutation) {
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+             
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
+
+     
             
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
         
             code.line();
         
-            lambda.helloWorldFunction(apiType);
+            lambda.emptyLambdaFunction();
         
             code.closeFile(this.outputFile);
             this.outputDir = `editable_src/lambda/${microServices[i]}/${key}_consumer`;
             await code.save(this.outputDir);
-          }
+
         }
 
 
@@ -74,6 +81,11 @@ class CustomLambda {
 
 
     for (let i = 0; i < generalFields.length; i++) {
+
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
+
 
       const key = generalFields[i];
       this.outputFile = "index.ts";
@@ -93,20 +105,19 @@ class CustomLambda {
 
 
       
-      if (architecture === ARCHITECTURE.eventDriven) {
-        if (isMutation) {
+      if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
       
           code.line();
       
-          lambda.helloWorldFunction(apiType);
+          lambda.emptyLambdaFunction();
       
           code.closeFile(this.outputFile);
           this.outputDir = `editable_src/lambda/${key}_consumer`;
           await code.save(this.outputDir);
-        }
+      
       }
 
 
