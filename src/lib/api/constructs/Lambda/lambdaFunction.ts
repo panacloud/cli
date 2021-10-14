@@ -12,7 +12,7 @@ export class LambdaFunction {
     content?: any,
     fieldName?: string,
     architecture?: ARCHITECTURE,
-    nestedResolver?:boolean
+    nestedResolver?: boolean
   ) {
     if (apiType === APITYPE.graphql) {
       this.code.line(`var AWS = require('aws-sdk');`);
@@ -24,15 +24,15 @@ export class LambdaFunction {
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
       this.code.line(`exports.handler = async (event: any) => {`);
-      if(nestedResolver){
-        this.code.line(`console.log(event)`)
-      }else{
+      if (nestedResolver) {
+        this.code.line(`console.log(event)`);
+      } else {
         this.code.line(`let response = {};
-        testCollections.fields.${fieldName}.forEach((v: any) => {
+        data.testCollections.fields.${fieldName}.forEach((v: any) => {
           if (v.arguments) {
             let equal = isEqual(
-              Object.values(v.arguments)[0],
-              Object.values(event.arguments)[0]
+              v.arguments,
+              event.arguments
             );
             if (equal) {
               response = v.response;
