@@ -11,7 +11,7 @@ export class LambdaFunction {
     apiName: string,
     content?: any,
     fieldName?: string,
-    architecture?: ARCHITECTURE,
+    architecture?: ARCHITECTURE
   ) {
     if (apiType === APITYPE.graphql) {
       this.code.line(`var AWS = require('aws-sdk');`);
@@ -22,11 +22,11 @@ export class LambdaFunction {
       this.code.line();
       this.code.line(`exports.handler = async (event: any) => {`);
       this.code.line(`let response = {};
-          testCollections.fields.${fieldName}.forEach((v: any) => {
+      data.testCollections.fields.${fieldName}.forEach((v: any) => {
             if (v.arguments) {
               let equal = isEqual(
-                Object.values(v.arguments)[0],
-                Object.values(event.arguments)[0]
+                v.arguments,
+                event.arguments
               );
               if (equal) {
                 response = v.response;
@@ -50,12 +50,12 @@ export class LambdaFunction {
               ],
             })
             .promise();
-            `)
+            `);
       }
 
       this.code.line(`
           return response;
-        `)
+        `);
       // this.code.line(
       //   `const data = await axios.post('http://sandbox:8080', event)`
       // );
@@ -108,4 +108,3 @@ export class LambdaFunction {
     this.code.line(`}`);
   }
 }
-
