@@ -56,6 +56,7 @@ export interface mockApiData {
   collections: any;
   types: any;
   imports: string[];
+  enumImports: string[];
 }
 
 export interface API {
@@ -78,13 +79,13 @@ export interface API {
 
 export enum ARCHITECTURE {
   requestDriven = "Request-Driven Architecture",
-  eventDriven = "Event-Driven Architecture"
+  eventDriven = "Event-Driven Architecture",
 }
 
 export type PanacloudconfigFile = {
-  lambdas: any
-}
+  lambdas: any;
+};
 
 export type PanacloudConfiglambdaParams = {
-  asset_path: string
-}
+  asset_path: string;
+};
