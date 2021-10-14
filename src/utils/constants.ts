@@ -8,7 +8,7 @@ export enum DATABASE {
   neptuneDB = "Neptune (Graph)",
   auroraDB = "Aurora Serverless (Relational)",
   documentDB = "DocumentDB (NoSQL MongoDB)",
-  none = "None"
+  none = "None",
 }
 
 export enum SAASTYPE {
@@ -23,7 +23,7 @@ export enum CONSTRUCTS {
   neptuneDB = "VpcNeptuneConstruct",
   auroraDB = "AuroraDBConstruct",
   apigateway = "ApiGatewayConstruct",
-  eventBridge = "EventBridgeConstruct"
+  eventBridge = "EventBridgeConstruct",
 }
 
 export enum TEMPLATE {
@@ -56,6 +56,7 @@ export interface mockApiData {
   collections: any;
   types: any;
   imports: string[];
+  enumImports: string[];
 }
 
 export interface API {
@@ -75,13 +76,13 @@ export interface API {
 
 export enum ARCHITECTURE {
   requestDriven = "Request-Driven Architecture",
-  eventDriven = "Event-Driven Architecture"
+  eventDriven = "Event-Driven Architecture",
 }
 
 export type PanacloudconfigFile = {
-  lambdas: any
-}
+  lambdas: any;
+};
 
 export type PanacloudConfiglambdaParams = {
-  asset_path: string
-}
+  asset_path: string;
+};

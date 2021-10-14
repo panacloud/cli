@@ -1,6 +1,6 @@
 let upperFirst = require("lodash/upperFirst");
 
-export const buildSchemaToTypescript = (gqlSchema: any) => {
+export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
   let includeDeprecatedFields = false;
 
   let collectionsObject: {
@@ -10,6 +10,7 @@ export const buildSchemaToTypescript = (gqlSchema: any) => {
   };
 
   let allImports: string[] = [];
+  let allEnumImports: string[] = [];
 
   let typeStr = "type TestCollection = {\n fields: {\n";
 
@@ -48,8 +49,16 @@ export const buildSchemaToTypescript = (gqlSchema: any) => {
         field.args.length > 0
           ? (typeStr += `${type}: [{arguments: ${description}${upperFirst(
               type
-            )}Args; response: ${responseType} }];\n`)
+            )}Args; response: ${responseType} } ];\n`)
           : (typeStr += `${type}: [{ response: ${responseType} }];\n`);
+
+        introspection.__schema.types.forEach((v: any) => {
+          if (v.kind === "ENUM") {
+            if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
+              allEnumImports.push(v.name);
+            }
+          }
+        });
 
         if (
           (responseTypeName === "String" ||
@@ -80,10 +89,12 @@ export const buildSchemaToTypescript = (gqlSchema: any) => {
 
   // Remove Duplication from Imports array
   let imports: string[] = [...new Set(allImports)];
+  let enumImports: string[] = [...new Set(allEnumImports)];
 
   return {
     collections: collectionsObject,
     types: typeStr,
     imports: imports,
+    enumImports: enumImports,
   };
 };

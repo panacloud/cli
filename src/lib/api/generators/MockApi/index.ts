@@ -37,6 +37,11 @@ class MockApiTestCollectionsFile {
     this.code.openFile(this.outputFile);
 
     ts.writeImports("./testCollectionsTypes", ["TestCollection"]);
+    if (this.config.api.mockApiData?.enumImports.length !== 0) {
+      ts.writeImports("../../editable_src/graphql/types", [
+        ...this.config.api.mockApiData?.enumImports!,
+      ]);
+    }
     this.code.line();
     this.code.indent(`export const testCollections: TestCollection = {
         fields: 
@@ -48,10 +53,8 @@ class MockApiTestCollectionsFile {
     await this.code.save(this.outputDir);
 
     fse.copy("./types", "./lambdaLayer/mockApi").then(() => {
-      fse.remove("./types").then(() => {})
-    })
-
-
+      fse.remove("./types").then(() => {});
+    });
   }
 }
 

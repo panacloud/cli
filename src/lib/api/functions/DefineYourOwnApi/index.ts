@@ -5,7 +5,12 @@ import {
   mkdirRecursiveAsync,
 } from "../../../fs";
 import { contextInfo, generatePanacloudConfig } from "../../info";
-import { Config, APITYPE, ApiModel, PanacloudconfigFile } from "../../../../utils/constants";
+import {
+  Config,
+  APITYPE,
+  ApiModel,
+  PanacloudconfigFile,
+} from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -153,19 +158,19 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    model.api.schema = introspectionFromSchema(gqlSchema);
+    const introspection = introspectionFromSchema(gqlSchema);
+    model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
     if (apiType === APITYPE.graphql) {
       updatedPanacloudConfig = await generatePanacloudConfig(
         model.api.queiresFields,
         model.api.mutationFields,
-        model.api.architecture,
+        model.api.architecture
       );
 
-      const mockApiCollection = buildSchemaToTypescript(gqlSchema);
+      const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
       model.api.mockApiData = mockApiCollection;
-
     }
   } else {
     copyFileAsync(
