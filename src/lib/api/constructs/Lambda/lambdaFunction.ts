@@ -17,7 +17,9 @@ export class LambdaFunction {
     if (apiType === APITYPE.graphql) {
       this.code.line(`var AWS = require('aws-sdk');`);
       if (architecture === ARCHITECTURE.eventDriven) {
-        this.code.line(`const eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
+        this.code.line(
+          `const eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`
+        );
       }
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
@@ -55,12 +57,12 @@ export class LambdaFunction {
               ],
             })
             .promise();
-            `)
+            `);
       }
 
       this.code.line(`
           return response;
-        `)
+        `);
       // this.code.line(
       //   `const data = await axios.post('http://sandbox:8080', event)`
       // );
@@ -113,4 +115,3 @@ export class LambdaFunction {
     this.code.line(`}`);
   }
 }
-

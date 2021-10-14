@@ -111,11 +111,13 @@ export default class Create extends Command {
         "!*.lock",
         "!*.yaml",
         "!*.yml",
+        "editable_src/panacloudconfig.json"
       ],
       {
         gitignore: true,
       }
     );
+    
     files.forEach(async (file: any) => {
       const data = fs.readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
