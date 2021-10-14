@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE } from "../../../../utils/constants";
+import { APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 
 export class LambdaFunction {
   code: CodeMaker;
@@ -8,21 +8,20 @@ export class LambdaFunction {
   }
   public initializeLambdaFunction(
     apiType: APITYPE,
+    apiName: string,
     content?: any,
-    fieldName?: string
+    fieldName?: string,
+    architecture?: ARCHITECTURE,
   ) {
     if (apiType === APITYPE.graphql) {
       this.code.line(`var AWS = require('aws-sdk');`);
+      if (architecture === ARCHITECTURE.eventDriven) {
+        this.code.line(`const eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
+      }
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
       this.code.line(`exports.handler = async (event: any) => {`);
-
-      // this.code.line(
-      //   `const data = await axios.post('http://sandbox:8080', event)`
-      // );
-
-      this.code.line(`
-          let response = {};
+      this.code.line(`let response = {};
           testCollections.fields.${fieldName}.forEach((v: any) => {
             if (v.arguments) {
               let equal = isEqual(
@@ -36,11 +35,33 @@ export class LambdaFunction {
               response = v.response;
             }
           });
-          return response;
-        `);
+          `);
 
+      if (architecture === ARCHITECTURE.eventDriven) {
+        this.code.line(`
+          await eventBridge
+            .putEvents({
+              Entries: [
+                {
+                  EventBusName: "default",
+                  Source: "${apiName}",
+                  Detail: JSON.stringify({ mutation: "${fieldName}" }),
+                },
+              ],
+            })
+            .promise();
+            `)
+      }
+
+      this.code.line(`
+          return response;
+        `)
+      // this.code.line(
+      //   `const data = await axios.post('http://sandbox:8080', event)`
+      // );
+      // this.code.line(`}`);
       this.code.line();
-      this.code.line(`}`);
+      this.code.line(`};`);
     } else {
       /* rest api */
       this.code.line(`exports.handler = async (event: any) => {`);
@@ -68,8 +89,9 @@ export class LambdaFunction {
     this.code.line(`
     const AWS = require('aws-sdk');
     
-    export const ${name} = async() => {
+    export const ${name} = async(events:any) => {
       // write your code here
+      console.log(JSON.stringify(events, null, 2));
     }
     `);
   }
@@ -86,3 +108,4 @@ export class LambdaFunction {
     this.code.line(`}`);
   }
 }
+

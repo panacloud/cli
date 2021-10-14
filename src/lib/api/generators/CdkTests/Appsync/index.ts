@@ -4,6 +4,7 @@ import {
   LAMBDASTYLE,
   DATABASE,
   ApiModel,
+  PanacloudconfigFile
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
@@ -13,15 +14,18 @@ import { Lambda } from "../../../constructs/Lambda";
 
 type StackBuilderProps = {
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile
 };
 export class AppsyncApiConstructTest {
   outputFile: string = `${CONSTRUCTS.appsync}.test.ts`;
   outputDir: string = `test`;
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile;
   code: CodeMaker;
 
   constructor(props: StackBuilderProps) {
     this.config = props.config;
+    this.panacloudConfig = props.panacloudConfig;
     this.code = new CodeMaker();
   }
 
@@ -39,7 +43,7 @@ export class AppsyncApiConstructTest {
     } = this.config;
     const iam = new Iam(this.code);
     const appsync = new Appsync(this.code);
-    const lambda = new Lambda(this.code);
+    const lambda = new Lambda(this.code, this.panacloudConfig);
     const imp = new Imports(this.code);
     const testClass = new Cdk(this.code);
     const mutationsAndQueries = [...queiresFields!, ...mutationFields!];

@@ -1,7 +1,9 @@
 import {
   ApiModel,
   APITYPE,
-  DATABASE
+  DATABASE,
+  ARCHITECTURE,
+  PanacloudconfigFile,
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
@@ -20,13 +22,14 @@ import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
+import { eventBridgeConstruct } from "./EventBridge";
 
-export const generator = async (config: ApiModel) => {
+export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile) => {
   // bin file
   CdkAppClass({ config });
 
   // stack
-  CdkStackClass({ config });
+  CdkStackClass({ config, panacloudConfig });
 
   // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
@@ -54,17 +57,20 @@ export const generator = async (config: ApiModel) => {
   // lambda Test
   // lambdaConstructTest({ config });
   // lambda Construct
-  LambdaConstruct({ config });
+  LambdaConstruct({ config, panacloudConfig });
 
   // Single or Multi
-  if (
-    config.api.apiType === APITYPE.rest
-  ) {
-    singleLambda({ config });
+  if (config.api.apiType === APITYPE.rest) {
+        singleLambda({ config });
   }
-  else {
+  else if (config.api.apiType === APITYPE.graphql) {
     multipleLambda({ config });
     mockApiTestCollections({ config });
     customLambda({ config });
   }
+
+  if (config.api.architecture === ARCHITECTURE.eventDriven) {
+    eventBridgeConstruct({ config })
+  }
+
 };

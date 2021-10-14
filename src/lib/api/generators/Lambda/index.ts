@@ -3,6 +3,8 @@ import {
   APITYPE,
   DATABASE,
   ApiModel,
+  PanacloudconfigFile,
+  ARCHITECTURE
 } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -23,20 +25,23 @@ import { Lambda } from "../../constructs/Lambda";
 
 type StackBuilderProps = {
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile
 };
 
 class lambdaConstruct {
   outputFile: string = `index.ts`;
   outputDir: string = `lib/${CONSTRUCTS.lambda}`;
   config: ApiModel;
+  panacloudConfig: PanacloudconfigFile;
   code: CodeMaker;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
+    this.panacloudConfig = props.panacloudConfig;
     this.code = new CodeMaker();
   }
 
   async LambdaConstructFile() {
-    const {api: { apiName, apiType, database,nestedResolver,schemaTypes }} = this.config;
+    const {api: { apiName, apiType, database,nestedResolver,schemaTypes,architecture }} = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
       const { queiresFields, mutationFields } = this.config.api;
@@ -44,11 +49,11 @@ class lambdaConstruct {
     }
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
-    let lambdaProperties: Property[] | undefined = [];
+    let lambdaProperties: Property[] = [];
     this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
-    const lambda = new Lambda(this.code);
+    const lambda = new Lambda(this.code, this.panacloudConfig);
     imp.importLambda();
 
     if(nestedResolver){
@@ -100,7 +105,19 @@ class lambdaConstruct {
         mutationsAndQueries,
       )]
     }
-  
+
+    if (architecture === ARCHITECTURE.eventDriven && apiType === APITYPE.graphql) {
+      this.config.api.mutationFields?.forEach(key => {
+        lambdaProperties.push({
+          name: `${apiName}_lambdaFn_${key}_consumerArn`,
+          typeName: 'string',
+          accessModifier: "public",
+          isReadonly: true,
+        })
+      })
+    }
+
+
     cdk.initializeConstruct(
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
@@ -115,10 +132,23 @@ class lambdaConstruct {
             );
             this.code.line();
           });
+
+          if (architecture === ARCHITECTURE.eventDriven) {
+            (this.config.api.mutationFields || []).forEach((key: string) => {
+              lambda.initializeLambda(apiName, `${key}_consumer`);
+              this.code.line();
+              this.code.line( //myApi_lambdaFn_createApi_consumerArn
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );
+              this.code.line();
+            })
+          }
+
         }
-        else if (database === DATABASE.dynamoDB) {
+        if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
+            this.panacloudConfig,
             apiName,
             apiType,
             mutationsAndQueries,
@@ -129,6 +159,7 @@ class lambdaConstruct {
         else if (database === DATABASE.neptuneDB) {
           lambdaHandlerForNeptunedb(
             this.code,
+            this.panacloudConfig,
             apiType,
             apiName,
             mutationsAndQueries,
@@ -139,6 +170,7 @@ class lambdaConstruct {
         else if (database === DATABASE.auroraDB) {
           lambdaHandlerForAuroradb(
             this.code,
+            this.panacloudConfig,
             apiType,
             apiName,
             mutationsAndQueries,

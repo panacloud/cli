@@ -1,0 +1,159 @@
+input AddToCartInput {
+  id: ID!
+  quantity: Int
+  clientMutationId: String
+}
+
+type AddToCartPayload {
+  cartEntryEdge: CartEntryEdge
+  cartEntry: CartEntry
+  cart: Cart
+  clientMutationId: String
+}
+
+type Cart implements Node {
+  # The ID of an object
+  id: ID!
+  entries(after: String, first: Int, before: String, last: Int): CartEntryConnection
+  totalNumberOfItems: Int
+  totalPriceOfItems: Float
+}
+
+type CartEntry implements Node {
+  # The ID of an object
+  id: ID!
+  product: Product
+  quantity: Float
+  price: Float
+  totalPrice: Float
+}
+
+# A connection to a list of items.
+type CartEntryConnection {
+  # Information to aid in pagination.
+  pageInfo: PageInfo!
+
+  # A list of edges.
+  edges: [CartEntryEdge]
+}
+
+# An edge in a connection.
+type CartEntryEdge {
+  # The item at the end of the edge
+  node: CartEntry
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+# Just image
+type Image {
+  # The format of image.
+  format: String
+
+  # The url of image.
+  url: String
+}
+
+type Mutation {
+  addToCart(input: AddToCartInput!): AddToCartPayload
+  removeFromCart(input: RemoveFromCartInput!): RemoveFromCartPayload
+}
+
+# An object with an ID
+interface Node {
+  # The id of the object.
+  id: ID!
+}
+
+# Information about pagination in a connection.
+type PageInfo {
+  # When paginating forwards, are there more items?
+  hasNextPage: Boolean!
+
+  # When paginating backwards, are there more items?
+  hasPreviousPage: Boolean!
+
+  # When paginating backwards, the cursor to continue.
+  startCursor: String
+
+  # When paginating forwards, the cursor to continue.
+  endCursor: String
+}
+
+type Product implements Node {
+  # The ID of an object
+  id: ID!
+
+  # 商品名称
+  name: String
+
+  # 商品颜色
+  color: String
+
+  # 商品描述
+  description: String
+
+  # 商品价格，保留两位小数
+  price: Float
+
+  # 商品图片，['primary': 主图,'thumbnail'：缩略图,'zoom':大图]
+  images(format: String = "any", after: String, first: Int, before: String, last: Int): [Image]
+}
+
+# A connection to a list of items.
+type ProductConnection {
+  # Information to aid in pagination.
+  pageInfo: PageInfo!
+
+  # A list of edges.
+  edges: [ProductEdge]
+  totalNumberOfItems: Int
+}
+
+# An edge in a connection.
+type ProductEdge {
+  # The item at the end of the edge
+  node: Product
+
+  # A cursor for use in pagination
+  cursor: String!
+}
+
+type ProductList implements Node {
+  # The ID of an object
+  id: ID!
+  items(after: String, first: Int, before: String, last: Int): ProductConnection
+}
+
+type Query {
+  product(id: ID): Product
+  productList: ProductList
+  cart: Cart
+  viewer(id: ID): Viewer
+
+  # Fetches an object given its ID
+  node(
+    # The ID of an object
+    id: ID!
+  ): Node
+}
+
+input RemoveFromCartInput {
+  id: ID!
+  clientMutationId: String
+}
+
+type RemoveFromCartPayload {
+  deletedCartEntryId: ID
+  cart: Cart
+  clientMutationId: String
+}
+
+type Viewer implements Node {
+  # The ID of an object
+  id: ID!
+  name: String
+  cart: Cart
+  products(after: String, first: Int, before: String, last: Int): ProductConnection
+}

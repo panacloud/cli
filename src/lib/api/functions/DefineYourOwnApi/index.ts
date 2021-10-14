@@ -5,11 +5,12 @@ import {
   mkdirRecursiveAsync,
 } from "../../../fs";
 import { contextInfo, generatePanacloudConfig } from "../../info";
-import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
+import { Config, APITYPE, ApiModel, PanacloudconfigFile } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema, GraphQLObjectType } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { EliminateScalarTypes, ScalarAndEnumKindFinder } from "../../helpers";
+import { CreateAspects } from "../../generators/Aspects";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -49,11 +50,16 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   });
 
+  
+
   // Updating fileName
   const stackPackageJson = JSON.parse(
     fs.readFileSync(`${templateDir}/package.json`)
   );
+
+
   const cdkJson = JSON.parse(fs.readFileSync(`${templateDir}/cdk.json`));
+
 
   stackPackageJson.bin = `bin/${workingDir}.js`;
   stackPackageJson.name = workingDir;
@@ -70,6 +76,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     }
   );
+
 
   await fs.writeFileSync(
     `./cdk.json`,
@@ -94,10 +101,10 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   );
 
   if (apiType === APITYPE.graphql) {
-    await mkdirRecursiveAsync(`custom_src`);
-    await mkdirRecursiveAsync(`custom_src/graphql`);
-    await mkdirRecursiveAsync(`custom_src/graphql/schema`);
-    await mkdirRecursiveAsync(`custom_src/aspects`);
+    await mkdirRecursiveAsync(`editable_src`);
+    await mkdirRecursiveAsync(`editable_src/graphql`);
+    await mkdirRecursiveAsync(`editable_src/graphql/schema`);
+    //    await mkdirRecursiveAsync(`editable_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -108,6 +115,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   });
+  let updatedPanacloudConfig: any;
 
   if (apiType === APITYPE.graphql) {
     let directivesPath = path.resolve(
@@ -135,7 +143,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     });
 
     fs.writeFileSync(
-      `./custom_src/graphql/schema/schema.graphql`,
+      `./editable_src/graphql/schema/schema.graphql`,
       `${scalars}\n${schema}`,
       (err: string) => {
         if (err) {
@@ -189,6 +197,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     }
 
+    
 
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
@@ -196,14 +205,15 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.schema = schemaJson
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
-
     if (apiType === APITYPE.graphql) {
-      await generatePanacloudConfig(
+      updatedPanacloudConfig = await generatePanacloudConfig(
         model.api.queiresFields,
-        model.api.mutationFields
+        model.api.mutationFields,
+        model.api.architecture,
       );
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
+
     }
   } else {
     copyFileAsync(
@@ -225,8 +235,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
+  await CreateAspects({ config: model });
+
+
   // Codegenerator Function
-  await generator(model);
+  await generator(model, updatedPanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
