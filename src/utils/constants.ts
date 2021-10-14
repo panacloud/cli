@@ -67,10 +67,13 @@ export interface API {
   apiName: string;
   schemaPath: string;
   schema?: any;
+  schemaTypes?:string[];
+  nestedResolverTypes?: { [key: string]: string[] }
   queiresFields?: string[];
   mutationFields?: string[];
   apiType: APITYPE;
   database: DATABASE;
+  nestedResolver?: boolean;
   mockApiData?: mockApiData;
 }
 

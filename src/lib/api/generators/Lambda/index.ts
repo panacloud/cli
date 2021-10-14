@@ -16,11 +16,11 @@ import {
   lambdaHandlerForNeptunedb,
   lambdaProperiesHandlerForAuroraDb,
   lambdaProperiesHandlerForDynoDb,
-  lambdaProperiesHandlerForMockApi,
   lambdaProperiesHandlerForNeptuneDb,
+  lambdaProperiesHandlerForNestedResolver,
   lambdaPropsHandlerForAuroradb,
   lambdaPropsHandlerForNeptunedb,
-} from "./functions";
+} from "./functions/index";
 import { Lambda } from "../../constructs/Lambda";
 
 type StackBuilderProps = {
@@ -41,9 +41,7 @@ class lambdaConstruct {
   }
 
   async LambdaConstructFile() {
-    const {
-      api: { apiName, apiType, database, architecture },
-    } = this.config;
+    const {api: { apiName, apiType, database,nestedResolver,schemaTypes,architecture }} = this.config;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
       const { queiresFields, mutationFields } = this.config.api;
@@ -58,14 +56,21 @@ class lambdaConstruct {
     const lambda = new Lambda(this.code, this.panacloudConfig);
     imp.importLambda();
 
-    if (!database) {
-      lambdaProperties = lambdaProperiesHandlerForMockApi(
-        apiName,
-        apiType,
-        mutationsAndQueries
-      );
+    if(nestedResolver){
+      lambdaProperties = [...lambdaProperties,...lambdaProperiesHandlerForNestedResolver(apiName,apiType,schemaTypes!,database)]
     }
-    if (database === DATABASE.dynamoDB) {
+   
+    if (!database) {
+      mutationsAndQueries.forEach((key)=>{
+        lambdaProperties?.push({
+          name: `${apiName}_lambdaFn_${key}Arn`,
+          typeName: "string",
+          accessModifier: "public",
+          isReadonly: true,
+        })
+      })
+    }
+    else if (database === DATABASE.dynamoDB) {
       lambdaProps = [
         {
           name: "tableName",
@@ -73,41 +78,47 @@ class lambdaConstruct {
         },
       ];
       lambdaPropsWithName = "handlerProps";
-      lambdaProperties = lambdaProperiesHandlerForDynoDb(
+      lambdaProperties = [...lambdaProperties,...lambdaProperiesHandlerForDynoDb(
         apiName,
         apiType,
-        mutationsAndQueries
-      );
+        mutationsAndQueries,
+      )];
     }
     else if (database === DATABASE.neptuneDB) {
       imp.importEc2();
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForNeptunedb();
-      lambdaProperties = lambdaProperiesHandlerForNeptuneDb(
+      lambdaProperties = [...lambdaProperties,...lambdaProperiesHandlerForNeptuneDb(
         apiName,
         apiType,
-        mutationsAndQueries
-      );
+        mutationsAndQueries,
+      )];
     }
     else if (database === DATABASE.auroraDB) {
       imp.importEc2();
       imp.importIam();
       lambdaPropsWithName = "handlerProps";
       lambdaProps = lambdaPropsHandlerForAuroradb();
-      lambdaProperties = lambdaProperiesHandlerForAuroraDb(
+      lambdaProperties=[...lambdaProperties,...lambdaProperiesHandlerForAuroraDb(
         apiName,
         apiType,
-        mutationsAndQueries
-      );
+        mutationsAndQueries,
+      )]
     }
 
     if (architecture === ARCHITECTURE.eventDriven && apiType === APITYPE.graphql) {
       this.config.api.mutationFields?.forEach(key => {
+        let name = `${apiName}_lambdaFn_${key}_consumerArn`;
+        let typeName = "string" 
+        if(database === DATABASE.dynamoDB ){
+           name = `${apiName}_lambdaFn_${key}_consumer`;
+           typeName = "lambda.Function" 
+        }
         lambdaProperties.push({
-          name: `${apiName}_lambdaFn_${key}_consumerArn`,
-          typeName: 'string',
+          name: name,
+          typeName: typeName,
           accessModifier: "public",
-          isReadonly: true,
+          isReadonly: false,
         })
       })
     }
@@ -118,28 +129,17 @@ class lambdaConstruct {
       lambdaPropsWithName,
       () => {
         if (!database) {
-          lambda.lambdaLayer(apiName);
+          lambda.lambdaLayer(apiName)
           mutationsAndQueries.forEach((key: string) => {
-            lambda.initializeLambda(apiName, key);
+            lambda.initializeLambda(apiName , key);
             this.code.line();
             this.code.line(
               `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
             );
             this.code.line();
           });
-
-          if (architecture === ARCHITECTURE.eventDriven) {
-            (this.config.api.mutationFields || []).forEach((key: string) => {
-              lambda.initializeLambda(apiName, `${key}_consumer`);
-              this.code.line();
-              this.code.line( //myApi_lambdaFn_createApi_consumerArn
-                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-              );
-              this.code.line();
-            })
-          }
-
         }
+
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
@@ -147,6 +147,8 @@ class lambdaConstruct {
             apiName,
             apiType,
             mutationsAndQueries,
+            nestedResolver!,
+            schemaTypes!
           );
         }
         else if (database === DATABASE.neptuneDB) {
@@ -156,6 +158,8 @@ class lambdaConstruct {
             apiType,
             apiName,
             mutationsAndQueries,
+            nestedResolver!,
+            schemaTypes!
           );
         }
         else if (database === DATABASE.auroraDB) {
@@ -165,8 +169,28 @@ class lambdaConstruct {
             apiType,
             apiName,
             mutationsAndQueries,
+            nestedResolver!,
+            schemaTypes!
           );
         }
+
+        if (architecture === ARCHITECTURE.eventDriven && apiType === APITYPE.graphql) {
+          (this.config.api.mutationFields || []).forEach((key: string) => {
+            lambda.initializeLambda(apiName, `${key}_consumer`);
+            this.code.line();
+            if(database===DATABASE.dynamoDB){
+              this.code.line( //myApi_lambdaFn_createApi_consumer lambda
+                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+              );  
+            }else{
+              this.code.line( //myApi_lambdaFn_createApi_consumerArn functionArn
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );  
+            }
+            this.code.line();
+          })
+        }
+        
       },
       lambdaProps,
       lambdaProperties

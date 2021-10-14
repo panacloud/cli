@@ -41,7 +41,6 @@ export class Lambda {
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     if(functionName){
       const {lambdas} = this.panacloudConfig;
-      // console.log(lambdas);
       const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
       handlerName = functionName? `${handlerfile}.handler` : "main.handler";
       const splitPath = lambdas[functionName].asset_path.split("/");

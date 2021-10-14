@@ -34,7 +34,6 @@ class EventBridgeConstruct {
         const cdk = new Cdk(this.code);
         const imp = new Imports(this.code);
         const eventBridge = new EventBridge(this.code);
-        const ts = new TypeScriptWriter(this.code);
         // const lambda = new LambdaFunction(this.code);
         // const lambda = new Lambda(this.code, this.panacloudConfig);
 
