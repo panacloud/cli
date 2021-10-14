@@ -7,24 +7,23 @@ import {
 import { contextInfo, generatePanacloudConfig } from "../../info";
 import { Config, APITYPE, ApiModel, PanacloudconfigFile } from "../../../../utils/constants";
 import { generator } from "../../generators";
-import { introspectionFromSchema, buildSchema } from "graphql";
+import { introspectionFromSchema, buildSchema, GraphQLObjectType } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
+import { EliminateScalarTypes, ScalarAndEnumKindFinder } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
 const exec = require("await-exec");
 const fse = require("fs-extra");
-const _ = require("lodash");
+const snakeCase = require("lodash/snakeCase");
 
 async function defineYourOwnApi(config: Config, templateDir: string) {
   const { api_token, entityId } = config;
 
-  const {
-    api: { schemaPath, apiType },
-  } = config;
+  const {api: { schemaPath, apiType,nestedResolver } } = config;
 
-  const workingDir = _.snakeCase(path.basename(process.cwd()));
+  const workingDir = snakeCase(path.basename(process.cwd()));
 
   const model: ApiModel = {
     api: {
@@ -51,11 +50,16 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   });
 
+  
+
   // Updating fileName
   const stackPackageJson = JSON.parse(
     fs.readFileSync(`${templateDir}/package.json`)
   );
+
+
   const cdkJson = JSON.parse(fs.readFileSync(`${templateDir}/cdk.json`));
+
 
   stackPackageJson.bin = `bin/${workingDir}.js`;
   stackPackageJson.name = workingDir;
@@ -72,6 +76,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     }
   );
+
 
   await fs.writeFileSync(
     `./cdk.json`,
@@ -149,20 +154,59 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     );
 
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
+    const schemaJson = introspectionFromSchema(gqlSchema)
+    let nestedResolverTypes: { [key: string]: string[] } = {};
+    let schemaTypes: string[] = [];
+
+    if(nestedResolver){
+      schemaJson.__schema.types.map((allTypes) => {
+        if (EliminateScalarTypes(allTypes)) {
+          if (ScalarAndEnumKindFinder(allTypes)) {
+            const typeName = gqlSchema.getType(allTypes.name) as GraphQLObjectType;
+            const fieldsInType = typeName.getFields();
+            let fieldsArray: string[] = [];
+            for (const type in fieldsInType) {
+              if (
+                EliminateScalarTypes(
+                  gqlSchema.getType(
+                    fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
+                  )
+                )
+              ) {
+                const node = gqlSchema.getType(
+                  fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
+                )?.astNode;
+                if (node?.kind !== ("EnumTypeDefinition" || "UnionTypeDefinition" || "InputObjectTypeDefinition")) {
+                  if (schemaTypes.indexOf(type) === -1) {
+                    schemaTypes.push(type);
+                  }
+                  fieldsArray.push(type);
+                  nestedResolverTypes[allTypes.name] = [...fieldsArray];
+                }
+              }
+            }
+          }
+        }
+      });
+      if(Object.keys(nestedResolverTypes).length <= 0){
+        stopSpinner(generatingCode, "nested resolvers are not possible with this schema normal resolvers are created", false);
+        model.api.nestedResolver = false
+      }else{
+        model.api.nestedResolverTypes = nestedResolverTypes
+        model.api.schemaTypes = schemaTypes
+      }
+    }
+
+    
 
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    model.api.schema = introspectionFromSchema(gqlSchema);
+    model.api.schema = schemaJson
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
     if (apiType === APITYPE.graphql) {
-      updatedPanacloudConfig = await generatePanacloudConfig(
-        model.api.queiresFields,
-        model.api.mutationFields,
-        model.api.architecture,
-      );
-
+      updatedPanacloudConfig = await generatePanacloudConfig(model);
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
 

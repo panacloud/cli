@@ -66,10 +66,8 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
     const updatedPanacloudConfig = await updatePanacloudConfig(
-        model.api.queiresFields,
-        model.api.mutationFields,
+        model,
         spinner,
-        model.api.architecture
     );
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema);

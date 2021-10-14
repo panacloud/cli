@@ -38,6 +38,7 @@ export default class Create extends Command {
       saasType: usrInput.saas_type,
       api: {
         template: usrInput.template,
+        nestedResolver: usrInput.nestedResolver,
         language: usrInput.language,
         cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
@@ -87,12 +88,14 @@ export default class Create extends Command {
     }
 
     const generatingTypes = startSpinner("Generating Types");
+    
     try {
       await exec(`npx graphql-codegen`);
     } catch (error) {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
+    
     stopSpinner(generatingTypes, "Generating Types", false);
 
     const formatting = startSpinner("Formatting Code");

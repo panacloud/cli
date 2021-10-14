@@ -1,5 +1,6 @@
 const fse = require("fs-extra");
 
+import { ApiModel } from "../../utils/constants";
 import { ARCHITECTURE, PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
 import { stopSpinner } from "../spinner";
 
@@ -17,23 +18,29 @@ export const contextInfo = (apiToken: string, entityId: string) => {
 
 
 export const generatePanacloudConfig = async (
-  queiresFields: string[],
-  mutationFields: string[],
-  architecture: ARCHITECTURE,
+  model:ApiModel
 ) => {
+  const {api:{mutationFields,queiresFields,architecture,schemaTypes,nestedResolver}} = model;
   let mutationsAndQueries: string[] = [...queiresFields!, ...mutationFields!];
-
   let configJson: PanacloudconfigFile = { lambdas: {} };
+  
   mutationsAndQueries.forEach((key: string) => {
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
     lambdas.asset_path = `mock_lambda/${key}/index.ts`;
   });
 
   if (architecture === ARCHITECTURE.eventDriven) {
-    mutationFields.forEach((key: string) => {
+    mutationFields!.forEach((key: string) => {
       key = `${key}_consumer`;
       const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
       lambdas.asset_path = `consumer_lambda/${key}/index.ts`;
+    });
+  }
+
+  if(nestedResolver){
+    schemaTypes!.forEach((key: string) => {
+      const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
+      lambdas.asset_path = `mock_lambda/${key}/index.ts`;
     });
   }
 
@@ -43,19 +50,28 @@ export const generatePanacloudConfig = async (
 };
 
 export const updatePanacloudConfig = async (
-  queiresFields: string[],
-  mutationFields: string[],
+  model:ApiModel,
   spinner: any,
-  architecture: ARCHITECTURE,
 ) => {
 
+  const {api:{queiresFields,mutationFields,architecture,nestedResolver,schemaTypes}} = model
+
   let newLambdas: string[] = [...queiresFields!, ...mutationFields!];
+
   if (architecture === ARCHITECTURE.eventDriven) {
-    mutationFields.forEach((key: string) => {
+    mutationFields!.forEach((key: string) => {
       key = `${key}_consumer`;
       newLambdas = [...newLambdas, key]
     });
   }
+
+  if (nestedResolver) {
+    schemaTypes!.forEach((key: string) => {
+      key = `${key}`;
+      newLambdas = [...newLambdas, key]
+    });
+  }
+
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   let prevLambdas = Object.keys(configPanacloud.lambdas)
 
@@ -89,6 +105,5 @@ export const updatePanacloudConfig = async (
   });
 
   return panacloudConfigNew;
-
 
 };
