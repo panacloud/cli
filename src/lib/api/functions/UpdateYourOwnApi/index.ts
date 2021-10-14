@@ -61,7 +61,8 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    model.api.schema = introspectionFromSchema(gqlSchema);
+    const introspection = introspectionFromSchema(gqlSchema);
+    model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
@@ -70,7 +71,7 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         spinner,
     );
 
-    const mockApiCollection = buildSchemaToTypescript(gqlSchema);
+    const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
     model.api.mockApiData = mockApiCollection;
 
     // Codegenerator Function
