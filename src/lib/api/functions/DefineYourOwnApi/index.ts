@@ -206,11 +206,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
     if (apiType === APITYPE.graphql) {
-      updatedPanacloudConfig = await generatePanacloudConfig(
-        model.api.queiresFields,
-        model.api.mutationFields,
-        model.api.architecture,
-      );
+      updatedPanacloudConfig = await generatePanacloudConfig(model);
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
 

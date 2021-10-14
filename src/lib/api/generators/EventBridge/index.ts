@@ -34,7 +34,6 @@ class EventBridgeConstruct {
         const cdk = new Cdk(this.code);
         const imp = new Imports(this.code);
         const eventBridge = new EventBridge(this.code);
-        const ts = new TypeScriptWriter(this.code);
         // const lambda = new LambdaFunction(this.code);
         // const lambda = new Lambda(this.code, this.panacloudConfig);
 
@@ -44,12 +43,12 @@ class EventBridgeConstruct {
         let ConstructProps: ConstructPropsType[] = [];
         mutationFields?.forEach((key: string, index: number) => {
             ConstructProps.push({
-                name: `${apiName}_lambdaFn_${key}Arn`,
-                type: "string"
+                name: `${apiName}_lambdaFn_${key}`,
+                type: "lambda.Function"
             })
             ConstructProps.push({
-                name: `${apiName}_lambdaFn_${key}_consumerArn`,
-                type: "string"
+                name: `${apiName}_lambdaFn_${key}_consumer`,
+                type: "lambda.Function"
             })
         })
 

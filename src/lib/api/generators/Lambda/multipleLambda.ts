@@ -54,7 +54,7 @@ class MultipleLambda {
           code.openFile(this.outputFile);
           code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
           code.line();         
-          lambda.initializeLambdaFunction(apiType, apiName, undefined, key, undefined,);
+          lambda.initializeLambdaFunction(apiType, apiName, undefined, key, undefined,nestedResolver);
           code.closeFile(this.outputFile);
           this.outputDir = `mock_lambda/${key}`;
           await code.save(this.outputDir);

@@ -108,11 +108,17 @@ class lambdaConstruct {
 
     if (architecture === ARCHITECTURE.eventDriven && apiType === APITYPE.graphql) {
       this.config.api.mutationFields?.forEach(key => {
+        let name = `${apiName}_lambdaFn_${key}_consumerArn`;
+        let typeName = "string" 
+        if(database === DATABASE.dynamoDB ){
+           name = `${apiName}_lambdaFn_${key}_consumer`;
+           typeName = "lambda.Function" 
+        }
         lambdaProperties.push({
-          name: `${apiName}_lambdaFn_${key}_consumerArn`,
-          typeName: 'string',
+          name: name,
+          typeName: typeName,
           accessModifier: "public",
-          isReadonly: true,
+          isReadonly: false,
         })
       })
     }
@@ -132,19 +138,8 @@ class lambdaConstruct {
             );
             this.code.line();
           });
-
-          if (architecture === ARCHITECTURE.eventDriven) {
-            (this.config.api.mutationFields || []).forEach((key: string) => {
-              lambda.initializeLambda(apiName, `${key}_consumer`);
-              this.code.line();
-              this.code.line( //myApi_lambdaFn_createApi_consumerArn
-                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-              );
-              this.code.line();
-            })
-          }
-
         }
+
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
             this.code,
@@ -178,6 +173,24 @@ class lambdaConstruct {
             schemaTypes!
           );
         }
+
+        if (architecture === ARCHITECTURE.eventDriven && apiType === APITYPE.graphql) {
+          (this.config.api.mutationFields || []).forEach((key: string) => {
+            lambda.initializeLambda(apiName, `${key}_consumer`);
+            this.code.line();
+            if(database===DATABASE.dynamoDB){
+              this.code.line( //myApi_lambdaFn_createApi_consumer lambda
+                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+              );  
+            }else{
+              this.code.line( //myApi_lambdaFn_createApi_consumerArn functionArn
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );  
+            }
+            this.code.line();
+          })
+        }
+        
       },
       lambdaProps,
       lambdaProperties

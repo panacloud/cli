@@ -20,8 +20,8 @@ export class EventBridge {
                         `new ${CONSTRUCTS.eventBridge}(this,"${apiName}${CONSTRUCTS.eventBridge}",{`
                     );
                     mutationFields?.forEach((field) => {
-                        this.code.line(`${apiName}_lambdaFn_${field}Arn: ${apiName}Lambda.${apiName}_lambdaFn_${field}Arn,`);
-                        this.code.line(`${apiName}_lambdaFn_${field}_consumerArn: ${apiName}Lambda.${apiName}_lambdaFn_${field}_consumerArn,`);
+                        this.code.line(`${apiName}_lambdaFn_${field}Arn: ${apiName}Lambda.${apiName}_lambdaFn_${field}.functionArn,`);
+                        this.code.line(`${apiName}_lambdaFn_${field}_consumerArn: ${apiName}Lambda.${apiName}_lambdaFn_${field}_consumer.functionArn,`);
                     })
                     this.code.line("})");
                 },
