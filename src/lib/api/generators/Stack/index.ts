@@ -52,7 +52,7 @@ export class CdkStack {
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
     const cdk = new Cdk(this.code);
-    const manager = new apiManager(this.code);
+    // const manager = new apiManager(this.code);
     const dynamodb = new DynamoDB(this.code);
     const neptune = new Neptune(this.code);
     const aurora = new AuroraServerless(this.code);
@@ -66,7 +66,7 @@ export class CdkStack {
       `${upperFirst(camelCase(this.config.workingDir))}`,
       () => {
         this.code.line(`new AspectController(this)`)
-          manager.apiManagerInitializer(apiName);
+          // manager.apiManagerInitializer(apiName);
           this.code.line();
         if (database == DATABASE.dynamoDB) {
           dynamodb.dynmaodbConstructInitializer(apiName, this.code);
