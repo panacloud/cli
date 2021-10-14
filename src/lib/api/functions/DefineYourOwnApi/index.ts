@@ -10,7 +10,7 @@ import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { CreateAspects } from "../../generators/Aspects";
-import { microServicesDirectiveFieldSplitter } from "../../../../utils/microServicesDirective";
+import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
