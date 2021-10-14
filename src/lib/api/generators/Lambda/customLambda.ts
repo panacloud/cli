@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 import { Imports } from "../../constructs/ConstructsImports";
 
@@ -11,15 +11,13 @@ class CustomLambda {
   outputFile: string = `index.ts`;
   outputDir: string = `lambda`;
   config: ApiModel;
-  code: CodeMaker;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
-    this.code = new CodeMaker();
   }
 
   async LambdaFile() {
     const {
-      api: { apiType },
+      api: { apiType, architecture },
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
@@ -30,21 +28,43 @@ class CustomLambda {
         ...queiresFields!,
         ...mutationFields!,
       ];
-      const lambda = new LambdaFunction(this.code);
-      const imp = new Imports(this.code);
 
       mutationsAndQueries.forEach(async (key: string) => {
-        this.code.openFile(this.outputFile);
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
+        const imp = new Imports(code);
+        code.openFile(this.outputFile);
 
         imp.importAxios();
-        this.code.line();
+        code.line();
 
         lambda.emptyLambdaFunction();
 
-        this.code.closeFile(this.outputFile);
-        this.outputDir = `custom_src/lambda/${key}`;
-        await this.code.save(this.outputDir);
+        code.closeFile(this.outputFile);
+        this.outputDir = `editable_src/lambda/${key}`;
+        await code.save(this.outputDir);
       });
+
+      if (architecture === ARCHITECTURE.eventDriven) {
+        for (let i = 0; i < (mutationFields || []).length; i++) {
+          if (!mutationFields) { continue }
+          const code = new CodeMaker();
+          const lambda = new LambdaFunction(code);
+          const imp = new Imports(code);
+          const key = `${mutationFields[i]}_consumer`;
+          this.outputFile = "index.ts";
+          code.openFile(this.outputFile);
+
+          code.line();
+
+          lambda.helloWorldFunction(apiType);
+
+          code.closeFile(this.outputFile);
+          this.outputDir = `editable_src/lambda/${key}`;
+          await code.save(this.outputDir);
+        }
+      }
+
     }
   }
 }

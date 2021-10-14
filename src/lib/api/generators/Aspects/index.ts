@@ -27,13 +27,13 @@ import { defineConstructVisitor } from "./constructVisitor";
     this.code.openFile('index.ts');
      await defineAspectController(this.code)
      this.code.closeFile('index.ts');
-     await this.code.save('custom_src/aspects');
+     await this.code.save('editable_src/aspects');
 
      
     this.code.openFile('constructVisitor.ts');
      await defineConstructVisitor(this.code)
      this.code.closeFile('constructVisitor.ts');
-     await this.code.save('custom_src/aspects');
+     await this.code.save('editable_src/aspects');
     }
   }
   
