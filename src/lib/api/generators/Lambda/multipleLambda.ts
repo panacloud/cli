@@ -85,7 +85,6 @@ class MultipleLambda {
           await code.save(this.outputDir);
         }
       }
-
     }
   }
 }
