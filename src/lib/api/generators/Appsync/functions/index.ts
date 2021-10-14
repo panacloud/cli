@@ -4,31 +4,32 @@ import { Appsync } from "../../../constructs/Appsync";
 import { Cdk } from "../../../constructs/Cdk";
 
 export const appsyncDatasourceHandler = (config: ApiModel, code: CodeMaker) => {
-  const {
-    api: { apiName, mutationFields, queiresFields },
-  } = config;
+  const {api: { apiName, mutationFields, queiresFields,nestedResolver,schemaTypes }} = config;
   const appsync = new Appsync(code);
   appsync.apiName = apiName;
-
-    const mutationsAndQueries: string[] = [
-      ...mutationFields!,
-      ...queiresFields!,
-    ];
+  const mutationsAndQueries: string[] = [
+    ...mutationFields!,
+    ...queiresFields!,
+  ];
     mutationsAndQueries.forEach((key: string) => {
       appsync.appsyncLambdaDataSource(apiName, apiName, key);
       code.line();
     });
 
+    if(nestedResolver){
+      schemaTypes!.forEach((key: string) => {
+        appsync.appsyncLambdaDataSource(apiName, apiName, key);
+        code.line();
+      });
+    }
 };
 
 export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
-  const {
-    api: { apiName, queiresFields, mutationFields },
-  } = config;
+  const { api: { apiName, queiresFields, mutationFields , nestedResolver, nestedResolverTypes} } = config;
   const appsync = new Appsync(code);
   appsync.apiName = apiName;
   const cdk = new Cdk(code);
-
+  
   queiresFields!.forEach((key: string) => {
     const dataSourceName = `ds_${apiName}_${key}`;
     appsync.appsyncLambdaResolver(key, "Query", dataSourceName);
@@ -46,4 +47,27 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
     cdk.nodeAddDependency(`${key}_resolver`, dataSourceName);
     code.line();
   });
+
+  if(nestedResolver){    
+    for (const [key, value] of Object.entries(nestedResolverTypes!)) {
+      let dataSourceName = `ds_${apiName}_${value[0]}`;
+      if(value.length > 1){
+        value.forEach((val)=>{
+          dataSourceName = `ds_${apiName}_${val}`;
+          appsync.appsyncLambdaResolver(val, key, dataSourceName, nestedResolver);
+          code.line();
+          cdk.nodeAddDependency(`${key}_${val}_resolver`, `${apiName}_schema`);
+          cdk.nodeAddDependency(`${key}_${val}_resolver`, dataSourceName);
+          code.line();      
+        })
+      }else{
+        appsync.appsyncLambdaResolver( value[0] , key, dataSourceName, nestedResolver);
+        code.line();
+        cdk.nodeAddDependency(`${key}_${value[0]}_resolver`, `${apiName}_schema`);
+        cdk.nodeAddDependency(`${key}_${value[0]}_resolver`, dataSourceName);
+        code.line();      
+      }
+    }    
+  }
+
 };

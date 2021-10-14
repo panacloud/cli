@@ -3,9 +3,7 @@ let upperFirst = require("lodash/upperFirst");
 export const buildSchemaToTypescript = (gqlSchema: any) => {
   let includeDeprecatedFields = false;
 
-  let collectionsObject: {
-    fields: { [k: string]: [{ arguments?: any; response: any }] };
-  } = {
+  let collectionsObject: {fields: { [k: string]: [{ arguments?: any; response: any }] }} = {
     fields: {},
   };
 
