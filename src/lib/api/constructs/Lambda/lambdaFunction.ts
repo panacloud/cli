@@ -16,7 +16,7 @@ export class LambdaFunction {
     if (apiType === APITYPE.graphql) {
       this.code.line(`var AWS = require('aws-sdk');`);
       if (architecture === ARCHITECTURE.eventDriven) {
-        this.code.line(`const eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
+        this.code.line(`var eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
       }
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();

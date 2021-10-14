@@ -54,16 +54,9 @@ async function updateYourOwnApi(config: Config, spinner:any) {
           process.exit(1);
         }
       });
-  
-      let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
-        if (err) {
-          stopSpinner(spinner, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      });
 
 
-    const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
+    const gqlSchema = buildSchema(`${directives}\n${schema}`);
 
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
