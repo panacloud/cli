@@ -1,6 +1,7 @@
 import { CodeMaker } from "codemaker";
 import {
   APITYPE,
+  ARCHITECTURE,
   DATABASE
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
@@ -10,6 +11,7 @@ import { DynamoDB } from "../../../constructs/Dynamodb";
 export const importHandlerForStack = (
   database: string,
   apiType: string,
+  architecture: ARCHITECTURE,
   code: CodeMaker
 ) => {
   const imp = new Imports(code);
@@ -20,6 +22,10 @@ export const importHandlerForStack = (
   } else {
     imp.importForApiGatewayConstruct();
   }
+  if (architecture === ARCHITECTURE.eventDriven) {
+    imp.importForEventBrideConstruct();
+  }
+
   imp.importForLambdaConstruct();
   databaseImportHandler(database, code);
   imp.importApiManager();

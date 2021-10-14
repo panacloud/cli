@@ -60,7 +60,8 @@ export default class Create extends Command {
     const updatingCode = startSpinner("Updating Code");
 
 
-    fse.removeSync('lambda', { recursive: true });
+    fse.removeSync('mock_lambda', { recursive: true });
+    fse.removeSync('consumer_lambda', { recursive: true });
     fse.removeSync('lib', { recursive: true });
 
     if (configCli.saasType === SAASTYPE.api) {

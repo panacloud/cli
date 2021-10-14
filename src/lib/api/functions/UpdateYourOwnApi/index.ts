@@ -42,7 +42,7 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         "../../../../utils/awsAppsyncScalars.graphql"
       );
 
-    let schema = fs.readFileSync("custom_src/graphql/schema/schema.graphql", "utf8", (err: string) => {
+    let schema = fs.readFileSync("editable_src/graphql/schema/schema.graphql", "utf8", (err: string) => {
         if (err) {
             stopSpinner(spinner, `Error: ${err}`, true);
             process.exit(1);
@@ -82,7 +82,10 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     const updatedPanacloudConfig = await updatePanacloudConfig(
         model.api.generalFields,
         model.api.microServiceFields,
-        spinner
+        spinner,
+        model.api.queiresFields,
+        model.api.mutationFields,
+        model.api.architecture
     );
 
     // Codegenerator Function

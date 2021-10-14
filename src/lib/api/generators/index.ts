@@ -2,6 +2,7 @@ import {
   ApiModel,
   APITYPE,
   DATABASE,
+  ARCHITECTURE,
   PanacloudconfigFile,
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
@@ -21,6 +22,7 @@ import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
+import { eventBridgeConstruct } from "./EventBridge";
 
 export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile) => {
   // bin file
@@ -66,4 +68,9 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
     mockApiTestCollections({ config });
     customLambda({ config });
   }
+
+  if (config.api.architecture === ARCHITECTURE.eventDriven) {
+    eventBridgeConstruct({ config })
+  }
+
 };

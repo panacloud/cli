@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 
@@ -17,7 +17,7 @@ class MultipleLambda {
 
   async MultipleLambdaFile() {
     const {
-      api: { apiType,generalFields,microServiceFields },
+      api: { apiType,generalFields,microServiceFields,mutationFields,architecture,apiName },
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
@@ -32,19 +32,41 @@ class MultipleLambda {
       for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
   
         const key = microServiceFields[microServices[i]][j];
+        const isMutation = mutationFields?.includes(key);
         this.outputFile = `index.ts`;
         code.openFile(this.outputFile);
 
-          code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
-          code.line();
-          // imp.importAxios();
-          // this.code.line();
-
-        lambda.initializeLambdaFunction(apiType, undefined , key);
+        code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
+        code.line();
+        // imp.importAxios();
+        // this.code.line();
+        lambda.initializeLambdaFunction(apiType, apiName, undefined, key, isMutation ? architecture : undefined,);
 
         code.closeFile(this.outputFile);
-        this.outputDir = `lambda/${microServices[i]}/${key}`;
+        this.outputDir = `mock_lambda/${microServices[i]}/${key}`;
         await code.save(this.outputDir);
+
+
+
+        if (architecture === ARCHITECTURE.eventDriven) {
+          if (isMutation) {
+            
+            this.outputFile = "index.ts";
+            code.openFile(this.outputFile);
+        
+            code.line();
+        
+            lambda.helloWorldFunction(apiType);
+        
+            code.closeFile(this.outputFile);
+            this.outputDir = `mock_lambda/${microServices[i]}/${key}_consumer`;
+            await code.save(this.outputDir);
+          }
+        }
+
+
+
+
       }
 
     }
@@ -57,6 +79,8 @@ class MultipleLambda {
 
       const key = generalFields[i];
       this.outputFile = "index.ts";
+      const isMutation = mutationFields?.includes(key);
+
       code.openFile(this.outputFile);
 
         code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
@@ -64,12 +88,33 @@ class MultipleLambda {
         // imp.importAxios();
         // this.code.line();
 
-      lambda.initializeLambdaFunction(apiType, undefined , key);
+        lambda.initializeLambdaFunction(apiType, apiName, undefined, key, isMutation ? architecture : undefined,);
 
       code.closeFile(this.outputFile);
-      this.outputDir = `lambda/${key}`;
+      this.outputDir = `mock_lambda/${key}`;
       await code.save(this.outputDir);
+
+
+      
+      if (architecture === ARCHITECTURE.eventDriven) {
+        if (isMutation) {
+          
+          this.outputFile = "index.ts";
+          code.openFile(this.outputFile);
+      
+          code.line();
+      
+          lambda.helloWorldFunction(apiType);
+      
+          code.closeFile(this.outputFile);
+          this.outputDir = `mock_lambda/${key}_consumer`;
+          await code.save(this.outputDir);
+        }
+      }
+
+
     }
+
 
 
 

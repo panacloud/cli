@@ -97,10 +97,10 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   );
 
   if (apiType === APITYPE.graphql) {
-    await mkdirRecursiveAsync(`custom_src`);
-    await mkdirRecursiveAsync(`custom_src/graphql`);
-    await mkdirRecursiveAsync(`custom_src/graphql/schema`);
-//    await mkdirRecursiveAsync(`custom_src/aspects`);
+    await mkdirRecursiveAsync(`editable_src`);
+    await mkdirRecursiveAsync(`editable_src/graphql`);
+    await mkdirRecursiveAsync(`editable_src/graphql/schema`);
+    //    await mkdirRecursiveAsync(`editable_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -139,7 +139,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     });
 
     fs.writeFileSync(
-      `./custom_src/graphql/schema/schema.graphql`,
+      `./editable_src/graphql/schema/schema.graphql`,
       `${scalars}\n${schema}`,
       (err: string) => {
         if (err) {
@@ -164,14 +164,18 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
     if (apiType === APITYPE.graphql) {
+
       PanacloudConfig = await generatePanacloudConfig(
         model.api.generalFields,
-        model.api.microServiceFields
-      );
+        model.api.microServiceFields,
+        model.api.queiresFields,
+        model.api.mutationFields,
+        model.api.architecture)
+
 
       const mockApiCollection = buildSchemaToTypescript(gqlSchema);
       model.api.mockApiData = mockApiCollection;
-      
+
     }
   } else {
     copyFileAsync(

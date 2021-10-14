@@ -1,6 +1,6 @@
 const fse = require("fs-extra");
 
-import { PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
+import { ARCHITECTURE, PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
 import { stopSpinner } from "../spinner";
 
 export const contextInfo = (apiToken: string, entityId: string) => {
@@ -20,7 +20,10 @@ export const generatePanacloudConfig = async (
   generalFields: string[],
   microServiceFields: {
     [k: string]: any[];
-  }
+  },
+  queiresFields: string[],
+  mutationFields: string[],
+  architecture: ARCHITECTURE,
 ) => {
 
   let configJson: PanacloudconfigFile = { lambdas: {} };
@@ -33,12 +36,22 @@ export const generatePanacloudConfig = async (
 
       const key = microServiceFields[microServices[i]][j];
       const microService = microServices[i];
+      const isMutation = mutationFields?.includes(key);
+
 
       if (!configJson.lambdas[microService]) {
         configJson.lambdas[microService] = {}
       }
       const lambdas = configJson.lambdas[microService][key] = {} as PanacloudConfiglambdaParams
       lambdas.asset_path = `lambda/${microService}/${key}/index.ts`;
+
+      if (architecture === ARCHITECTURE.eventDriven && isMutation){
+
+        const consumerLambdas = configJson.lambdas[microService][`${key}_consumer`] = {} as PanacloudConfiglambdaParams
+
+        consumerLambdas.asset_path = `mock_lambda/${microService}/${key}_consumer/index.ts`;
+      }
+    
     }
 
   }
@@ -49,14 +62,24 @@ export const generatePanacloudConfig = async (
   for (let i = 0; i < generalFields.length; i++) {
 
     const key = generalFields[i];
+    const isMutation = mutationFields?.includes(key);
 
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-    lambdas.asset_path = `lambda/${key}/index.ts`;
+    lambdas.asset_path = `mock_lambda/${key}/index.ts`;
+
+  if (architecture === ARCHITECTURE.eventDriven && isMutation){
+
+    
+    const consumerLambdas = configJson.lambdas[`${key}_consumer`] = {} as PanacloudConfiglambdaParams
+
+    consumerLambdas.asset_path = `mock_lambda/${key}_consumer/index.ts`;
+
+}
+
 
   }
 
-
-  await fse.writeJson(`./custom_src/panacloudconfig.json`, configJson);
+  await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
 
   return configJson;
 };
@@ -66,10 +89,13 @@ export const updatePanacloudConfig = async (
   microServiceFields: {
     [k: string]: any[];
   },
-  spinner: any
+  spinner: any,
+  queiresFields: string[],
+  mutationFields: string[],
+  architecture: ARCHITECTURE,
 ) => {
 
-  const configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
+  const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   let panacloudConfigNew = configPanacloud;
 
   let prevItems = Object.keys(configPanacloud.lambdas)
@@ -114,7 +140,15 @@ export const updatePanacloudConfig = async (
 
       if (microServiceFields[service].includes(diff)) {
         panacloudConfigNew.lambdas[service][diff] = {} as PanacloudConfiglambdaParams
-        panacloudConfigNew.lambdas[service][diff].asset_path = `lambda/${service}/${diff}/index.ts`
+        panacloudConfigNew.lambdas[service][diff].asset_path = `mock_lambda/${service}/${diff}/index.ts`
+
+        const isMutation = mutationFields?.includes(diff);
+
+        if (architecture === ARCHITECTURE.eventDriven && isMutation){
+
+          panacloudConfigNew.lambdas[service][`${diff}_consumer`] = {} as PanacloudConfiglambdaParams  
+          panacloudConfigNew.lambdas[service][`${diff}_consumer`].asset_path = `mock_lambda/${service}/${diff}_consumer/index.ts`
+        }
       }
       else {
         delete panacloudConfigNew.lambdas[service][diff];
@@ -133,19 +167,27 @@ export const updatePanacloudConfig = async (
 
   for (let diff of difference) {
 
+    const isMutation = mutationFields?.includes(diff);
+
+
     if (generalFields.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
-      panacloudConfigNew.lambdas[diff].asset_path = `lambda/${diff}/index.ts`
+      panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
+
+      if (architecture === ARCHITECTURE.eventDriven && isMutation){
+
+        panacloudConfigNew.lambdas[`${diff}_consumer`] = {} as PanacloudConfiglambdaParams  
+        panacloudConfigNew.lambdas[`${diff}_consumer`].asset_path = `mock_lambda/${diff}_consumer/index.ts`
+      }
 
     }
     else {
       delete panacloudConfigNew.lambdas[diff];
-
     }
   }
 
-  fse.removeSync('custom_src/panacloudconfig.json')
-  fse.writeJson(`./custom_src/panacloudconfig.json`, panacloudConfigNew, (err: string) => {
+  fse.removeSync('editable_src/panacloudconfig.json')
+  fse.writeJson(`./editable_src/panacloudconfig.json`, panacloudConfigNew, (err: string) => {
     if (err) {
       stopSpinner(spinner, `Error: ${err}`, true);
       process.exit(1);

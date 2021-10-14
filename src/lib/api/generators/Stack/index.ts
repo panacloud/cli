@@ -2,6 +2,7 @@ import { CodeMaker } from "codemaker";
 import {
   ApiModel,
   APITYPE,
+  ARCHITECTURE,
   CONSTRUCTS,
   DATABASE,
   PanacloudconfigFile
@@ -13,6 +14,7 @@ import { Cdk } from "../../constructs/Cdk";
 import { DynamoDB } from "../../constructs/Dynamodb";
 import { Lambda } from "../../constructs/Lambda";
 import { Neptune } from "../../constructs/Neptune";
+import { EventBridge } from "../../constructs/EventBridge";
 import {
   importHandlerForStack,
   LambdaAccessHandler,
@@ -46,7 +48,7 @@ export class CdkStack {
       this.config.api;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
-      const { queiresFields, mutationFields } = this.config.api;
+      const { queiresFields, mutationFields, architecture } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
     const cdk = new Cdk(this.code);
@@ -56,7 +58,8 @@ export class CdkStack {
     const aurora = new AuroraServerless(this.code);
     const lambda = new Lambda(this.code, this.panacloudConfig);
     const appsync = new Appsync(this.code);
-    importHandlerForStack(database, apiType, this.code);
+    const eventBridge = new EventBridge(this.code);
+    importHandlerForStack(database, apiType, this.config.api.architecture, this.code);
     this.code.line();
 
     cdk.initializeStack(
@@ -75,9 +78,9 @@ export class CdkStack {
           aurora.auroradbConstructInitializer(apiName, this.code);
           this.code.line();
         }
-        
+
         lambda.lambdaConstructInitializer(apiName, database);
-        
+
         database === DATABASE.dynamoDB &&
           LambdaAccessHandler(
             this.code,
@@ -98,6 +101,11 @@ export class CdkStack {
           propsHandlerForApiGatewayConstruct(this.code, apiName);
           this.code.line("})");
         }
+
+        if (this.config.api.architecture === ARCHITECTURE.eventDriven) {
+          eventBridge.eventBridgeConstructInitializer(this.config.api);
+        }
+
       }
     );
 

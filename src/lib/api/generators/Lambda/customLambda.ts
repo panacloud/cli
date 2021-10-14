@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 import { Imports } from "../../constructs/ConstructsImports";
 
@@ -10,63 +10,110 @@ type StackBuilderProps = {
 class CustomLambda {
   outputFile: string = `index.ts`;
   config: ApiModel;
-  code: CodeMaker;
+  outputDir: string = `lambda`;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
-    this.code = new CodeMaker();
   }
 
   async LambdaFile() {
     const {
-      api: { apiType },
+      api: {apiType,generalFields,microServiceFields,mutationFields,architecture,apiName},
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
-      const {
-        api: { microServiceFields,generalFields },
-      } = this.config;
-
-
-      const lambda = new LambdaFunction(this.code);
-      const imp = new Imports(this.code);
+    
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
 
       const microServices = Object.keys(microServiceFields);
 
       for (let i = 0; i < microServices.length; i++) {
       for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
-   
+  
         const key = microServiceFields[microServices[i]][j];
-
-        this.code.openFile(this.outputFile);
+        const isMutation = mutationFields?.includes(key);
+        code.openFile(this.outputFile);
 
         imp.importAxios();
-        this.code.line();
+        code.line();
 
         lambda.emptyLambdaFunction();
 
-        this.code.closeFile(this.outputFile);
-        const outputDir = `custom_src/lambda/${microServices[i]}/${key}`;
-        await this.code.save(outputDir);
+        code.closeFile(this.outputFile);
+        this.outputDir = `editable_src/lambda/${microServices[i]}/${key}`;
+        await code.save(this.outputDir);
+
+
+
+        if (architecture === ARCHITECTURE.eventDriven) {
+          if (isMutation) {
+            
+            this.outputFile = "index.ts";
+            code.openFile(this.outputFile);
+        
+            code.line();
+        
+            lambda.helloWorldFunction(apiType);
+        
+            code.closeFile(this.outputFile);
+            this.outputDir = `editable_src/lambda/${microServices[i]}/${key}_consumer`;
+            await code.save(this.outputDir);
+          }
+        }
+
+
+
+
       }
 
     }
+
+
+
 
 
     for (let i = 0; i < generalFields.length; i++) {
 
       const key = generalFields[i];
       this.outputFile = "index.ts";
-      this.code.openFile(this.outputFile);
+      const isMutation = mutationFields?.includes(key);
+
+      code.openFile(this.outputFile);
 
       imp.importAxios();
-      this.code.line();
+      code.line();
 
       lambda.emptyLambdaFunction();
 
-      this.code.closeFile(this.outputFile);
-      const outputDir = `custom_src/lambda/${key}`;
-      await this.code.save(outputDir);
+      code.closeFile(this.outputFile);
+      this.outputDir = `editable_src/lambda/${key}`;
+      await code.save(this.outputDir);
+
+
+
+      
+      if (architecture === ARCHITECTURE.eventDriven) {
+        if (isMutation) {
+
+          this.outputFile = "index.ts";
+          code.openFile(this.outputFile);
+      
+          code.line();
+      
+          lambda.helloWorldFunction(apiType);
+      
+          code.closeFile(this.outputFile);
+          this.outputDir = `editable_src/lambda/${key}_consumer`;
+          await code.save(this.outputDir);
+        }
+      }
+
+
     }
+
+
+
 
 
 

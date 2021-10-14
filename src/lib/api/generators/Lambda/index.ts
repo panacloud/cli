@@ -3,7 +3,8 @@ import {
   APITYPE,
   DATABASE,
   ApiModel,
-  PanacloudconfigFile
+  PanacloudconfigFile,
+  ARCHITECTURE
 } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -41,7 +42,7 @@ class lambdaConstruct {
 
   async LambdaConstructFile() {
     const {
-      api: { apiName, apiType, database },
+      api: { apiName, apiType, database, architecture },
     } = this.config;
     let mutationsAndQueries: string[] = [];
     let general_Fields: string[] = [];
@@ -56,7 +57,7 @@ class lambdaConstruct {
     }
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
-    let lambdaProperties: Property[] | undefined;
+    let lambdaProperties: Property[] = [];
     this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
     const imp = new Imports(this.code);
@@ -105,6 +106,19 @@ class lambdaConstruct {
         mutationsAndQueries
       );
     }
+
+    if (architecture === ARCHITECTURE.eventDriven && apiType === APITYPE.graphql) {
+      this.config.api.mutationFields?.forEach(key => {
+        lambdaProperties.push({
+          name: `${apiName}_lambdaFn_${key}_consumerArn`,
+          typeName: 'string',
+          accessModifier: "public",
+          isReadonly: true,
+        })
+      })
+    }
+
+
     cdk.initializeConstruct(
       CONSTRUCTS.lambda,
       lambdaPropsWithName,
@@ -127,6 +141,21 @@ class lambdaConstruct {
             );
             this.code.line();
 
+            
+          if (architecture === ARCHITECTURE.eventDriven) {
+
+            if (this.config.api.mutationFields?.includes(key)){
+
+              lambda.initializeLambda(apiName, `${key}_consumer`,undefined,undefined,undefined,undefined,microService);
+              this.code.line();
+              this.code.line( //myApi_lambdaFn_createApi_consumerArn
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );
+              this.code.line();
+            }
+
+          }
+
             }
 
           }
@@ -145,7 +174,7 @@ class lambdaConstruct {
     this.code.line();
 
   }
-         
+
         }
         if (database === DATABASE.dynamoDB) {
           lambdaHandlerForDynamodb(
