@@ -75,11 +75,11 @@ export interface API {
   database: DATABASE;
   nestedResolver?: boolean;
   mockApiData?: mockApiData;
-  microServiceFields:  {
+  microServiceFields?:  {
     [k: string]: any[];
 
 };
-  generalFields: string[]
+  generalFields?: string[]
 }
 
 export enum ARCHITECTURE {
