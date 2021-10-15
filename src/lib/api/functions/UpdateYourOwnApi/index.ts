@@ -68,7 +68,8 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    model.api.schema = introspectionFromSchema(gqlSchema);
+    const introspection = introspectionFromSchema(gqlSchema);
+    model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
 
@@ -80,13 +81,12 @@ async function updateYourOwnApi(config: Config, spinner:any) {
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
     
     const updatedPanacloudConfig = await updatePanacloudConfig(
-        model.api.generalFields,
-        model.api.microServiceFields,
+        model,
         spinner,
-        model.api.queiresFields,
-        model.api.mutationFields,
-        model.api.architecture
     );
+
+    const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
+    model.api.mockApiData = mockApiCollection;
 
     // Codegenerator Function
     await generator(model, updatedPanacloudConfig);

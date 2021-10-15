@@ -1,5 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
+import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 
@@ -34,6 +35,7 @@ class MultipleLambda {
         const code = new CodeMaker();
         const lambda = new LambdaFunction(code);
         const imp = new Imports(code);
+        const ts = new TypeScriptWriter(code);
 
         const key = microServiceFields[microServices[i]][j];
         const isMutation = mutationFields?.includes(key);
@@ -41,10 +43,14 @@ class MultipleLambda {
         code.openFile(this.outputFile);
 
 
-        code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
+        ts.writeImports("../../lambdaLayer/mockApi/testCollectionsTypes", [
+          "TestCollection",
+        ]);
+        code.line(`var data = require("/opt/mockApi/testCollections") as {
+          testCollections: TestCollection;
+        };`);
         code.line();
-        // imp.importAxios();
-        // this.code.line();
+
         lambda.initializeLambdaFunction(apiType, apiName, undefined, key, isMutation ? architecture : undefined,);
 
         code.closeFile(this.outputFile);
@@ -90,7 +96,7 @@ class MultipleLambda {
       const code = new CodeMaker();
       const lambda = new LambdaFunction(code);
       const imp = new Imports(code);
-      
+      const ts = new TypeScriptWriter(code);
 
       const key = generalFields[i];
       this.outputFile = "index.ts";
@@ -98,10 +104,16 @@ class MultipleLambda {
 
       code.openFile(this.outputFile);
 
-        code.line(`var testCollections = require("/opt/mockApi/testCollections")`);
-        code.line();
-        // imp.importAxios();
-        // this.code.line();
+      
+
+      ts.writeImports("../../lambdaLayer/mockApi/testCollectionsTypes", [
+        "TestCollection",
+      ]);
+      code.line(`var data = require("/opt/mockApi/testCollections") as {
+        testCollections: TestCollection;
+      };`);
+      code.line();
+
 
         lambda.initializeLambdaFunction(apiType, apiName, undefined, key, isMutation ? architecture : undefined,);
 

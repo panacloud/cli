@@ -1,0 +1,183 @@
+type Mutation {
+    createApi(input: CreateApiInput): ApiVersion!
+}
+
+type Query {
+    getMyApis(input: GetMyApisInput): ApisListOutput!
+    getPublicApis(input: GetPublicApisInput): ApisListOutput!
+    getApiDetails(apiId: ID!): Api!
+    getApiVersions(input:GetApiVersionsInput): ApiVersionsListOutput!
+    getApiVersionDetails(versionId: ID!): ApiVersion!
+    getSubscriptionDetails(subscriptionId: ID!): ApiSubscription!
+}
+
+input CreateApiInput {
+    apiId: String!
+    title: String!
+    description:String
+    saasType: [ApiSaasType!]! # max 3
+    type: ApiType!
+    releaseNotes: String
+    apiRootUrl: AWSURL
+    openApiDef: String
+    apiUrl: AWSURL
+    graphQlSchema: String
+}
+
+input GetMyApisInput{
+    pagination: Pagination
+    apiSaasType: [ApiSaasType]
+    apiStatus: ApiStatus
+}
+
+input GetPublicApisInput{
+    pagination: Pagination
+    apiSaasType: [ApiSaasType]
+}
+
+input GetApiVersionsInput{
+    apiId: ID!
+    pagination: Pagination
+}
+
+input Pagination {
+    pageSize:Int
+    pageNumber:Int
+}
+
+type ApisListOutput {
+    totalCount: Int!
+    data: [Api]!
+}
+
+type ApiVersionsListOutput {
+    totalCount: Int!
+    data: [ApiVersion]!
+}
+
+type VersionsListOutput {
+    totalCount: Int!
+    data: [ApiVersion]!
+}
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+}
+
+type Api {
+    id: ID!
+    title: String!
+    developer: User!
+    description: String!
+    saasType: [ApiSaasType]!
+    image: String
+    status: ApiStatus!
+    creationDate:AWSTimestamp!
+    type: ApiType!
+}
+
+interface ApiVersion {
+    id: ID!
+    api: Api
+    status: ApiVersionStatus!
+    dateCreated:AWSTimestamp!
+    datePublished:AWSTimestamp
+    versionNumber: Int!
+    releaseNotes: String
+    subscriptions: [ApiSubscription]
+    apiToken:String
+}
+
+type GraphqlApiVersion implements ApiVersion {
+    id: ID!
+    api: Api
+    status: ApiVersionStatus!
+    dateCreated:AWSTimestamp!
+    datePublished:AWSTimestamp
+    versionNumber: Int!
+    releaseNotes: String
+    subscriptions: [ApiSubscription]
+    apiToken:String
+
+    graphQlSchema: String
+    apiUrl: AWSURL
+}
+
+type OpenApiVersion implements ApiVersion {
+    id: ID!
+    api: Api
+    status: ApiVersionStatus!
+    dateCreated:AWSTimestamp!
+    datePublished:AWSTimestamp
+    versionNumber: Int!
+    releaseNotes: String
+    subscriptions: [ApiSubscription]
+    apiToken:String
+
+    openApiDef: String
+    rootUrl: AWSURL
+}
+
+type ApiSubscription {
+    id: ID!
+    subscriptionDate: AWSTimestamp
+    version: ApiVersion
+    subscriptionToken: String
+    type: SubscriptionType
+}
+
+enum ApiType {
+    GRAPHQL
+    OPENAPI
+}
+
+
+enum ApiStatus {
+    UNDERDEVELOPMENT
+    PUBLIC
+}
+enum ApiVersionStatus {
+    PUBLISHED
+    UNPUBLISHED
+}
+enum SubscriptionType {
+    NORMAL
+    TESTING
+}
+
+enum ApiSaasType {
+    CRM
+    ERP  
+    ACCOUNTING 
+    PM   
+    CMS
+    COMMUNICATION  
+    ECOMMERCE  
+    HRM
+    PAYMENT_GATEWAY
+    BILLING
+    FINANCE 
+    EDUCATION 
+    MEDICAL 
+    MUSIC 
+    NEWS 
+    SOCIAL_NETWORKING 
+    WEATHER 
+    LIFESTYLE
+    PRODUCTIVITY 
+    SPORTS 
+    TRAVEL 
+    FOOD 
+    PHOTO_VIDEO 
+    UTILITIES 
+    DATA 
+    AI 
+    IOT 
+    BLOCKCHAIN_CRYPTO
+    BUSINESS 
+    REFERENCE 
+    HEALTH_FITNESS 
+}

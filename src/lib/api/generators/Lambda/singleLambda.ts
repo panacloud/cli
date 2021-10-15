@@ -21,7 +21,7 @@ class SingleLambda {
 
   async SingleLambdaFile() {
     const {
-      api: { apiType },
+      api: { apiType,apiName },
     } = this.config;
 
     if (apiType === APITYPE.rest) {
@@ -51,7 +51,7 @@ class SingleLambda {
             this.code.line();
 
             let isFirstIf: boolean = true;
-            lambda.initializeLambdaFunction(apiType, () => {
+            lambda.initializeLambdaFunction(apiType,apiName, () => {
               Object.keys(api.paths).forEach((path) => {
                 for (var methodName in api.paths[`${path}`]) {
                   let lambdaFunctionFile =

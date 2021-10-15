@@ -5,7 +5,7 @@ import {
   CLOUDPROVIDER,
   LANGUAGE,
   SAASTYPE,
-  ARCHITECTURE
+  ARCHITECTURE,
 } from "../utils/constants";
 import { fileExistsAsync } from "./fs";
 const inquirer = require("inquirer");
@@ -50,19 +50,20 @@ export const userInput = async () => {
       message: "Select architecture type?",
       choices: [ARCHITECTURE.requestDriven, ARCHITECTURE.eventDriven],
       default: ARCHITECTURE.requestDriven,
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
     {
       type: "string",
       name: "entityId",
       message: "Enter Your Panacloud Portal User ID",
-      validate: Boolean
+      validate: Boolean,
     },
     {
       type: "string",
       name: "api_token",
       message: "Enter Your Panacloud Portal API Key",
-      validate: Boolean
+      validate: Boolean,
     },
     {
       type: "list",
@@ -95,11 +96,25 @@ export const userInput = async () => {
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
+    // {
+    //   type: "confirm",
+    //   name: "nestedResolver",
+    //   message: "Nested Resolver",
+    //   validate: Boolean,
+    //   when: (answers: any) =>
+    //     answers.template === TEMPLATE.defineApi ||
+    //     answers.api_type === APITYPE.graphql,
+    // },
     {
       type: "list",
       name: "database",
       message: "Select Database?",
-      choices: [DATABASE.dynamoDB, DATABASE.neptuneDB, DATABASE.auroraDB, DATABASE.none],
+      choices: [
+        DATABASE.dynamoDB,
+        DATABASE.neptuneDB,
+        DATABASE.auroraDB,
+        DATABASE.none,
+      ],
       default: DATABASE.auroraDB,
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,

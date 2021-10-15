@@ -1,5 +1,6 @@
 const fse = require("fs-extra");
 
+import { ApiModel } from "../../utils/constants";
 import { ARCHITECTURE, PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
 import { stopSpinner } from "../spinner";
 
@@ -16,15 +17,14 @@ export const contextInfo = (apiToken: string, entityId: string) => {
 
 
 
+
 export const generatePanacloudConfig = async (
-  generalFields: string[],
-  microServiceFields: {
-    [k: string]: any[];
-  },
-  queiresFields: string[],
-  mutationFields: string[],
-  architecture: ARCHITECTURE,
+ model:ApiModel
 ) => {
+
+  const {
+    api: { microServiceFields, architecture,mutationFields,generalFields },
+  } = model;
 
   let configJson: PanacloudconfigFile = { lambdas: {} };
 
@@ -85,15 +85,13 @@ export const generatePanacloudConfig = async (
 };
 
 export const updatePanacloudConfig = async (
-  generalFields: string[],
-  microServiceFields: {
-    [k: string]: any[];
-  },
-  spinner: any,
-  queiresFields: string[],
-  mutationFields: string[],
-  architecture: ARCHITECTURE,
+model:ApiModel, spinner:any
 ) => {
+
+  const {
+    api: { microServiceFields, architecture,mutationFields,generalFields },
+  } = model;
+
 
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   let panacloudConfigNew = configPanacloud;
