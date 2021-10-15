@@ -107,6 +107,10 @@ class CustomLambda {
       
       if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
+  
+
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
       

@@ -43,7 +43,7 @@ class MultipleLambda {
         code.openFile(this.outputFile);
 
 
-        ts.writeImports("../../lambdaLayer/mockApi/testCollectionsTypes", [
+        ts.writeImports("../../../lambdaLayer/mockApi/testCollectionsTypes", [
           "TestCollection",
         ]);
         code.line(`var data = require("/opt/mockApi/testCollections") as {
@@ -64,8 +64,6 @@ class MultipleLambda {
            const code = new CodeMaker();
            const lambda = new LambdaFunction(code);
            const imp = new Imports(code);
-
-          console.log("KEY",key,"ISMUTATION",isMutation)
 
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
@@ -125,6 +123,8 @@ class MultipleLambda {
       
       if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
           
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);

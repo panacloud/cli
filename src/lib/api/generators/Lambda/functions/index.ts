@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, PanacloudconfigFile } from "../../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE, PanacloudconfigFile } from "../../../../../utils/constants";
 import {
   Property,
   TypeScriptWriter,
@@ -45,13 +45,13 @@ export const lambdaPropsHandlerForAuroradb = () => {
 export const lambdaHandlerForAuroradb = (
   code: CodeMaker,
   panacloudConfig: PanacloudconfigFile,
-  apiType: string,
-  apiName: string,
-  generalFields?: string[],
-  microServiceFields?: {
-    [k: string]: any[];
-  }
+  model:ApiModel
 ) => {
+
+  const {
+    api: { apiName, apiType,mutationFields,generalFields,microServiceFields,architecture },
+  } = model;
+
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
@@ -85,6 +85,40 @@ export const lambdaHandlerForAuroradb = (
 
           const key = microServiceFields[microServices[i]][j];
           const microService = microServices[i];
+
+
+          
+          const isMutation = mutationFields?.includes(key);
+
+
+          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+
+            
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            `props!.vpcRef`,
+            undefined,
+            [
+              {
+                name: "INSTANCE_CREDENTIALS",
+                value: `props!.secretRef`,
+              },
+            ],
+            undefined,
+            `props!.serviceRole`
+            ,microService
+          );
+          code.line();
+          code.line(
+            `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+          );
+          code.line();
+        
+
+          }
+
 
           lambda.initializeLambda(
             apiName,
@@ -120,6 +154,37 @@ export const lambdaHandlerForAuroradb = (
 
         const key = generalFields[i];
 
+
+        const isMutation = mutationFields?.includes(key);
+
+
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+
+          
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            `props!.vpcRef`,
+            undefined,
+            [
+              {
+                name: "INSTANCE_CREDENTIALS",
+                value: `props!.secretRef`,
+              },
+            ],
+            undefined,
+            `props!.serviceRole`
+          );
+          code.line();
+          code.line(
+            `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+          );
+          code.line();
+      
+
+        }
+
         lambda.initializeLambda(
           apiName,
           key,
@@ -150,14 +215,15 @@ export const lambdaHandlerForAuroradb = (
 export const lambdaHandlerForNeptunedb = (
   code: CodeMaker,
   panacloudConfig: PanacloudconfigFile,
-  apiType: string,
-  apiName: string,
-  generalFields?: string[],
-  microServiceFields?: {
-    [k: string]: any[];
-  }
+  model :ApiModel
 
 ) => {
+
+  
+  const {
+    api: { apiName, apiType,mutationFields,generalFields,microServiceFields,architecture },
+  } = model;
+
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
   lambda.lambdaLayer(apiName);
@@ -196,6 +262,41 @@ export const lambdaHandlerForNeptunedb = (
           const key = microServiceFields[microServices[i]][j];
           const microService = microServices[i];
 
+
+
+
+          const isMutation = mutationFields?.includes(key);
+
+
+          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+
+            lambda.initializeLambda(
+              apiName,
+              `${key}_consumer`,
+              `props!.VPCRef`,
+              `props!.SGRef`,
+              [
+                {
+                  name: "NEPTUNE_ENDPOINT",
+                  value: `props!.neptuneReaderEndpoint`,
+                },
+              ],
+              `ec2.SubnetType.PRIVATE_ISOLATED`
+            ,undefined,microService);
+            code.line();
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+            );
+            code.line();
+        
+
+          }
+
+
+
+
+
           lambda.initializeLambda(
             apiName,
             key,
@@ -227,6 +328,39 @@ export const lambdaHandlerForNeptunedb = (
       for (let i = 0; i < generalFields.length; i++) {
 
         const key = generalFields[i];
+
+
+
+        const isMutation = mutationFields?.includes(key);
+
+
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+
+       
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            `props!.VPCRef`,
+            `props!.SGRef`,
+            [
+              {
+                name: "NEPTUNE_ENDPOINT",
+                value: `props!.neptuneReaderEndpoint`,
+              },
+            ],
+            `ec2.SubnetType.PRIVATE_ISOLATED`
+          );
+          code.line();
+          code.line(
+            `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+          );
+          code.line();
+      
+
+        }
+
+
 
         lambda.initializeLambda(
           apiName,
@@ -457,14 +591,14 @@ export const lambdaProperiesHandlerForDynoDb = (
 export const lambdaHandlerForDynamodb = (
   code: CodeMaker,
   panacloudConfig: PanacloudconfigFile,
-  apiName: string,
-  apiType: string,
-  generalFields?: string[],
-  microServiceFields?: {
-    [k: string]: any[];
-  }
-
+  model:ApiModel
 ) => {
+
+
+  const {
+    api: { apiName, apiType,mutationFields,generalFields,microServiceFields,architecture },
+  } = model;
+
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
@@ -486,11 +620,29 @@ export const lambdaHandlerForDynamodb = (
           const key = microServiceFields[microServices[i]][j];
           const microService = microServices[i];
 
+          
+          const isMutation = mutationFields?.includes(key);
+
+
+          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+
+              lambda.initializeLambda(apiName, `${key}_consumer`, undefined, undefined, [
+                { name: "TableName", value: "props!.tableName" },
+              ], undefined, undefined, microService);
+              code.line();
+              code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);
+              code.line();
+        
+
+          }
+
+
           lambda.initializeLambda(apiName, key, undefined, undefined, [
             { name: "TableName", value: "props!.tableName" },
           ], undefined, undefined, microService);
           code.line();
-          code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+          code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
           code.line();
 
         }
@@ -506,11 +658,26 @@ export const lambdaHandlerForDynamodb = (
 
         const key = generalFields[i];
 
+        const isMutation = mutationFields?.includes(key);
+
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+    
+          lambda.initializeLambda(apiName, `${key}_consumer`, undefined, undefined, [
+            { name: "TableName", value: "props!.tableName" },
+          ]);
+          code.line();
+          code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);
+          code.line();
+
+    
+      }
+    
+
         lambda.initializeLambda(apiName, key, undefined, undefined, [
           { name: "TableName", value: "props!.tableName" },
         ]);
         code.line();
-        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+        code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
         code.line();
 
       }

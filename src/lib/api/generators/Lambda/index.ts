@@ -197,30 +197,23 @@ class lambdaConstruct {
           lambdaHandlerForDynamodb(
             this.code,
             this.panacloudConfig,
-            apiName,
-            apiType,
-            general_Fields,
-            microService_Fields
+            this.config
           );
         }
         else if (database === DATABASE.neptuneDB) {
           lambdaHandlerForNeptunedb(
             this.code,
             this.panacloudConfig,
-            apiType,
-            apiName,
-            general_Fields,
-            microService_Fields
+            this.config
+
           );
         }
         else if (database === DATABASE.auroraDB) {
           lambdaHandlerForAuroradb(
             this.code,
             this.panacloudConfig,
-            apiType,
-            apiName,
-            general_Fields,
-            microService_Fields
+            this.config
+
           );
         }
       },

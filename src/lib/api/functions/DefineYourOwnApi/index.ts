@@ -229,7 +229,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
     if (apiType === APITYPE.graphql) {
-      updatedPanacloudConfig = await generatePanacloudConfig(model);
+      PanacloudConfig = await generatePanacloudConfig(model);
 
       const mockApiCollection = buildSchemaToTypescript(
         gqlSchema,
