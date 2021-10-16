@@ -15,68 +15,46 @@ export const contextInfo = (apiToken: string, entityId: string) => {
   };
 };
 
-
-
-
 export const generatePanacloudConfig = async (
  model:ApiModel
 ) => {
-
-  const {
-    api: { microServiceFields, architecture,mutationFields,generalFields },
-  } = model;
-
+  const {api: { microServiceFields, architecture,mutationFields,generalFields,nestedResolver,nestedResolverFieldsAndLambdas }} = model;
   let configJson: PanacloudconfigFile = { lambdas: {} };
-
-
   const microServices = Object.keys(microServiceFields!);
 
   for (let i = 0; i < microServices.length; i++) {
     for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
-
       const key = microServiceFields![microServices[i]][j];
       const microService = microServices[i];
       const isMutation = mutationFields?.includes(key);
-
-
       if (!configJson.lambdas[microService]) {
         configJson.lambdas[microService] = {}
       }
       const lambdas = configJson.lambdas[microService][key] = {} as PanacloudConfiglambdaParams
       lambdas.asset_path = `lambda/${microService}/${key}/index.ts`;
-
       if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-
         const consumerLambdas = configJson.lambdas[microService][`${key}_consumer`] = {} as PanacloudConfiglambdaParams
-
         consumerLambdas.asset_path = `mock_lambda/${microService}/${key}_consumer/index.ts`;
       }
-
     }
-
   }
 
-
-
-
   for (let i = 0; i < generalFields!.length; i++) {
-
     const key = generalFields![i];
     const isMutation = mutationFields?.includes(key);
-
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
     lambdas.asset_path = `mock_lambda/${key}/index.ts`;
-
     if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-
-
       const consumerLambdas = configJson.lambdas[`${key}_consumer`] = {} as PanacloudConfiglambdaParams
-
       consumerLambdas.asset_path = `mock_lambda/${key}_consumer/index.ts`;
-
     }
-
-
+  }
+  
+  if(nestedResolver){
+    nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
+      const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
+      lambdas.asset_path = `mock_lambda/${key}/index.ts`;
+    });
   }
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
@@ -181,7 +159,7 @@ model:ApiModel, spinner:any
 
   let difference = generalFields!
     .filter(val => !prevGeneralLambdas.includes(val))
-    .concat(prevGeneralLambdas.filter(val => !generalFields!.includes(val)));
+    .concat(prevGeneralLambdas.filter(val => !generalFields?.includes(val)));
 
   for (let diff of difference) {
 

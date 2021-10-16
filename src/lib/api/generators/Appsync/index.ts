@@ -27,9 +27,7 @@ class AppsyncConstruct {
   }
 
   async AppsyncConstructFile() {
-    const {
-      api: { apiName, schemaPath, queiresFields, mutationFields,nestedResolver,schemaTypes,nestedResolverTypes },
-    } = this.config;
+    const { api: { apiName, schemaPath, queiresFields, mutationFields,nestedResolver,nestedResolverFieldsAndLambdas}} = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
     const cdk = new Cdk(this.code);
@@ -45,8 +43,8 @@ class AppsyncConstruct {
     imp.importIam();
 
     let ConstructProps: ConstructPropsType[] = [];
-
-    mutationsAndQueries.forEach((key: string, index: number) => {
+    
+    mutationsAndQueries.forEach((key: string) => {
       ConstructProps.push({
         name: `${apiName}_lambdaFn_${key}Arn`,
         type: "string",
@@ -54,12 +52,12 @@ class AppsyncConstruct {
     });
 
     if(nestedResolver){
-      schemaTypes?.forEach((key: string, index: number) => {
+      nestedResolverFieldsAndLambdas?.nestedResolverLambdas?.forEach((key: string) => {
         ConstructProps.push({
           name: `${apiName}_lambdaFn_${key}Arn`,
           type: "string",
         })
-      }); 
+      });
     }
 
     cdk.initializeConstruct(

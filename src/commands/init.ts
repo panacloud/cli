@@ -38,7 +38,7 @@ export default class Create extends Command {
       saasType: usrInput.saas_type,
       api: {
         template: usrInput.template,
-        // nestedResolver: usrInput.nestedResolver,
+        nestedResolver: usrInput.nestedResolver,
         language: usrInput.language,
         cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
