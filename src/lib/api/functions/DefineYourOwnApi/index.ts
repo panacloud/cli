@@ -18,7 +18,7 @@ import {
   GraphQLObjectType,
 } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
-import { EliminateScalarTypes, ScalarAndEnumKindFinder } from "../../helpers";
+import { EliminateScalarTypes, FieldsAndLambdaForNestedResolver, ScalarAndEnumKindFinder } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 const path = require("path");
@@ -161,59 +161,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     );
 
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-    const schemaJson = introspectionFromSchema(gqlSchema);
-    let nestedResolverTypes: { [key: string]: string[] } = {};
-    let schemaTypes: string[] = [];
-
-    if (nestedResolver) {
-      schemaJson.__schema.types.map((allTypes) => {
-        if (EliminateScalarTypes(allTypes)) {
-          if (ScalarAndEnumKindFinder(allTypes)) {
-            const typeName = gqlSchema.getType(
-              allTypes.name
-            ) as GraphQLObjectType;
-            const fieldsInType = typeName.getFields();
-            let fieldsArray: string[] = [];
-            for (const type in fieldsInType) {
-              if (
-                EliminateScalarTypes(
-                  gqlSchema.getType(
-                    fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
-                  )
-                )
-              ) {
-                const node = gqlSchema.getType(
-                  fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
-                )?.astNode;
-                if (
-                  node?.kind !==
-                  ("EnumTypeDefinition" ||
-                    "UnionTypeDefinition" ||
-                    "InputObjectTypeDefinition")
-                ) {
-                  if (schemaTypes.indexOf(type) === -1) {
-                    schemaTypes.push(type);
-                  }
-                  fieldsArray.push(type);
-                  nestedResolverTypes[allTypes.name] = [...fieldsArray];
-                }
-              }
-            }
-          }
-        }
-      });
-      if (Object.keys(nestedResolverTypes).length <= 0) {
-        stopSpinner(
-          generatingCode,
-          "nested resolvers are not possible with this schema normal resolvers are created",
-          false
-        );
-        model.api.nestedResolver = false;
-      } else {
-        model.api.nestedResolverTypes = nestedResolverTypes;
-        model.api.schemaTypes = schemaTypes;
-      }
-    }
+    // let nestedResolverTypes: { [key: string]: string[] } = {};
+    // let schemaTypes: string[] = [];
 
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
@@ -230,12 +179,26 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
     if (apiType === APITYPE.graphql) {
       PanacloudConfig = await generatePanacloudConfig(model);
-
       const mockApiCollection = buildSchemaToTypescript(
         gqlSchema,
         introspection
       );
       model.api.mockApiData = mockApiCollection;
+
+      // if user selects nested resolver
+      if (nestedResolver) {
+        const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model,gqlSchema)
+        if (Object.keys(fieldsAndLambdas.nestedResolverFields).length <= 0) {
+          stopSpinner(
+            generatingCode,
+            "nested resolvers are not possible with this schema normal resolvers are created",
+            false
+          );
+          model.api.nestedResolver = false;
+        } else {
+            model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas
+        }
+      }
     }
   } else {
     copyFileAsync(
@@ -259,11 +222,12 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
 
 
+  console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields ====>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields)
+  console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas ===>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas)
+  // await CreateAspects({config:model});
 
-  await CreateAspects({config:model});
-
-  // Codegenerator Function
-  await generator(model, PanacloudConfig);
+  // // Codegenerator Function
+  // await generator(model, PanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

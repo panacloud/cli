@@ -1,3 +1,5 @@
+import { IntrospectionQuery } from "graphql";
+
 export enum APITYPE {
   graphql = "GraphQL",
   rest = "REST OpenAPI",
@@ -59,6 +61,10 @@ export interface mockApiData {
   enumImports: string[];
 }
 
+export interface nestedResolverFieldsAndLambda{
+  nestedResolverFields: {[key: string]: {fieldName:string,lambda:string}[] },
+  nestedResolverLambdas: string[]
+}
 export interface API {
   template: TEMPLATE;
   language: LANGUAGE;
@@ -66,20 +72,20 @@ export interface API {
   architecture: ARCHITECTURE;
   apiName: string;
   schemaPath: string;
-  schema?: any;
-  schemaTypes?:string[];
-  nestedResolverTypes?: { [key: string]: string[] }
+  schema?: IntrospectionQuery;
+  nestedResolverFieldsAndLambdas?:nestedResolverFieldsAndLambda
+  // nestedResolverLambdas?:string[]
+  // nestedResolverFields?:{[key: string]: {fieldName:string,lambda:string}[]}
   queiresFields?: string[];
   mutationFields?: string[];
   apiType: APITYPE;
   database: DATABASE;
   nestedResolver?: boolean;
   mockApiData?: mockApiData;
-  microServiceFields:  {
+  microServiceFields?:{
     [k: string]: any[];
-
 };
-  generalFields: string[]
+  generalFields?: string[]
 }
 
 export enum ARCHITECTURE {

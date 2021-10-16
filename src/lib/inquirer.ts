@@ -96,15 +96,15 @@ export const userInput = async () => {
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
-    // {
-    //   type: "confirm",
-    //   name: "nestedResolver",
-    //   message: "Nested Resolver",
-    //   validate: Boolean,
-    //   when: (answers: any) =>
-    //     answers.template === TEMPLATE.defineApi ||
-    //     answers.api_type === APITYPE.graphql,
-    // },
+    {
+      type: "confirm",
+      name: "nestedResolver",
+      message: "Nested Resolver",
+      validate: Boolean,
+      when: (answers: any) =>
+        answers.template === TEMPLATE.defineApi ||
+        answers.api_type === APITYPE.graphql,
+    },
     {
       type: "list",
       name: "database",
