@@ -599,6 +599,7 @@ export const lambdaHandlerForDynamodb = (
     api: { apiName, apiType,mutationFields,generalFields,microServiceFields,architecture },
   } = model;
 
+
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
@@ -619,7 +620,6 @@ export const lambdaHandlerForDynamodb = (
 
           const key = microServiceFields[microServices[i]][j];
           const microService = microServices[i];
-
           
           const isMutation = mutationFields?.includes(key);
 
@@ -642,7 +642,7 @@ export const lambdaHandlerForDynamodb = (
             { name: "TableName", value: "props!.tableName" },
           ], undefined, undefined, microService);
           code.line();
-          code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
+          code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
           code.line();
 
         }
@@ -677,7 +677,7 @@ export const lambdaHandlerForDynamodb = (
           { name: "TableName", value: "props!.tableName" },
         ]);
         code.line();
-        code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
+        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
         code.line();
 
       }
