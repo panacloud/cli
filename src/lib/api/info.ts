@@ -98,7 +98,6 @@ model:ApiModel, spinner:any
 
     if (newMicroServices.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
-      panacloudConfigNew.lambdas[diff] = {}
     }
     else {
       delete panacloudConfigNew.lambdas[diff];
@@ -107,21 +106,30 @@ model:ApiModel, spinner:any
   }
 
 
+
+
   for (let service of newMicroServices) {
 
     const prevMicroServicesLambdas = Object.keys(configPanacloud.lambdas[service])
-    const newMicroServicesLambdas = microServiceFields![service];
+    let newMicroServicesLambdas = microServiceFields![service];
+
+ 
 
     for (let serv of newMicroServicesLambdas) {
       const isMutation = mutationFields?.includes(serv);
-      if (isMutation) {
-        newMicroServicesLambdas.push(`${serv}_consumer`)
+      if (isMutation ) {
+        //newMicroServicesLambdas.push(`${serv}_consumer`)
+        newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
       }
     }
+
+
+
 
     let differenceMicroServicesLambdas = newMicroServicesLambdas
       .filter(val => !prevMicroServicesLambdas.includes(val))
       .concat(prevMicroServicesLambdas.filter(val => !newMicroServicesLambdas.includes(val)));
+
 
 
     for (let diff of differenceMicroServicesLambdas) {
@@ -144,6 +152,9 @@ model:ApiModel, spinner:any
         delete panacloudConfigNew.lambdas[service][diff];
 
       }
+
+
+
     }
 
   }
@@ -160,12 +171,11 @@ model:ApiModel, spinner:any
     const isMutation = mutationFields?.includes(diff);
 
 
-    if (generalFields?.includes(diff)) {
+    if (generalFields!.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
 
 
-      console.log('ARCH', architecture, 'ismut', isMutation, 'DIFFFF', diff)
 
       if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 

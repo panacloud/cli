@@ -57,6 +57,8 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   // lambda Test
   // lambdaConstructTest({ config });
   // lambda Construct
+
+
   LambdaConstruct({ config, panacloudConfig });
 
   // Single or Multi

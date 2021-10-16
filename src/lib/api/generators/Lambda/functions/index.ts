@@ -536,9 +536,7 @@ export const lambdaHandlerForDynamodb = (
             microService
           );
           code.line();
-          code.line(
-            `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-          );
+          code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
           code.line();
         }
       }
@@ -570,9 +568,7 @@ export const lambdaHandlerForDynamodb = (
           { name: "TableName", value: "props!.tableName" },
         ]);
         code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        );
+        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
         code.line();
       }
     }

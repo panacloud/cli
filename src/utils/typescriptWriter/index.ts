@@ -47,6 +47,10 @@ export class TypeScriptWriter {
     this.code.line(`import { ${components.join(", ")} } from "${lib}";`);
   }
 
+  public writeAllImports(lib: string, components: string, ) {
+    this.code.line(`import ${components} from "${lib}";`);
+  }
+
   public writeClassBlock(
     classDefinition: ClassDefinition,
     properties?: Property[],
