@@ -219,8 +219,7 @@ export const lambdaHandlerForNeptunedb = (
   panacloudConfig: PanacloudconfigFile,
   model: ApiModel
 ) => {
-  const {api: {apiName,apiType,mutationFields,generalFields,database,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
-  const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,database,nestedResolver}} = model;
 
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
@@ -307,6 +306,8 @@ export const lambdaHandlerForNeptunedb = (
     if (generalFields) {
       let mutationAndQueries = generalFields
       if(nestedResolver){
+        const {api:{nestedResolverFieldsAndLambdas}} = model
+        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
         mutationAndQueries = [...generalFields,...nestedResolverLambdas]
       }
       for (let i = 0; i < mutationAndQueries.length; i++) {
