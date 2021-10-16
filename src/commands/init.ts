@@ -64,9 +64,10 @@ export default class Create extends Command {
       }
     }
 
+
     writeFileAsync(
       `./codegenconfig.json`,
-      JSON.stringify(config),
+      JSON.stringify({...config, api: {...config.api, schemaPath: "./editable_src/graphql/schema/schema.graphql"}}),
       (err: string) => {
         if (err) {
           stopSpinner(validating, `Error: ${err}`, true);
