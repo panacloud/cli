@@ -15,10 +15,10 @@ class AspectController {
 
      imp.importAspects();
      imp.importStack();
-     imp.importContructVisitor();
+     imp.importDefaultVisitor();
 
     ts.writeBasicClassBlock({name:"AspectController",export:true},undefined,"scope:Stack",()=>{
-        code.line("Aspects.of(scope).add(new ConstructVisitor());")
+        code.line("Aspects.of(scope).add(new DefaultVisitor());")
     })
 
   }

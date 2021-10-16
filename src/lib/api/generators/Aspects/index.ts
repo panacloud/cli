@@ -6,7 +6,7 @@ import {
 import { Imports } from "../../constructs/ConstructsImports";
  
   import {defineAspectController} from './aspectController'
-import { defineConstructVisitor } from "./constructVisitor";
+import { defineDefaultVisitor } from "./defaultVisitor";
 
   type props = {
     config: ApiModel;
@@ -24,15 +24,15 @@ import { defineConstructVisitor } from "./constructVisitor";
     async defineAspects() {
 
 
-    this.code.openFile('index.ts');
+    this.code.openFile('AspectController.ts');
      await defineAspectController(this.code)
-     this.code.closeFile('index.ts');
+     this.code.closeFile('AspectController.ts');
      await this.code.save('editable_src/aspects');
 
      
-    this.code.openFile('constructVisitor.ts');
-     await defineConstructVisitor(this.code)
-     this.code.closeFile('constructVisitor.ts');
+    this.code.openFile('DefaultVisitor.ts');
+     await defineDefaultVisitor(this.code)
+     this.code.closeFile('DefaultVisitor.ts');
      await this.code.save('editable_src/aspects');
     }
   }

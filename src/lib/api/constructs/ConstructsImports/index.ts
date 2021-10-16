@@ -176,12 +176,12 @@ export class Imports {
 
   public importAspectController() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports("../editable_src/aspects", ["AspectController"]);
+    ts.writeImports("../editable_src/aspects/AspectController", ["AspectController"]);
   }
 
-  public importContructVisitor() {
+  public importDefaultVisitor() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports("./constructVisitor", ["ConstructVisitor"]);
+    ts.writeImports("./DefaultVisitor", ["DefaultVisitor"]);
   }
 
 
