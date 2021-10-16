@@ -61,7 +61,7 @@ export interface mockApiData {
   enumImports: string[];
 }
 
-export interface nestedResolverFieldsAndLambda{
+export type nestedResolverFieldsAndLambda = {
   nestedResolverFields: {[key: string]: {fieldName:string,lambda:string}[] },
   nestedResolverLambdas: string[]
 }

@@ -161,9 +161,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     );
 
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-    // let nestedResolverTypes: { [key: string]: string[] } = {};
-    // let schemaTypes: string[] = [];
-
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
@@ -178,13 +175,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
     if (apiType === APITYPE.graphql) {
-      PanacloudConfig = await generatePanacloudConfig(model);
       const mockApiCollection = buildSchemaToTypescript(
         gqlSchema,
         introspection
       );
       model.api.mockApiData = mockApiCollection;
-
       // if user selects nested resolver
       if (nestedResolver) {
         const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model,gqlSchema)
@@ -199,6 +194,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
             model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas
         }
       }
+      await generatePanacloudConfig(model);
     }
   } else {
     copyFileAsync(
@@ -227,7 +223,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   // await CreateAspects({config:model});
 
   // // Codegenerator Function
-  // await generator(model, PanacloudConfig);
+  await generator(model, PanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

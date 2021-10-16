@@ -59,7 +59,6 @@ export class Lambda {
       const splitPath = lambdas[functionName].asset_path.split("/");
       splitPath.pop();
       handlerAsset = functionName? splitPath.join("/") : "lambda";
-
     }
     }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
