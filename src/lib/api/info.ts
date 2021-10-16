@@ -53,7 +53,7 @@ export const generatePanacloudConfig = async (
   if(nestedResolver){
     nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
       const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `mock_lambda/${key}/index.ts`;
+      lambdas.asset_path = `mock_lambda/nestedResolvers/${key}/index.ts`;
     });
   }
 
