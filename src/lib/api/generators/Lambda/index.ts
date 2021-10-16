@@ -38,6 +38,8 @@ class lambdaConstruct {
     this.config = props.config;
     this.panacloudConfig = props.panacloudConfig;
     this.code = new CodeMaker();
+
+
   }
 
   async LambdaConstructFile() {
@@ -51,8 +53,8 @@ class lambdaConstruct {
     if (apiType === APITYPE.graphql) {
       const { queiresFields, mutationFields,generalFields,microServiceFields } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
-      general_Fields = generalFields;
-      microService_Fields = microServiceFields;
+      general_Fields = generalFields!;
+      microService_Fields = microServiceFields!;
 
     }
     let lambdaPropsWithName: string | undefined;
@@ -194,6 +196,7 @@ class lambdaConstruct {
 
         }
         if (database === DATABASE.dynamoDB) {
+
           lambdaHandlerForDynamodb(
             this.code,
             this.panacloudConfig,

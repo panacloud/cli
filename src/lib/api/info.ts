@@ -29,12 +29,12 @@ export const generatePanacloudConfig = async (
   let configJson: PanacloudconfigFile = { lambdas: {} };
 
 
-  const microServices = Object.keys(microServiceFields);
+  const microServices = Object.keys(microServiceFields!);
 
   for (let i = 0; i < microServices.length; i++) {
-    for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+    for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
 
-      const key = microServiceFields[microServices[i]][j];
+      const key = microServiceFields![microServices[i]][j];
       const microService = microServices[i];
       const isMutation = mutationFields?.includes(key);
 
@@ -59,9 +59,9 @@ export const generatePanacloudConfig = async (
 
 
 
-  for (let i = 0; i < generalFields.length; i++) {
+  for (let i = 0; i < generalFields!.length; i++) {
 
-    const key = generalFields[i];
+    const key = generalFields![i];
     const isMutation = mutationFields?.includes(key);
 
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
@@ -102,7 +102,7 @@ model:ApiModel, spinner:any
 
   const prevGeneralLambdas = prevItems.filter((val: any) => configPanacloud.lambdas[val].asset_path ? true : false)
 
-  const newMicroServices = Object.keys(microServiceFields);
+  const newMicroServices = Object.keys(microServiceFields!);
 
 
 
@@ -115,7 +115,6 @@ model:ApiModel, spinner:any
 
     if (newMicroServices.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
-      panacloudConfigNew.lambdas[diff] = {}
     }
     else {
       delete panacloudConfigNew.lambdas[diff];
@@ -124,27 +123,36 @@ model:ApiModel, spinner:any
   }
 
 
+
+
   for (let service of newMicroServices) {
 
     const prevMicroServicesLambdas = Object.keys(configPanacloud.lambdas[service])
-    const newMicroServicesLambdas = microServiceFields[service];
+    let newMicroServicesLambdas = microServiceFields![service];
+
+ 
 
     for (let serv of newMicroServicesLambdas) {
       const isMutation = mutationFields?.includes(serv);
-      if (isMutation) {
-        newMicroServicesLambdas.push(`${serv}_consumer`)
+      if (isMutation ) {
+        //newMicroServicesLambdas.push(`${serv}_consumer`)
+        newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
       }
     }
+
+
+
 
     let differenceMicroServicesLambdas = newMicroServicesLambdas
       .filter(val => !prevMicroServicesLambdas.includes(val))
       .concat(prevMicroServicesLambdas.filter(val => !newMicroServicesLambdas.includes(val)));
 
 
+
     for (let diff of differenceMicroServicesLambdas) {
 
 
-      if (microServiceFields[service].includes(diff)) {
+      if (microServiceFields![service].includes(diff)) {
         panacloudConfigNew.lambdas[service][diff] = {} as PanacloudConfiglambdaParams
         panacloudConfigNew.lambdas[service][diff].asset_path = `mock_lambda/${service}/${diff}/index.ts`
 
@@ -161,6 +169,9 @@ model:ApiModel, spinner:any
         delete panacloudConfigNew.lambdas[service][diff];
 
       }
+
+
+
     }
 
   }
@@ -168,21 +179,20 @@ model:ApiModel, spinner:any
 
 
 
-  let difference = generalFields
+  let difference = generalFields!
     .filter(val => !prevGeneralLambdas.includes(val))
-    .concat(prevGeneralLambdas.filter(val => !generalFields.includes(val)));
+    .concat(prevGeneralLambdas.filter(val => !generalFields!.includes(val)));
 
   for (let diff of difference) {
 
     const isMutation = mutationFields?.includes(diff);
 
 
-    if (generalFields.includes(diff)) {
+    if (generalFields!.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
 
 
-      console.log('ARCH', architecture, 'ismut', isMutation, 'DIFFFF', diff)
 
       if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 
