@@ -49,11 +49,8 @@ export const generatePanacloudConfig = async (
       consumerLambdas.asset_path = `mock_lambda/${key}_consumer/index.ts`;
     }
   }
-  console.log("model ------->",model);
-  console.log("model nested resolver------->",model.api.nestedResolver);
   
   if(nestedResolver){
-    console.log("hello from condition nested resolver ",nestedResolver);
     nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
       const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
       lambdas.asset_path = `mock_lambda/${key}/index.ts`;
@@ -61,8 +58,6 @@ export const generatePanacloudConfig = async (
   }
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
-
-  console.log("line number 65 info.ts ---> ",configJson);
 
   return configJson;
 };

@@ -41,11 +41,9 @@ export class Lambda {
     let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
-    if(functionName){
+    if(functionName){      
       const {lambdas} = this.panacloudConfig;
-
       if (microServiceName){
-
         const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
         handlerName = functionName? `${handlerfile}.handler` : "main.handler";
         const splitPath = lambdas[microServiceName][functionName].asset_path.split("/");

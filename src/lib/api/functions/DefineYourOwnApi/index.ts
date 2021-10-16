@@ -111,7 +111,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     await mkdirRecursiveAsync(`editable_src`);
     await mkdirRecursiveAsync(`editable_src/graphql`);
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
-    //    await mkdirRecursiveAsync(`editable_src/aspects`);
+    await mkdirRecursiveAsync(`editable_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -194,7 +194,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
             model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas
         }
       }
-      await generatePanacloudConfig(model);
+      PanacloudConfig = await generatePanacloudConfig(model);
     }
   } else {
     copyFileAsync(
@@ -218,11 +218,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
 
 
-  console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields ====>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields)
-  console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas ===>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas)
-  // await CreateAspects({config:model});
+  // console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields ====>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields)
+  // console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas ===>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas)
+  await CreateAspects({config:model});
 
-  // // Codegenerator Function
+  // Codegenerator Function
   await generator(model, PanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
