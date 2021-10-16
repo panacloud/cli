@@ -20,6 +20,7 @@ import {
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { EliminateScalarTypes, ScalarAndEnumKindFinder } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
+import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -121,7 +122,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   });
-  let updatedPanacloudConfig: any;
+  let PanacloudConfig: any;
 
   if (apiType === APITYPE.graphql) {
     let directivesPath = path.resolve(
@@ -221,8 +222,14 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
+  
+    const fieldSplitterOutput = microServicesDirectiveFieldSplitter(queriesFields,mutationsFields);
+    
+    model.api.generalFields = fieldSplitterOutput.generalFields;
+    model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+
     if (apiType === APITYPE.graphql) {
-      updatedPanacloudConfig = await generatePanacloudConfig(model);
+      PanacloudConfig = await generatePanacloudConfig(model);
 
       const mockApiCollection = buildSchemaToTypescript(
         gqlSchema,
@@ -250,10 +257,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
-  await CreateAspects({ config: model });
+
+
+
+  await CreateAspects({config:model});
 
   // Codegenerator Function
-  await generator(model, updatedPanacloudConfig);
+  await generator(model, PanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

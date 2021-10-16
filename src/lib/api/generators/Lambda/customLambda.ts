@@ -9,30 +9,31 @@ type StackBuilderProps = {
 
 class CustomLambda {
   outputFile: string = `index.ts`;
-  outputDir: string = `lambda`;
   config: ApiModel;
+  outputDir: string = `lambda`;
   constructor(props: StackBuilderProps) {
     this.config = props.config;
   }
 
   async LambdaFile() {
     const {
-      api: { apiType, architecture },
+      api: {apiType,generalFields,microServiceFields,mutationFields,architecture,apiName},
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
-      const {
-        api: { queiresFields, mutationFields },
-      } = this.config;
-      let mutationsAndQueries: string[] = [
-        ...queiresFields!,
-        ...mutationFields!,
-      ];
+    
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
 
-      mutationsAndQueries.forEach(async (key: string) => {
-        const code = new CodeMaker();
-        const lambda = new LambdaFunction(code);
-        const imp = new Imports(code);
+      const microServices = Object.keys(microServiceFields);
+      
+
+      for (let i = 0; i < microServices.length; i++) {
+      for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+  
+        const key = microServiceFields[microServices[i]][j];
+        const isMutation = mutationFields?.includes(key);
         code.openFile(this.outputFile);
 
         imp.importAxios();
@@ -41,29 +42,95 @@ class CustomLambda {
         lambda.emptyLambdaFunction();
 
         code.closeFile(this.outputFile);
-        this.outputDir = `editable_src/lambda/${key}`;
+        this.outputDir = `editable_src/lambda/${microServices[i]}/${key}`;
         await code.save(this.outputDir);
-      });
 
-      if (architecture === ARCHITECTURE.eventDriven) {
-        for (let i = 0; i < (mutationFields || []).length; i++) {
-          if (!mutationFields) { continue }
-          const code = new CodeMaker();
-          const lambda = new LambdaFunction(code);
-          const imp = new Imports(code);
-          const key = `${mutationFields[i]}_consumer`;
+
+
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+             
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
+
+     
+            
+            this.outputFile = "index.ts";
+            code.openFile(this.outputFile);
+        
+            code.line();
+        
+            lambda.emptyLambdaFunction();
+        
+            code.closeFile(this.outputFile);
+            this.outputDir = `editable_src/lambda/${microServices[i]}/${key}_consumer`;
+            await code.save(this.outputDir);
+
+        }
+
+
+
+
+      }
+
+    }
+
+
+
+
+
+    for (let i = 0; i < generalFields.length; i++) {
+
+      const code = new CodeMaker();
+      const lambda = new LambdaFunction(code);
+      const imp = new Imports(code);
+
+
+      const key = generalFields[i];
+      this.outputFile = "index.ts";
+      const isMutation = mutationFields?.includes(key);
+
+      code.openFile(this.outputFile);
+
+      imp.importAxios();
+      code.line();
+
+      lambda.emptyLambdaFunction();
+
+      code.closeFile(this.outputFile);
+      this.outputDir = `editable_src/lambda/${key}`;
+      await code.save(this.outputDir);
+
+
+
+      
+      if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
+  
+
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
-
+      
           code.line();
-
-          lambda.helloWorldFunction(apiType);
-
+      
+          lambda.emptyLambdaFunction();
+      
           code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/${key}`;
+          this.outputDir = `editable_src/lambda/${key}_consumer`;
           await code.save(this.outputDir);
-        }
+      
       }
+
+
+    }
+
+
+
+
+
 
     }
   }
