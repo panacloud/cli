@@ -80,7 +80,19 @@ export class Appsync {
 
   public appsyncDatabasePropsHandler(config: API, code: CodeMaker) {
     const { apiName, queiresFields, mutationFields, database,nestedResolver,nestedResolverFieldsAndLambdas} = config;
-    const {nestedResolverFields,nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+    
+    let nestedResolverFields:{
+      [key: string]: {
+          fieldName: string;
+          lambda: string;
+      }[];
+  };
+    let nestedResolverLambdas: string[] = [];
+
+    if (nestedResolverFieldsAndLambdas){
+    nestedResolverFields = nestedResolverFieldsAndLambdas.nestedResolverFields
+    nestedResolverLambdas = nestedResolverFieldsAndLambdas?.nestedResolverLambdas
+  }
     
     const mutationsAndQueries: string[] = [
       ...queiresFields!,

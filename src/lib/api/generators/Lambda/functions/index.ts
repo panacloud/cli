@@ -5,7 +5,11 @@ import { Lambda } from "../../../constructs/Lambda";
 
 export const lambdaProperiesHandlerForNestedResolver = (model: ApiModel) => {
   const {  api: { database, apiName, nestedResolverFieldsAndLambdas } } = model;
-  const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
+  let nestedResolverLambdas : string[] =[];
+
+  if (nestedResolverFieldsAndLambdas){
+ nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
+}
   let properties: Property[] = [];
   if (database === DATABASE.dynamoDB) {
     nestedResolverLambdas.forEach((key: string, index: number) => {
@@ -202,7 +206,10 @@ export const lambdaHandlerForNeptunedb = (
   model: ApiModel
 ) => {
   const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
-  const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+  let nestedResolverLambdas:string[] =[]
+  if (nestedResolverFieldsAndLambdas){
+    nestedResolverLambdas= nestedResolverFieldsAndLambdas!.nestedResolverLambdas
+  }
 
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
@@ -234,6 +241,9 @@ export const lambdaHandlerForNeptunedb = (
           const key = microServiceFields[microServices[i]][j];
           const microService = microServices[i];
           const isMutation = mutationFields?.includes(key);
+
+          console.log('key',key)
+
           if (architecture === ARCHITECTURE.eventDriven && isMutation) {
             lambda.initializeLambda(
               apiName,
@@ -492,7 +502,10 @@ export const lambdaHandlerForDynamodb = (
   model: ApiModel
 ) => {
   const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
-  const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+ let nestedResolverLambdas:string[] = []
+  if (nestedResolverFieldsAndLambdas){
+  nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas
+}
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
