@@ -70,7 +70,6 @@ model:ApiModel, spinner:any
     api: { microServiceFields, architecture,mutationFields,generalFields, nestedResolver,nestedResolverFieldsAndLambdas },
   } = model;
 
-
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   let panacloudConfigNew = configPanacloud;
 
@@ -87,8 +86,7 @@ model:ApiModel, spinner:any
   let differenceMicroServices = newMicroServices
     .filter(val => !prevMicroServices.includes(val))
     .concat(prevMicroServices.filter(val => !newMicroServices.includes(val)));
-
-
+  
   for (let diff of differenceMicroServices) {
 
     if (newMicroServices.includes(diff)) {
@@ -113,42 +111,25 @@ model:ApiModel, spinner:any
     for (let serv of newMicroServicesLambdas) {
       const isMutation = mutationFields?.includes(serv);
       if (isMutation ) {
-        //newMicroServicesLambdas.push(`${serv}_consumer`)
         newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
       }
     }
-
-
 
 
     let differenceMicroServicesLambdas = newMicroServicesLambdas
       .filter(val => !prevMicroServicesLambdas.includes(val))
       .concat(prevMicroServicesLambdas.filter(val => !newMicroServicesLambdas.includes(val)));
 
-
-
     for (let diff of differenceMicroServicesLambdas) {
 
-
-      if (microServiceFields![service].includes(diff)) {
+      if (newMicroServicesLambdas.includes(diff)) {
         panacloudConfigNew.lambdas[service][diff] = {} as PanacloudConfiglambdaParams
         panacloudConfigNew.lambdas[service][diff].asset_path = `mock_lambda/${service}/${diff}/index.ts`
-
-        const isMutation = mutationFields?.includes(diff);
-
-
-        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-
-          panacloudConfigNew.lambdas[service][`${diff}_consumer`] = {} as PanacloudConfiglambdaParams
-          panacloudConfigNew.lambdas[service][`${diff}_consumer`].asset_path = `mock_lambda/${service}/${diff}_consumer/index.ts`
-        }
       }
       else {
         delete panacloudConfigNew.lambdas[service][diff];
 
       }
-
-
 
     }
 
