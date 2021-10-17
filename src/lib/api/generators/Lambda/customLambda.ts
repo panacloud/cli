@@ -26,13 +26,13 @@ class CustomLambda {
       const lambda = new LambdaFunction(code);
       const imp = new Imports(code);
 
-      const microServices = Object.keys(microServiceFields);
+      const microServices = Object.keys(microServiceFields!);
       
 
       for (let i = 0; i < microServices.length; i++) {
-      for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+      for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
   
-        const key = microServiceFields[microServices[i]][j];
+        const key = microServiceFields![microServices[i]][j];
         const isMutation = mutationFields?.includes(key);
         code.openFile(this.outputFile);
 
@@ -80,14 +80,14 @@ class CustomLambda {
 
 
 
-    for (let i = 0; i < generalFields.length; i++) {
+    for (let i = 0; i < generalFields!.length; i++) {
 
       const code = new CodeMaker();
       const lambda = new LambdaFunction(code);
       const imp = new Imports(code);
 
 
-      const key = generalFields[i];
+      const key = generalFields![i];
       this.outputFile = "index.ts";
       const isMutation = mutationFields?.includes(key);
 
