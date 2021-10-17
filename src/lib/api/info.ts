@@ -182,11 +182,29 @@ model:ApiModel, spinner:any
   }
 
 
+ let prevGeneralMutLambdas :string[] = []
+
+  if (architecture === ARCHITECTURE.eventDriven){
+    // for (let serv of newMicroServicesLambdas) {
+    //   const isMutation = mutationFields?.includes(serv);
+    //   if (isMutation ) {
+    //     //newMicroServicesLambdas.push(`${serv}_consumer`)
+    //     newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
+    //   }
+    // }
+
+    
+    prevGeneralMutLambdas = prevGeneralLambdas.filter ((val:string)=> val.split('_').pop() !== "consumer")
+
+
+  }
 
 
   let difference = generalFields!
-    .filter(val => !prevGeneralLambdas.includes(val))
-    .concat(prevGeneralLambdas.filter(val => !generalFields?.includes(val)));
+    .filter(val => !prevGeneralMutLambdas.includes(val))
+    .concat(prevGeneralMutLambdas.filter(val => !generalFields?.includes(val)));
+
+    console.log('diff',prevGeneralMutLambdas)
 
   for (let diff of difference) {
 
@@ -198,7 +216,6 @@ model:ApiModel, spinner:any
       panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
 
 
-
       if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 
         panacloudConfigNew.lambdas[`${diff}_consumer`] = {} as PanacloudConfiglambdaParams
@@ -208,8 +225,33 @@ model:ApiModel, spinner:any
     }
     else {
       delete panacloudConfigNew.lambdas[diff];
+      delete panacloudConfigNew.lambdas[`${diff}_consumer`];
+
     }
+
+
   }
+
+  let newItems = Object.keys(panacloudConfigNew.lambdas)
+
+
+  const newGeneralMutLambdas = newItems.filter((val: any) => panacloudConfigNew.lambdas[val].asset_path ? true : false)
+
+
+  for (let mutLambda of newGeneralMutLambdas) {
+
+    const isMutation = mutationFields?.includes(mutLambda);
+
+    if (isMutation && !panacloudConfigNew.lambdas[`${mutLambda}_consumer`]){
+      
+      panacloudConfigNew.lambdas[`${mutLambda}_consumer`] = {} as PanacloudConfiglambdaParams
+      panacloudConfigNew.lambdas[`${mutLambda}_consumer`].asset_path = `mock_lambda/${mutLambda}_consumer/index.ts`
+    }
+
+  }
+
+
+
 
   if(nestedResolver){
     nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {

@@ -279,15 +279,9 @@ export const lambdaHandlerForNeptunedb = (
               microService
             );
             code.line();
-            if(database == DATABASE.dynamoDB){
-              code.line(
-                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
-              );
-            }else{
               code.line(
                 `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
               );  
-            }
             code.line();
           }
           lambda.initializeLambda(
@@ -339,15 +333,11 @@ export const lambdaHandlerForNeptunedb = (
             `ec2.SubnetType.PRIVATE_ISOLATED`
           );
           code.line();
-          if(database == DATABASE.dynamoDB){
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
-            );
-          }else{
+      
             code.line(
               `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
             );  
-          }
+          
           code.line();
         }
 
@@ -486,11 +476,8 @@ export const lambdaHandlerForDynamodb = (
               microService
             );
             code.line();
-            if(database === DATABASE.dynamoDB){
               code.line(`this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);  
-            }else{
-              code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);  
-            }
+            
             code.line();
           }
 
@@ -529,11 +516,8 @@ export const lambdaHandlerForDynamodb = (
             [{ name: "TableName", value: "props!.tableName" }]
           );
           code.line();
-          if(database == DATABASE.dynamoDB){
             code.line( `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
-          }else{
-            code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);  
-          }
+          
           code.line();
         }
         lambda.initializeLambda(apiName, key, undefined, undefined, [
