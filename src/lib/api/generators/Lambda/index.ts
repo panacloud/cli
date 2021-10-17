@@ -94,11 +94,19 @@ class lambdaConstruct {
 
     if (architecture === ARCHITECTURE.eventDriven &&apiType === APITYPE.graphql) {
       this.config.api.mutationFields?.forEach((key) => {
+        let name = `${apiName}_lambdaFn_${key}_consumerArn`
+        let typeName = "string"
+        let readonly = true
+        if(database===DATABASE.dynamoDB){
+          name = `${apiName}_lambdaFn_${key}_consumer`
+          typeName = "lambda.Function"
+          readonly = false
+        }
         lambdaProperties.push({
-          name: `${apiName}_lambdaFn_${key}_consumerArn`,
-          typeName: "string",
+          name: name,
+          typeName: typeName,
           accessModifier: "public",
-          isReadonly: true,
+          isReadonly: readonly,
         });
       });
     }

@@ -12,6 +12,7 @@ import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
+import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 
 const path = require("path");
 const fs = require("fs");
@@ -42,7 +43,7 @@ async function updateYourOwnApi(config: Config, spinner:any) {
         "../../../../utils/awsAppsyncScalars.graphql"
       );
 
-    let schema = fs.readFileSync("editable_src/graphql/schema/schema.graphql", "utf8", (err: string) => {
+    let schema = fs.readFileSync(config.api.schemaPath, "utf8", (err: string) => {
         if (err) {
             stopSpinner(spinner, `Error: ${err}`, true);
             process.exit(1);
@@ -80,16 +81,29 @@ async function updateYourOwnApi(config: Config, spinner:any) {
 
     model.api.generalFields = fieldSplitterOutput.generalFields;
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+
+
+    const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
+    model.api.mockApiData = mockApiCollection;
     
+    if (model.api.nestedResolver) {
+      const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model,gqlSchema)
+      if (Object.keys(fieldsAndLambdas.nestedResolverFields).length <= 0) {
+        stopSpinner(
+          spinner,
+          "nested resolvers are not possible with this schema normal resolvers are created",
+          false
+        );
+        model.api.nestedResolver = false;
+      } else {
+          model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas
+      }
+    }
 
     const updatedPanacloudConfig = await updatePanacloudConfig(
       model,
         spinner,
     );
-
-
-    const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
-    model.api.mockApiData = mockApiCollection;
 
 
     // Codegenerator Function

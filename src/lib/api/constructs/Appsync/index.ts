@@ -103,6 +103,7 @@ export class Appsync {
     let lambdafunc = `${apiName}_lambdaFn`;
     
     if(nestedResolver){
+      const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
       nestedResolverLambdas?.forEach((key)=>{
         lambdafunc = `${apiName}_lambdaFn_${key}Arn`;
         if(database === DATABASE.dynamoDB){

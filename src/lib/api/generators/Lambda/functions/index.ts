@@ -74,7 +74,7 @@ export const lambdaHandlerForAuroradb = (
   panacloudConfig: PanacloudconfigFile,
   model: ApiModel
 ) => {
-  const {api: {  apiName,  apiType,  mutationFields,  generalFields,  microServiceFields,  architecture}} = model;
+  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,database}} = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
@@ -121,9 +121,15 @@ export const lambdaHandlerForAuroradb = (
               microService
             );
             code.line();
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-            );
+            if(database === DATABASE.dynamoDB){
+              code.line(
+                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+              );  
+            }else{
+              code.line(
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );
+            }
             code.line();
           }
 
@@ -152,8 +158,14 @@ export const lambdaHandlerForAuroradb = (
     }
 
     if (generalFields) {
-      for (let i = 0; i < generalFields.length; i++) {
-        const key = generalFields[i];
+      let mutationAndQueries = generalFields
+      if(nestedResolver){
+        const {api:{nestedResolverFieldsAndLambdas}} = model
+        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+        mutationAndQueries = [...generalFields,...nestedResolverLambdas]
+      }
+      for (let i = 0; i < mutationAndQueries.length; i++) {
+        const key = mutationAndQueries[i];
         const isMutation = mutationFields?.includes(key);
         if (architecture === ARCHITECTURE.eventDriven && isMutation) {
           lambda.initializeLambda(
@@ -171,9 +183,15 @@ export const lambdaHandlerForAuroradb = (
             `props!.serviceRole`
           );
           code.line();
-          code.line(
-            `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-          );
+          if(database == DATABASE.dynamoDB){
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+            );
+          }else{
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+            );  
+          }
           code.line();
         }
         lambda.initializeLambda(
@@ -261,9 +279,15 @@ export const lambdaHandlerForNeptunedb = (
               microService
             );
             code.line();
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-            );
+            if(database == DATABASE.dynamoDB){
+              code.line(
+                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+              );
+            }else{
+              code.line(
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );  
+            }
             code.line();
           }
           lambda.initializeLambda(
@@ -293,6 +317,8 @@ export const lambdaHandlerForNeptunedb = (
     if (generalFields) {
       let mutationAndQueries = generalFields
       if(nestedResolver){
+        const {api:{nestedResolverFieldsAndLambdas}} = model
+        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
         mutationAndQueries = [...generalFields,...nestedResolverLambdas]
       }
       for (let i = 0; i < mutationAndQueries.length; i++) {
@@ -313,9 +339,15 @@ export const lambdaHandlerForNeptunedb = (
             `ec2.SubnetType.PRIVATE_ISOLATED`
           );
           code.line();
-          code.line(
-            `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-          );
+          if(database == DATABASE.dynamoDB){
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+            );
+          }else{
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+            );  
+          }
           code.line();
         }
 
@@ -348,27 +380,6 @@ export const lambdaProperiesHandlerForAuroraDb = (
   mutationsAndQueries?: any
 ) => {
   let properties: Property[] = [];
-  // if (
-  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-  //     apiType === APITYPE.rest) &&
-  //   database === DATABASE.auroraDB
-  // ) {
-  //   properties = [
-  //     {
-  //       name: `${apiName}_lambdaFnArn`,
-  //       typeName: "string",
-  //       accessModifier: "public",
-  //       isReadonly: true,
-  //     },
-  //     {
-  //       name: `${apiName}_lambdaFn`,
-  //       typeName: "lambda.Function",
-  //       accessModifier: "public",
-  //       isReadonly: false,
-  //     },
-  //   ];
-  //   return properties;
-  // }
   if (apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
@@ -388,27 +399,6 @@ export const lambdaProperiesHandlerForNeptuneDb = (
   mutationsAndQueries: any
 ) => {
   let properties: Property[] = [];
-  // if (
-  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-  //     apiType === APITYPE.rest) &&
-  //   database === DATABASE.neptuneDB
-  // ) {
-  //   properties = [
-  //     {
-  //       name: `${apiName}_lambdaFnArn`,
-  //       typeName: "string",
-  //       accessModifier: "public",
-  //       isReadonly: true,
-  //     },
-  //     {
-  //       name: `${apiName}_lambdaFn`,
-  //       typeName: "lambda.Function",
-  //       accessModifier: "public",
-  //       isReadonly: false,
-  //     },
-  //   ];
-  //   return properties;
-  // }
   if (apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
@@ -428,13 +418,6 @@ export const lambdaProperiesHandlerForMockApi = (
   mutationsAndQueries: any
 ) => {
   let properties: Property[] = [];
-  // if (
-  //   (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-  //   apiType === APITYPE.rest
-  // ) {
-  //   return properties;
-  // }
-
   if (apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
@@ -446,21 +429,6 @@ export const lambdaProperiesHandlerForMockApi = (
     });
   }
   return properties;
-
-  // if (
-  //   lambdaStyle === LAMBDASTYLE.multi &&
-  //   apiType === APITYPE.graphql
-  // ) {
-  //   mutationsAndQueries.forEach((key: string, index: number) => {
-  //     properties[index] = {
-  //       name: `${apiName}_lambdaFn_${key}Arn`,
-  //       typeName: "string",
-  //       accessModifier: "public",
-  //       isReadonly: true,
-  //     };
-  //   });
-  //   return properties;
-  // }
 };
 
 export const lambdaProperiesHandlerForDynoDb = (
@@ -469,20 +437,6 @@ export const lambdaProperiesHandlerForDynoDb = (
   mutationsAndQueries: any
 ) => {
   let properties: Property[] = [];
-  // if (
-  //   (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
-  //   apiType === APITYPE.rest
-  // ) {
-  //   properties = [
-  //     {
-  //       name: `${apiName}_lambdaFn`,
-  //       typeName: "lambda.Function",
-  //       accessModifier: "public",
-  //       isReadonly: false,
-  //     },
-  //   ];
-  //   return properties;
-  // }
   if (apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
@@ -532,9 +486,11 @@ export const lambdaHandlerForDynamodb = (
               microService
             );
             code.line();
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-            );
+            if(database === DATABASE.dynamoDB){
+              code.line(`this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);  
+            }else{
+              code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);  
+            }
             code.line();
           }
 
@@ -558,7 +514,8 @@ export const lambdaHandlerForDynamodb = (
     if (generalFields) {
       let mutationAndQueries = generalFields
       if(nestedResolver){
-        mutationAndQueries = [...generalFields,...nestedResolverLambdas]
+        const { api : {nestedResolverFieldsAndLambdas}} = model
+        mutationAndQueries = [...generalFields, ...nestedResolverFieldsAndLambdas!.nestedResolverLambdas]
       }
       for (let i = 0; i < mutationAndQueries.length; i++) {
         const key = mutationAndQueries[i];
@@ -572,9 +529,11 @@ export const lambdaHandlerForDynamodb = (
             [{ name: "TableName", value: "props!.tableName" }]
           );
           code.line();
-          code.line(
-            `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-          );
+          if(database == DATABASE.dynamoDB){
+            code.line( `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
+          }else{
+            code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);  
+          }
           code.line();
         }
         lambda.initializeLambda(apiName, key, undefined, undefined, [

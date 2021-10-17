@@ -53,7 +53,7 @@ export const generatePanacloudConfig = async (
   if(nestedResolver){
     nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
       const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `mock_lambda/${key}/index.ts`;
+      lambdas.asset_path = `mock_lambda/nestedResolvers/${key}/index.ts`;
     });
   }
 
@@ -67,7 +67,7 @@ model:ApiModel, spinner:any
 ) => {
 
   const {
-    api: { microServiceFields, architecture,mutationFields,generalFields },
+    api: { microServiceFields, architecture,mutationFields,generalFields, nestedResolver,nestedResolverFieldsAndLambdas },
   } = model;
 
 
@@ -210,6 +210,14 @@ model:ApiModel, spinner:any
       delete panacloudConfigNew.lambdas[diff];
     }
   }
+
+  if(nestedResolver){
+    nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
+      const lambdas = panacloudConfigNew.lambdas[key] = {} as PanacloudConfiglambdaParams
+      lambdas.asset_path = `mock_lambda/nestedResolvers/${key}/index.ts`;
+    });
+  }
+
 
   fse.removeSync('editable_src/panacloudconfig.json')
   fse.writeJson(`./editable_src/panacloudconfig.json`, panacloudConfigNew, (err: string) => {

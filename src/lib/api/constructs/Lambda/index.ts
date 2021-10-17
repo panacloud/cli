@@ -53,14 +53,13 @@ export class Lambda {
         splitPath.pop();
         handlerAsset = functionName? splitPath.join("/") : "lambda";
       }
-
       else{
-      const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
-      handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-      const splitPath = lambdas[functionName].asset_path.split("/");
-      splitPath.pop();
-      handlerAsset = functionName? splitPath.join("/") : "lambda";
-    }
+        const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+        const splitPath = lambdas[functionName].asset_path.split("/");
+        splitPath.pop();
+        handlerAsset = functionName? splitPath.join("/") : "lambda";
+      }
     }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
