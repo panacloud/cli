@@ -5,7 +5,11 @@ import { Lambda } from "../../../constructs/Lambda";
 
 export const lambdaProperiesHandlerForNestedResolver = (model: ApiModel) => {
   const {  api: { database, apiName, nestedResolverFieldsAndLambdas } } = model;
-  const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
+  let nestedResolverLambdas : string[] =[];
+
+  if (nestedResolverFieldsAndLambdas){
+ nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
+}
   let properties: Property[] = [];
   if (database === DATABASE.dynamoDB) {
     nestedResolverLambdas.forEach((key: string, index: number) => {
@@ -219,7 +223,11 @@ export const lambdaHandlerForNeptunedb = (
   panacloudConfig: PanacloudconfigFile,
   model: ApiModel
 ) => {
-  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,database,nestedResolver}} = model;
+  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
+  let nestedResolverLambdas:string[] =[]
+  if (nestedResolverFieldsAndLambdas){
+    nestedResolverLambdas= nestedResolverFieldsAndLambdas!.nestedResolverLambdas
+  }
 
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
@@ -251,6 +259,9 @@ export const lambdaHandlerForNeptunedb = (
           const key = microServiceFields[microServices[i]][j];
           const microService = microServices[i];
           const isMutation = mutationFields?.includes(key);
+
+          console.log('key',key)
+
           if (architecture === ARCHITECTURE.eventDriven && isMutation) {
             lambda.initializeLambda(
               apiName,
@@ -268,15 +279,9 @@ export const lambdaHandlerForNeptunedb = (
               microService
             );
             code.line();
-            if(database == DATABASE.dynamoDB){
-              code.line(
-                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
-              );
-            }else{
               code.line(
                 `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
               );  
-            }
             code.line();
           }
           lambda.initializeLambda(
@@ -328,15 +333,11 @@ export const lambdaHandlerForNeptunedb = (
             `ec2.SubnetType.PRIVATE_ISOLATED`
           );
           code.line();
-          if(database == DATABASE.dynamoDB){
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
-            );
-          }else{
+      
             code.line(
               `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
             );  
-          }
+          
           code.line();
         }
 
@@ -444,7 +445,11 @@ export const lambdaHandlerForDynamodb = (
   panacloudConfig: PanacloudconfigFile,
   model: ApiModel
 ) => {
-  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,database}} = model;
+  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
+ let nestedResolverLambdas:string[] = []
+  if (nestedResolverFieldsAndLambdas){
+  nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas
+}
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
@@ -471,11 +476,8 @@ export const lambdaHandlerForDynamodb = (
               microService
             );
             code.line();
-            if(database === DATABASE.dynamoDB){
               code.line(`this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);  
-            }else{
-              code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);  
-            }
+            
             code.line();
           }
 
@@ -514,11 +516,8 @@ export const lambdaHandlerForDynamodb = (
             [{ name: "TableName", value: "props!.tableName" }]
           );
           code.line();
-          if(database == DATABASE.dynamoDB){
             code.line( `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
-          }else{
-            code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);  
-          }
+          
           code.line();
         }
         lambda.initializeLambda(apiName, key, undefined, undefined, [

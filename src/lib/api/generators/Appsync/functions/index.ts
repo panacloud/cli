@@ -16,7 +16,8 @@ export const appsyncDatasourceHandler = (config: ApiModel, code: CodeMaker) => {
       code.line();
     });
 
-    if(nestedResolver){
+    if(nestedResolver && nestedResolverFieldsAndLambdas){
+
       const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!;
       nestedResolverLambdas.forEach((key: string) => {
         appsync.appsyncLambdaDataSource(apiName, apiName, key);
@@ -49,7 +50,7 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
     code.line();
   });
 
-  if(nestedResolver){
+  if(nestedResolver && nestedResolverFieldsAndLambdas){
     const {nestedResolverFields} = nestedResolverFieldsAndLambdas!   
     for( const key in nestedResolverFields){
       nestedResolverFields[key].forEach((resolver)=>{
