@@ -71,21 +71,27 @@ export const userInput = async () => {
       message: "Select API Type?",
       choices: [APITYPE.graphql, APITYPE.rest],
       default: APITYPE.graphql,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      when: (answers: any) =>
+        answers.template === TEMPLATE.defineApi &&
+        answers.architecture !== ARCHITECTURE.eventDriven,
       validate: Boolean,
     },
     {
       type: "string",
       name: "schema_path",
       message: "GraphQL Schema File Path",
-      when: (answers: any) => answers.api_type === APITYPE.graphql,
+      when: (answers: any) =>
+        answers.api_type === APITYPE.graphql ||
+        answers.architecture === ARCHITECTURE.eventDriven,
       validate: (val: string) => fileExistsAsync(val),
     },
     {
       type: "string",
       name: "schema_path",
       message: "REST OpenAPI Specifications File Path",
-      when: (answers: any) => answers.api_type === APITYPE.rest,
+      when: (answers: any) =>
+        answers.api_type === APITYPE.rest ||
+        answers.architecture !== ARCHITECTURE.eventDriven,
       validate: (val: string) => fileExistsAsync(val),
     },
     {

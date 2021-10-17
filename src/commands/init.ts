@@ -6,8 +6,14 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE, Config, DATABASE, LANGUAGE, CLOUDPROVIDER, APITYPE } from "../utils/constants";
-import { writeFileAsync } from "../lib/fs";
+import {
+  TEMPLATE,
+  SAASTYPE,
+  Config,
+  DATABASE,
+  ARCHITECTURE,
+  APITYPE,
+} from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
@@ -15,6 +21,7 @@ const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
 const camelCase = require("lodash/camelCase");
+const fse = require("fs-extra");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
@@ -38,13 +45,16 @@ export default class Create extends Command {
       saasType: usrInput.saas_type,
       api: {
         template: usrInput.template,
-        // nestedResolver: usrInput.nestedResolver,
         language: usrInput.language,
         cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
-        apiType: usrInput.api_type,
-        database: usrInput.database === DATABASE.none? undefined : usrInput.database,
+        apiType:
+          usrInput.architecture === ARCHITECTURE.eventDriven
+            ? APITYPE.graphql
+            : usrInput.api_type,
+        database:
+          usrInput.database === DATABASE.none ? undefined : usrInput.database,
         architecture: usrInput.architecture,
       },
     };
@@ -64,16 +74,12 @@ export default class Create extends Command {
       }
     }
 
-    writeFileAsync(
-      `./codegenconfig.json`,
-      JSON.stringify(config),
-      (err: string) => {
-        if (err) {
-          stopSpinner(validating, `Error: ${err}`, true);
-          process.exit(1);
-        }
+    fse.writeJson(`./codegenconfig.json`, config, (err: string) => {
+      if (err) {
+        stopSpinner(validating, `Error: ${err}`, true);
+        process.exit(1);
       }
-    );
+    });
 
     stopSpinner(validating, "Everything's fine", false);
 
@@ -88,14 +94,14 @@ export default class Create extends Command {
     }
 
     const generatingTypes = startSpinner("Generating Types");
-    
+
     try {
       await exec(`npx graphql-codegen`);
     } catch (error) {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
-    
+
     stopSpinner(generatingTypes, "Generating Types", false);
 
     const formatting = startSpinner("Formatting Code");
@@ -111,19 +117,19 @@ export default class Create extends Command {
         "!*.lock",
         "!*.yaml",
         "!*.yml",
-        "editable_src/panacloudconfig.json"
+        "editable_src/panacloudconfig.json",
       ],
       {
         gitignore: true,
       }
     );
-    
+
     files.forEach(async (file: any) => {
       const data = fs.readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
         parser: path.extname(file) === ".json" ? "json" : "typescript",
       });
-      await fs.writeFileSync(file, nextData, "utf8");
+      await fse.write(file, nextData, "utf8");
     });
 
     stopSpinner(formatting, "Formatting Done", false);
