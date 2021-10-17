@@ -142,8 +142,6 @@ model:ApiModel, spinner:any
 
     for (let diff of differenceMicroServicesLambdas) {
 
-      console.log("diff ", diff);
-
       if (newMicroServicesLambdas.includes(diff)) {
         panacloudConfigNew.lambdas[service][diff] = {} as PanacloudConfiglambdaParams
         panacloudConfigNew.lambdas[service][diff].asset_path = `mock_lambda/${service}/${diff}/index.ts`
