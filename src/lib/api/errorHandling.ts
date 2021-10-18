@@ -7,7 +7,6 @@ export const checkEmptyDirectoy = (spinner: any) => {
   const fileCount = fs.readdirSync(process.cwd()).length;
   if (fileCount >= 1) {
     fs.readdirSync(process.cwd()).forEach((file: string) => {
-      console.log("file ", file);
       if (
         path.extname(file) !== ".gql" &&
         path.extname(file) !== ".graphql" &&
