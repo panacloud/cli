@@ -218,8 +218,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
 
 
-  // console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields ====>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverFields)
-  // console.log("model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas ===>",model.api.nestedResolverFieldsAndLambdas?.nestedResolverLambdas)
   await CreateAspects({config:model});
 
   // Codegenerator Function

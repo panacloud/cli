@@ -95,6 +95,7 @@ export enum ARCHITECTURE {
 
 export type PanacloudconfigFile = {
   lambdas: any;
+  nestedLambdas?:any
 };
 
 export type PanacloudConfiglambdaParams = {

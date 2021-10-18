@@ -103,7 +103,7 @@ export const FieldsAndLambdaForNestedResolver = (
                 "UnionTypeDefinition" ||
                 "InputObjectTypeDefinition")
             ) {
-              if (FieldsAndLambdas.nestedResolverLambdas.indexOf(name) === -1) {
+              if (name && FieldsAndLambdas.nestedResolverLambdas.indexOf(name) === -1) {
                 FieldsAndLambdas.nestedResolverLambdas.push(name);
               }
               fieldsArray.push({

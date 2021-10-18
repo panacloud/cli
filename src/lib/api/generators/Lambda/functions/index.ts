@@ -260,8 +260,6 @@ export const lambdaHandlerForNeptunedb = (
           const microService = microServices[i];
           const isMutation = mutationFields?.includes(key);
 
-          console.log('key',key)
-
           if (architecture === ARCHITECTURE.eventDriven && isMutation) {
             lambda.initializeLambda(
               apiName,

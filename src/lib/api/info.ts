@@ -19,7 +19,7 @@ export const generatePanacloudConfig = async (
  model:ApiModel
 ) => {
   const {api: { microServiceFields, architecture,mutationFields,generalFields,nestedResolver,nestedResolverFieldsAndLambdas }} = model;
-  let configJson: PanacloudconfigFile = { lambdas: {} };
+  let configJson: PanacloudconfigFile = { lambdas: {}};
   const microServices = Object.keys(microServiceFields!);
 
   for (let i = 0; i < microServices.length; i++) {
@@ -49,12 +49,15 @@ export const generatePanacloudConfig = async (
       consumerLambdas.asset_path = `mock_lambda/${key}_consumer/index.ts`;
     }
   }
-  
+
   if(nestedResolver){
-    nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
-      const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `mock_lambda/nestedResolvers/${key}/index.ts`;
-    });
+    configJson.nestedLambdas = {}
+    const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+    for (let index = 0; index < nestedResolverLambdas.length; index++) {
+      const key = nestedResolverLambdas[index];
+      const nestedLambda = configJson.nestedLambdas[key] = {} as PanacloudConfiglambdaParams
+      nestedLambda['asset_path'] = `mock_lambda/nestedResolvers/${key}/index.ts`;      
+    }
   }
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
