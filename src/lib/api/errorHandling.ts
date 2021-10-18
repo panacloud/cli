@@ -7,12 +7,14 @@ export const checkEmptyDirectoy = (spinner: any) => {
   const fileCount = fs.readdirSync(process.cwd()).length;
   if (fileCount >= 1) {
     fs.readdirSync(process.cwd()).forEach((file: string) => {
+      console.log("file ", file);
       if (
         path.extname(file) !== ".gql" &&
         path.extname(file) !== ".graphql" &&
         path.extname(file) !== ".json" &&
         path.extname(file) !== ".yml" &&
-        path.extname(file) !== ".yaml"
+        path.extname(file) !== ".yaml" &&
+        file !== ".git"
       ) {
         stopSpinner(spinner, "Error: directory not empty", true);
         process.exit(1);
