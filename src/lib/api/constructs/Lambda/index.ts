@@ -42,20 +42,27 @@ export class Lambda {
     let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     if(functionName){      
-      const {lambdas} = this.panacloudConfig;
-      if (microServiceName){
-        const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
-        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-        const splitPath = lambdas[microServiceName][functionName].asset_path.split("/");
-        splitPath.pop();
-        handlerAsset = functionName? splitPath.join("/") : "lambda";
-      }
-      else{
-        const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
-        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-        const splitPath = lambdas[functionName].asset_path.split("/");
-        splitPath.pop();
-        handlerAsset = functionName? splitPath.join("/") : "lambda";
+      // const {lambdas} = this.panacloudConfig;
+      let k : keyof typeof this.panacloudConfig 
+      for (k in this.panacloudConfig) {
+        console.log("property ", this.panacloudConfig[k])
+        if (microServiceName){
+          const handlerfile = this.panacloudConfig[k][microServiceName][functionName].asset_path.split("/")[this.panacloudConfig[k][microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
+
+          // const handlerfile = this.panacloudConfig[property][microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = this.panacloudConfig[k][microServiceName][functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
+        else{
+          console.log("I am running")
+          const handlerfile = this.panacloudConfig[k][functionName].asset_path.split("/")[this.panacloudConfig[k][functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = this.panacloudConfig[k][functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
       }
     }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";

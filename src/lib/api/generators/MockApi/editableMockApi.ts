@@ -7,7 +7,7 @@ type StackBuilderProps = {
   config: ApiModel;
 };
 
-class MockApiTestCollectionsFile {
+class EditableMockApiTestCollectionsFile {
   outputFile: string = `testCollections.ts`;
   outputDir: string = `types`;
   config: ApiModel;
@@ -23,7 +23,7 @@ class MockApiTestCollectionsFile {
     code.openFile("testCollectionsTypes.ts");
 
     if (this.config.api.mockApiData?.imports) {
-      ts.writeImports("./types", [
+      ts.writeImports("../../../editable_src/graphql/types", [
         ...this.config.api.mockApiData?.imports,
       ]);
     }
@@ -37,7 +37,7 @@ class MockApiTestCollectionsFile {
 
     ts.writeImports("./testCollectionsTypes", ["TestCollection"]);
     if (this.config.api.mockApiData?.enumImports.length !== 0) {
-      ts.writeImports("./types", [
+      ts.writeImports("../../editable_src/graphql/types", [
         ...this.config.api.mockApiData?.enumImports!,
       ]);
     }
@@ -57,9 +57,9 @@ class MockApiTestCollectionsFile {
   }
 }
 
-export const mockApiTestCollections = async (
+export const EditableMockApiTestCollections = async (
   props: StackBuilderProps
 ): Promise<void> => {
-  const builder = new MockApiTestCollectionsFile(props);
+  const builder = new EditableMockApiTestCollectionsFile(props);
   await builder.mockApiTestCollectionsFile();
 };
