@@ -44,7 +44,6 @@ export class Lambda {
     if(functionName){      
       const {lambdas} = this.panacloudConfig;
       if (microServiceName){
-
         const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
         handlerName = functionName? `${handlerfile}.handler` : "main.handler";
         const splitPath = lambdas[microServiceName][functionName].asset_path.split("/");
