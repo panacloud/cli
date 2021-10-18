@@ -12,7 +12,8 @@ export const checkEmptyDirectoy = (spinner: any) => {
         path.extname(file) !== ".graphql" &&
         path.extname(file) !== ".json" &&
         path.extname(file) !== ".yml" &&
-        path.extname(file) !== ".yaml"
+        path.extname(file) !== ".yaml" &&
+        file !== ".git"
       ) {
         stopSpinner(spinner, "Error: directory not empty", true);
         process.exit(1);

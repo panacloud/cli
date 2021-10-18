@@ -45,6 +45,7 @@ export default class Create extends Command {
       saasType: usrInput.saas_type,
       api: {
         template: usrInput.template,
+        nestedResolver: usrInput.nestedResolver,
         language: usrInput.language,
         cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
@@ -74,10 +75,15 @@ export default class Create extends Command {
       }
     }
 
-    fse.writeJson(`./codegenconfig.json`, config, (err: string) => {
-      if (err) {
-        stopSpinner(validating, `Error: ${err}`, true);
-        process.exit(1);
+
+    writeFileAsync(
+      `./codegenconfig.json`,
+      JSON.stringify({...config, api: {...config.api, schemaPath: "./editable_src/graphql/schema/schema.graphql"}}),
+      (err: string) => {
+        if (err) {
+          stopSpinner(validating, `Error: ${err}`, true);
+          process.exit(1);
+        }
       }
     });
 

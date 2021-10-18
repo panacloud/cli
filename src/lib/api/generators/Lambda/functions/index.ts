@@ -1,10 +1,37 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, DATABASE, PanacloudconfigFile } from "../../../../../utils/constants";
-import {
-  Property,
-  TypeScriptWriter,
-} from "../../../../../utils/typescriptWriter";
+import {ApiModel,APITYPE,ARCHITECTURE,DATABASE,PanacloudconfigFile} from "../../../../../utils/constants";
+import {Property,TypeScriptWriter} from "../../../../../utils/typescriptWriter";
 import { Lambda } from "../../../constructs/Lambda";
+
+export const lambdaProperiesHandlerForNestedResolver = (model: ApiModel) => {
+  const {  api: { database, apiName, nestedResolverFieldsAndLambdas } } = model;
+  let nestedResolverLambdas : string[] =[];
+
+  if (nestedResolverFieldsAndLambdas){
+ nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
+}
+  let properties: Property[] = [];
+  if (database === DATABASE.dynamoDB) {
+    nestedResolverLambdas.forEach((key: string, index: number) => {
+      properties.push({
+        name: `${apiName}_lambdaFn_${key}`,
+        typeName: "lambda.Function",
+        accessModifier: "public",
+        isReadonly: false,
+      });
+    });
+  } else {
+    nestedResolverLambdas.forEach((key: string) => {
+      properties.push({
+        name: `${apiName}_lambdaFn_${key}Arn`,
+        typeName: "string",
+        accessModifier: "public",
+        isReadonly: true,
+      });
+    });
+  }
+  return properties;
+};
 
 export const lambdaPropsHandlerForNeptunedb = () => {
   let props: { name: string; type: string }[];
@@ -45,12 +72,9 @@ export const lambdaPropsHandlerForAuroradb = () => {
 export const lambdaHandlerForAuroradb = (
   code: CodeMaker,
   panacloudConfig: PanacloudconfigFile,
-  apiType: string,
-  apiName: string,
-  mutationsAndQueries: any,
-  nestedResolver:boolean,
-  schemaTypes:string[]
+  model: ApiModel
 ) => {
+  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,database}} = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
@@ -71,42 +95,140 @@ export const lambdaHandlerForAuroradb = (
     code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
     code.line();
   } else {
-    if(nestedResolver){
-      mutationsAndQueries = [...mutationsAndQueries,...schemaTypes!]
+    if (microServiceFields) {
+      const microServices = Object.keys(microServiceFields);
+      for (let i = 0; i < microServices.length; i++) {
+        for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+          const key = microServiceFields[microServices[i]][j];
+          const microService = microServices[i];
+
+          const isMutation = mutationFields?.includes(key);
+
+          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+            lambda.initializeLambda(
+              apiName,
+              `${key}_consumer`,
+              `props!.vpcRef`,
+              undefined,
+              [
+                {
+                  name: "INSTANCE_CREDENTIALS",
+                  value: `props!.secretRef`,
+                },
+              ],
+              undefined,
+              `props!.serviceRole`,
+              microService
+            );
+            code.line();
+            if(database === DATABASE.dynamoDB){
+              code.line(
+                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+              );  
+            }else{
+              code.line(
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );
+            }
+            code.line();
+          }
+
+          lambda.initializeLambda(
+            apiName,
+            key,
+            `props!.vpcRef`,
+            undefined,
+            [
+              {
+                name: "INSTANCE_CREDENTIALS",
+                value: `props!.secretRef`,
+              },
+            ],
+            undefined,
+            `props!.serviceRole`,
+            microService
+          );
+          code.line();
+          code.line(
+            `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+          );
+          code.line();
+        }
+      }
     }
-    mutationsAndQueries.forEach((key: string) => {
-      lambda.initializeLambda(
-        apiName,
-        key,
-        `props!.vpcRef`,
-        undefined,
-        [
-          {
-            name: "INSTANCE_CREDENTIALS",
-            value: `props!.secretRef`,
-          },
-        ],
-        undefined,
-        `props!.serviceRole`
-      );
-      code.line();
-      code.line(
-        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-      );
-      code.line();
-    });
+
+    if (generalFields) {
+      let mutationAndQueries = generalFields
+      if(nestedResolver){
+        const {api:{nestedResolverFieldsAndLambdas}} = model
+        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+        mutationAndQueries = [...generalFields,...nestedResolverLambdas]
+      }
+      for (let i = 0; i < mutationAndQueries.length; i++) {
+        const key = mutationAndQueries[i];
+        const isMutation = mutationFields?.includes(key);
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            `props!.vpcRef`,
+            undefined,
+            [
+              {
+                name: "INSTANCE_CREDENTIALS",
+                value: `props!.secretRef`,
+              },
+            ],
+            undefined,
+            `props!.serviceRole`
+          );
+          code.line();
+          if(database == DATABASE.dynamoDB){
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+            );
+          }else{
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+            );  
+          }
+          code.line();
+        }
+        lambda.initializeLambda(
+          apiName,
+          key,
+          `props!.vpcRef`,
+          undefined,
+          [
+            {
+              name: "INSTANCE_CREDENTIALS",
+              value: `props!.secretRef`,
+            },
+          ],
+          undefined,
+          `props!.serviceRole`
+        );
+        code.line();
+        code.line(
+          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        );
+        code.line();
+      }
+    }
   }
 };
 
 export const lambdaHandlerForNeptunedb = (
   code: CodeMaker,
   panacloudConfig: PanacloudconfigFile,
-  apiType: string,
-  apiName: string,
-  mutationsAndQueries: any,
-  nestedResolver: boolean,
-  schemaTypes:string[]
+  model: ApiModel
 ) => {
+  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
+  let nestedResolverLambdas:string[] =[]
+  if (nestedResolverFieldsAndLambdas){
+    nestedResolverLambdas= nestedResolverFieldsAndLambdas!.nestedResolverLambdas
+  }
+
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
   lambda.lambdaLayer(apiName);
@@ -130,67 +252,130 @@ export const lambdaHandlerForNeptunedb = (
       code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
     code.line();
   } else {
-    if(nestedResolver){
-      mutationsAndQueries = [...mutationsAndQueries,...schemaTypes!]
+    if (microServiceFields) {
+      const microServices = Object.keys(microServiceFields);
+      for (let i = 0; i < microServices.length; i++) {
+        for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+          const key = microServiceFields[microServices[i]][j];
+          const microService = microServices[i];
+          const isMutation = mutationFields?.includes(key);
+
+          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+            lambda.initializeLambda(
+              apiName,
+              `${key}_consumer`,
+              `props!.VPCRef`,
+              `props!.SGRef`,
+              [
+                {
+                  name: "NEPTUNE_ENDPOINT",
+                  value: `props!.neptuneReaderEndpoint`,
+                },
+              ],
+              `ec2.SubnetType.PRIVATE_ISOLATED`,
+              undefined,
+              microService
+            );
+            code.line();
+              code.line(
+                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+              );  
+            code.line();
+          }
+          lambda.initializeLambda(
+            apiName,
+            key,
+            `props!.VPCRef`,
+            `props!.SGRef`,
+            [
+              {
+                name: "NEPTUNE_ENDPOINT",
+                value: `props!.neptuneReaderEndpoint`,
+              },
+            ],
+            `ec2.SubnetType.PRIVATE_ISOLATED`,
+            undefined,
+            microService
+          );
+          code.line();
+          code.line(
+            `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+          );
+          code.line();
+        }
+      }
     }
-    mutationsAndQueries.forEach((key: string) => {
-      lambda.initializeLambda(
-        apiName,
-        key,
-        `props!.VPCRef`,
-        `props!.SGRef`,
-        [
-          {
-            name: "NEPTUNE_ENDPOINT",
-            value: `props!.neptuneReaderEndpoint`,
-          },
-        ],
-        `ec2.SubnetType.PRIVATE_ISOLATED`
-      );
-      code.line();
-      code.line(
-        `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-      );
-      code.line();
-    });
+
+    if (generalFields) {
+      let mutationAndQueries = generalFields
+      if(nestedResolver){
+        const {api:{nestedResolverFieldsAndLambdas}} = model
+        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+        mutationAndQueries = [...generalFields,...nestedResolverLambdas]
+      }
+      for (let i = 0; i < mutationAndQueries.length; i++) {
+        const key = mutationAndQueries[i];
+        const isMutation = mutationFields?.includes(key);
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            `props!.VPCRef`,
+            `props!.SGRef`,
+            [
+              {
+                name: "NEPTUNE_ENDPOINT",
+                value: `props!.neptuneReaderEndpoint`,
+              },
+            ],
+            `ec2.SubnetType.PRIVATE_ISOLATED`
+          );
+          code.line();
+      
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+            );  
+          
+          code.line();
+        }
+
+        lambda.initializeLambda(
+          apiName,
+          key,
+          `props!.VPCRef`,
+          `props!.SGRef`,
+          [
+            {
+              name: "NEPTUNE_ENDPOINT",
+              value: `props!.neptuneReaderEndpoint`,
+            },
+          ],
+          `ec2.SubnetType.PRIVATE_ISOLATED`
+        );
+        code.line();
+        code.line(
+          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        );
+        code.line();
+      }
+    }
   }
 };
 
 export const lambdaProperiesHandlerForAuroraDb = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries: any,
+  mutationsAndQueries?: any
 ) => {
   let properties: Property[] = [];
-  // if (
-  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-  //     apiType === APITYPE.rest) &&
-  //   database === DATABASE.auroraDB
-  // ) {
-  //   properties = [
-  //     {
-  //       name: `${apiName}_lambdaFnArn`,
-  //       typeName: "string",
-  //       accessModifier: "public",
-  //       isReadonly: true,
-  //     },
-  //     {
-  //       name: `${apiName}_lambdaFn`,
-  //       typeName: "lambda.Function",
-  //       accessModifier: "public",
-  //       isReadonly: false,
-  //     },
-  //   ];
-  //   return properties;
-  // }
   if (apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
-      properties.push({
+      properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
         typeName: "string",
         accessModifier: "public",
         isReadonly: true,
-      })
+      };
     });
   }
   return properties;
@@ -199,30 +384,9 @@ export const lambdaProperiesHandlerForAuroraDb = (
 export const lambdaProperiesHandlerForNeptuneDb = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries: any,
+  mutationsAndQueries: any
 ) => {
   let properties: Property[] = [];
-  // if (
-  //   ((lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-  //     apiType === APITYPE.rest) &&
-  //   database === DATABASE.neptuneDB
-  // ) {
-  //   properties = [
-  //     {
-  //       name: `${apiName}_lambdaFnArn`,
-  //       typeName: "string",
-  //       accessModifier: "public",
-  //       isReadonly: true,
-  //     },
-  //     {
-  //       name: `${apiName}_lambdaFn`,
-  //       typeName: "lambda.Function",
-  //       accessModifier: "public",
-  //       isReadonly: false,
-  //     },
-  //   ];
-  //   return properties;
-  // }
   if (apiType === APITYPE.graphql) {
     mutationsAndQueries.forEach((key: string, index: number) => {
       properties[index] = {
@@ -239,182 +403,128 @@ export const lambdaProperiesHandlerForNeptuneDb = (
 export const lambdaProperiesHandlerForMockApi = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries: any,
-  nestedResolver:boolean,
-  schemaTypes:string[]
-) : Property[] => {
+  mutationsAndQueries: any
+) => {
   let properties: Property[] = [];
-  // if (
-  //   (lambdaStyle === LAMBDASTYLE.single && apiType === APITYPE.graphql) ||
-  //   apiType === APITYPE.rest
-  // ) {
-  //   return properties;
-  // }
-
   if (apiType === APITYPE.graphql) {
-    if(nestedResolver){
-      mutationsAndQueries = [...schemaTypes]
-    }
-    mutationsAndQueries.forEach((key: string) => {
-      properties.push({
+    mutationsAndQueries.forEach((key: string, index: number) => {
+      properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
         typeName: "string",
         accessModifier: "public",
         isReadonly: true,
-      })
+      };
     });
   }
   return properties;
-
-  // if (
-  //   lambdaStyle === LAMBDASTYLE.multi &&
-  //   apiType === APITYPE.graphql
-  // ) {
-  //   mutationsAndQueries.forEach((key: string, index: number) => {
-  //     properties[index] = {
-  //       name: `${apiName}_lambdaFn_${key}Arn`,
-  //       typeName: "string",
-  //       accessModifier: "public",
-  //       isReadonly: true,
-  //     };
-  //   });
-  //   return properties;
-  // }
 };
 
 export const lambdaProperiesHandlerForDynoDb = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries: any,
-) : Property[] => {
-  let properties: Property[] = [];
-  // if (
-  //   (apiType === APITYPE.graphql && lambdaStyle === LAMBDASTYLE.single) ||
-  //   apiType === APITYPE.rest
-  // ) {
-  //   properties = [
-  //     {
-  //       name: `${apiName}_lambdaFn`,
-  //       typeName: "lambda.Function",
-  //       accessModifier: "public",
-  //       isReadonly: false,
-  //     },
-  //   ];
-  //   return properties;
-  // }
-  if (apiType === APITYPE.graphql) {
-    mutationsAndQueries.forEach((key: string) => {
-      properties.push({
-        name: `${apiName}_lambdaFn_${key}`,
-        typeName: "lambda.Function",
-        accessModifier: "public",
-        isReadonly: false,
-      });
-    });
-};
-return properties;
-}
-
-export const lambdaProperiesHandlerForNestedResolver = (
-  apiName: string,
-  apiType: string,
-  schemaTypes: string[],
-  database: string
+  mutationsAndQueries: any
 ) => {
   let properties: Property[] = [];
-  if(database === DATABASE.dynamoDB){
-    schemaTypes.forEach((key: string, index: number) => {
-      properties.push({
+  if (apiType === APITYPE.graphql) {
+    mutationsAndQueries.forEach((key: string, index: number) => {
+      properties[index] = {
         name: `${apiName}_lambdaFn_${key}`,
         typeName: "lambda.Function",
         accessModifier: "public",
         isReadonly: false,
-      });
-    });
-  }
-  else {
-    schemaTypes.forEach((key: string) => {
-      properties.push({
-        name: `${apiName}_lambdaFn_${key}Arn`,
-        typeName: "string",
-        accessModifier: "public",
-        isReadonly: true,
-      });
+      };
     });
   }
   return properties;
 };
 
-
 export const lambdaHandlerForDynamodb = (
   code: CodeMaker,
   panacloudConfig: PanacloudconfigFile,
-  apiName: string,
-  apiType: string,
-  mutationsAndQueries: any,
-  nestedResolver:boolean,
-  schemaTypes:string[]
+  model: ApiModel
 ) => {
+  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
+ let nestedResolverLambdas:string[] = []
+  if (nestedResolverFieldsAndLambdas){
+  nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas
+}
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
-    lambda.initializeLambda(apiName, undefined, undefined, undefined, [
-      { name: "TableName", value: "props!.tableName" },
-    ]);
+    lambda.initializeLambda(apiName, undefined, undefined, undefined, [{ name: "TableName", value: "props!.tableName" }]);
     code.line();
     code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
   } else {
-    if(nestedResolver){
-      mutationsAndQueries = [...mutationsAndQueries,...schemaTypes!]
+    if (microServiceFields) {
+      const microServices = Object.keys(microServiceFields);
+      for (let i = 0; i < microServices.length; i++) {
+        for (let j = 0; j < microServiceFields[microServices[i]].length; j++) {
+          const key = microServiceFields[microServices[i]][j];
+          const microService = microServices[i];
+          const isMutation = mutationFields?.includes(key);
+          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+            lambda.initializeLambda(
+              apiName,
+              `${key}_consumer`,
+              undefined,
+              undefined,
+              [{ name: "TableName", value: "props!.tableName" }],
+              undefined,
+              undefined,
+              microService
+            );
+            code.line();
+              code.line(`this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);  
+            
+            code.line();
+          }
+
+          lambda.initializeLambda(
+            apiName,
+            key,
+            undefined,
+            undefined,
+            [{ name: "TableName", value: "props!.tableName" }],
+            undefined,
+            undefined,
+            microService
+          );
+          code.line();
+          code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+          code.line();
+        }
+      }
     }
-    mutationsAndQueries.forEach((key: string) => {
-      lambda.initializeLambda(apiName, key, undefined, undefined, [
-        { name: "TableName", value: "props!.tableName" },
-      ]);
-      code.line();
-      code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-      code.line();
-    });
+
+    if (generalFields) {
+      let mutationAndQueries = generalFields
+      if(nestedResolver){
+        const { api : {nestedResolverFieldsAndLambdas}} = model
+        mutationAndQueries = [...generalFields, ...nestedResolverFieldsAndLambdas!.nestedResolverLambdas]
+      }
+      for (let i = 0; i < mutationAndQueries.length; i++) {
+        const key = mutationAndQueries[i];
+        const isMutation = mutationFields?.includes(key);
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            undefined,
+            undefined,
+            [{ name: "TableName", value: "props!.tableName" }]
+          );
+          code.line();
+            code.line( `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
+          
+          code.line();
+        }
+        lambda.initializeLambda(apiName, key, undefined, undefined, [
+          { name: "TableName", value: "props!.tableName" },
+        ]);
+        code.line();
+        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+        code.line();
+      }
+    }
   }
 };
-
-// export const lambdaHandlerForNestedResolver = (
-//   code: CodeMaker,
-//   apiName: string,
-//   database: string,
-//   schemaTypes?: string[]
-// ) => {
-//   const lambda = new Lambda(code);
-//       lambda.lambdaLayer(apiName);
-//       if(database === DATABASE.dynamoDB){
-//         schemaTypes!.forEach((key: string) => {
-//           lambda.initializeLambda(apiName, key, undefined, undefined, [
-//             { name: "TableName", value: "props!.tableName" },
-//           ]);
-//           code.line();
-//           code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-//           code.line();
-//         });
-//       }else if(database === DATABASE.neptuneDB){
-//         schemaTypes!.forEach((key: string) => {
-//           lambda.initializeLambda(
-//             apiName,
-//             key,
-//             `props!.VPCRef`,
-//             `props!.SGRef`,
-//             [
-//               {
-//                 name: "NEPTUNE_ENDPOINT",
-//                 value: `props!.neptuneReaderEndpoint`,
-//               },
-//             ],
-//             `ec2.SubnetType.PRIVATE_ISOLATED`
-//           );
-//           code.line();
-//           code.line(
-//             `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-//           );
-//           code.line();
-//         });
-//       }
-// };

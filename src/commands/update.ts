@@ -82,35 +82,35 @@ export default class Create extends Command {
     }
     stopSpinner(generatingTypes, "Types generated", false);
 
-    // const formatting = startSpinner("Formatting Code");
-    // // // Formatting files.
-    // const files = await globby(
-    //   [
-    //     "*",
-    //     "**/*.ts",
-    //     "!*.gql",
-    //     "!*.graphql",
-    //     "!?.",
-    //     "!*.md",
-    //     "!*.lock",
-    //     "!*.yaml",
-    //     "!*.yml",
-    //   ],
-    //   {
-    //     gitignore: true,
-    //   }
-    // );
+    const formatting = startSpinner("Formatting Code");
+    // // Formatting files.
+    const files = await globby(
+      [
+        "*",
+        "**/*.ts",
+        "!*.gql",
+        "!*.graphql",
+        "!?.",
+        "!*.md",
+        "!*.lock",
+        "!*.yaml",
+        "!*.yml",
+        "editable_src/panacloudconfig.json"
+      ],
+      {
+        gitignore: true,
+      }
+    );
 
-    // console.log("files ", files);
-    // files.forEach(async (file: any) => {
-    //   const data = fs.readFileSync(file, "utf8");
-    //   const nextData = prettier.format(data, {
-    //     parser: path.extname(file) === ".json" ? "json" : "typescript",
-    //   });
-    //   await fs.writeFileSync(file, nextData, "utf8");
-    // });
+    files.forEach(async (file: any) => {
+      const data = fs.readFileSync(file, "utf8");
+      const nextData = prettier.format(data, {
+        parser: path.extname(file) === ".json" ? "json" : "typescript",
+      });
+      await fs.writeFileSync(file, nextData, "utf8");
+    });
 
-    // stopSpinner(formatting, "Formatting Done", false);
+    stopSpinner(formatting, "Formatting Done", false);
 
   }
 }

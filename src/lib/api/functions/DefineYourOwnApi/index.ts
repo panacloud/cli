@@ -18,8 +18,9 @@ import {
   GraphQLObjectType,
 } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
-import { EliminateScalarTypes, ScalarAndEnumKindFinder } from "../../helpers";
+import { EliminateScalarTypes, FieldsAndLambdaForNestedResolver, ScalarAndEnumKindFinder } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
+import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -110,7 +111,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     await mkdirRecursiveAsync(`editable_src`);
     await mkdirRecursiveAsync(`editable_src/graphql`);
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
-    //    await mkdirRecursiveAsync(`editable_src/aspects`);
+    await mkdirRecursiveAsync(`editable_src/aspects`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -121,7 +122,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   });
-  let updatedPanacloudConfig: any;
+  let PanacloudConfig: any;
 
   if (apiType === APITYPE.graphql) {
     let directivesPath = path.resolve(
@@ -160,60 +161,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     );
 
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-    const schemaJson = introspectionFromSchema(gqlSchema);
-    let nestedResolverTypes: { [key: string]: string[] } = {};
-    let schemaTypes: string[] = [];
-
-    if (nestedResolver) {
-      schemaJson.__schema.types.map((allTypes) => {
-        if (EliminateScalarTypes(allTypes)) {
-          if (ScalarAndEnumKindFinder(allTypes)) {
-            const typeName = gqlSchema.getType(
-              allTypes.name
-            ) as GraphQLObjectType;
-            const fieldsInType = typeName.getFields();
-            let fieldsArray: string[] = [];
-            for (const type in fieldsInType) {
-              if (
-                EliminateScalarTypes(
-                  gqlSchema.getType(
-                    fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
-                  )
-                )
-              ) {
-                const node = gqlSchema.getType(
-                  fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
-                )?.astNode;
-                if (
-                  node?.kind !==
-                  ("EnumTypeDefinition" ||
-                    "UnionTypeDefinition" ||
-                    "InputObjectTypeDefinition")
-                ) {
-                  if (schemaTypes.indexOf(type) === -1) {
-                    schemaTypes.push(type);
-                  }
-                  fieldsArray.push(type);
-                  nestedResolverTypes[allTypes.name] = [...fieldsArray];
-                }
-              }
-            }
-          }
-        }
-      });
-      if (Object.keys(nestedResolverTypes).length <= 0) {
-        stopSpinner(
-          generatingCode,
-          "nested resolvers are not possible with this schema normal resolvers are created",
-          false
-        );
-        model.api.nestedResolver = false;
-      } else {
-        model.api.nestedResolverTypes = nestedResolverTypes;
-        model.api.schemaTypes = schemaTypes;
-      }
-    }
-
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
@@ -221,14 +168,33 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
-    if (apiType === APITYPE.graphql) {
-      updatedPanacloudConfig = await generatePanacloudConfig(model);
+  
+    const fieldSplitterOutput = microServicesDirectiveFieldSplitter(queriesFields,mutationsFields);
+    
+    model.api.generalFields = fieldSplitterOutput.generalFields;
+    model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
+    if (apiType === APITYPE.graphql) {
       const mockApiCollection = buildSchemaToTypescript(
         gqlSchema,
         introspection
       );
       model.api.mockApiData = mockApiCollection;
+      // if user selects nested resolver
+      if (nestedResolver) {
+        const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model,gqlSchema)
+        if (Object.keys(fieldsAndLambdas.nestedResolverFields).length <= 0) {
+          stopSpinner(
+            generatingCode,
+            "nested resolvers are not possible with this schema normal resolvers are created",
+            false
+          );
+          model.api.nestedResolver = false;
+        } else {
+            model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas
+        }
+      }
+      PanacloudConfig = await generatePanacloudConfig(model);
     }
   } else {
     copyFileAsync(
@@ -250,10 +216,12 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
-  await CreateAspects({ config: model });
+
+
+  await CreateAspects({config:model});
 
   // Codegenerator Function
-  await generator(model, updatedPanacloudConfig);
+  await generator(model, PanacloudConfig);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

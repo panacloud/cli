@@ -1,5 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { APITYPE, ARCHITECTURE } from "../../../../utils/constants";
+import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class LambdaFunction {
   code: CodeMaker;
@@ -15,15 +16,16 @@ export class LambdaFunction {
     nestedResolver?: boolean
   ) {
     if (apiType === APITYPE.graphql) {
-      this.code.line(`var AWS = require('aws-sdk');`);
+      const ts = new TypeScriptWriter(this.code);
+      ts.writeAllImports("aws-sdk", "* as AWS")
+      ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
+      // this.code.line(`var AWS = require('aws-sdk');`);
       if (architecture === ARCHITECTURE.eventDriven) {
-        this.code.line(
-          `const eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`
-        );
+        this.code.line(`var eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
       }
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
-      this.code.line(`exports.handler = async (event: any) => {`);
+      this.code.line(`exports.handler = async (event: AppSyncResolverEvent<any>) => {`);
       if (nestedResolver) {
         this.code.line(`console.log(event)`);
       } else {
@@ -72,9 +74,9 @@ export class LambdaFunction {
     } else {
       /* rest api */
       this.code.line(`exports.handler = async (event: any) => {`);
-      this.code.line(
-        `const data = await axios.post('http://sandbox:8080', event)`
-      );
+      // this.code.line(
+      //   `const data = await axios.post('http://sandbox:8080', event)`
+      // );
       this.code.line(`try {`);
       this.code.line();
       this.code.line("const method = event.httpMethod;");
@@ -93,10 +95,11 @@ export class LambdaFunction {
   }
 
   public helloWorldFunction(name: string) {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeAllImports("aws-sdk", "* as AWS")
+    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
     this.code.line(`
-    const AWS = require('aws-sdk');
-    
-    export const ${name} = async(events:any) => {
+    export const ${name} = async(events:AppSyncResolverEvent<any>) => {
       // write your code here
       console.log(JSON.stringify(events, null, 2));
     }
@@ -104,13 +107,17 @@ export class LambdaFunction {
   }
 
   public emptyLambdaFunction() {
-    this.code.line(`var AWS = require('aws-sdk');`);
-    this.code.line();
-    this.code.line(`exports.handler = async (event: any) => {`);
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeAllImports("aws-sdk", "* as AWS")
+    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
 
-    this.code.line(
-      `const data = await axios.post('http://sandbox:8080', event)`
-    );
+    // this.code.line(`var AWS = require('aws-sdk');`);
+    this.code.line();
+    this.code.line(`exports.handler = async (event: AppSyncResolverEvent<any>) => {`);
+
+    // this.code.line(
+    //   `const data = await axios.post('http://sandbox:8080', event)`
+    // );
     this.code.line();
     this.code.line(`}`);
   }

@@ -79,16 +79,32 @@ export class Appsync {
   }
 
   public appsyncDatabasePropsHandler(config: API, code: CodeMaker) {
-    const { apiName, queiresFields, mutationFields, database,nestedResolver,schemaTypes} = config;
+    const { apiName, queiresFields, mutationFields, database,nestedResolver,nestedResolverFieldsAndLambdas} = config;
+    
+    let nestedResolverFields:{
+      [key: string]: {
+          fieldName: string;
+          lambda: string;
+      }[];
+  };
+    let nestedResolverLambdas: string[] = [];
+
+    if (nestedResolverFieldsAndLambdas){
+    nestedResolverFields = nestedResolverFieldsAndLambdas.nestedResolverFields
+    nestedResolverLambdas = nestedResolverFieldsAndLambdas?.nestedResolverLambdas
+  }
+    
     const mutationsAndQueries: string[] = [
       ...queiresFields!,
       ...mutationFields!,
     ];
+
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
     
     if(nestedResolver){
-      schemaTypes?.forEach((key)=>{
+      const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+      nestedResolverLambdas?.forEach((key)=>{
         lambdafunc = `${apiName}_lambdaFn_${key}Arn`;
         if(database === DATABASE.dynamoDB){
           lambdafunc = `${apiName}_lambdaFn_${key}`;
