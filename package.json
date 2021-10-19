@@ -40,6 +40,7 @@
     "path": "^0.12.7",
     "prettier": "^2.3.2",
     "semver": "^7.3.5",
+    "supertest": "^6.1.6",
     "tslib": "^1",
     "typescript": "^3.9.10",
     "yamljs": "^0.3.0"
@@ -47,11 +48,11 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1",
     "@oclif/test": "^1",
-    "@types/chai": "^4",
+    "@types/chai": "^4.2.22",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^5",
     "@types/node": "^10",
-    "chai": "^4",
+    "chai": "^4.3.4",
     "eslint": "^5.13",
     "eslint-config-oclif": "^3.1",
     "eslint-config-oclif-typescript": "^0.1",
@@ -60,7 +61,7 @@
     "nyc": "^14",
     "rimraf": "^3.0.2",
     "ts-node": "^8",
-    "typescript": "^3.3"
+    "typescript": "^3.9.10"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -108,7 +109,6 @@
   },
   "scripts": {
     "postpack": "rimraf oclif.manifest.json",
-    "posttest": "eslint . --ext .ts --config .eslintrc",
     "copy-files": "copyfiles -a -u 1 \"./src/lib/api/template/**/*\" \"./src/utils/*.graphql\" lib",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && yarn copy-files",
     "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
