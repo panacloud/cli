@@ -3,3 +3,6 @@ generates:
   ./editable_src/graphql/types.ts:
     plugins:
       - typescript
+  ./lambdaLayer/mockApi/types.ts:
+    plugins:
+      - typescript

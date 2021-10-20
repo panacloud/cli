@@ -19,7 +19,7 @@ export const generatePanacloudConfig = async (
  model:ApiModel
 ) => {
   const {api: { microServiceFields, architecture,mutationFields,generalFields,nestedResolver,nestedResolverFieldsAndLambdas }} = model;
-  let configJson: PanacloudconfigFile = { lambdas: {} };
+  let configJson: PanacloudconfigFile = { lambdas: {}};
   const microServices = Object.keys(microServiceFields!);
 
   for (let i = 0; i < microServices.length; i++) {
@@ -49,12 +49,15 @@ export const generatePanacloudConfig = async (
       consumerLambdas.asset_path = `mock_lambda/${key}_consumer/index.ts`;
     }
   }
-  
+
   if(nestedResolver){
-    nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
-      const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `mock_lambda/nestedResolvers/${key}/index.ts`;
-    });
+    configJson.nestedLambdas = {}
+    const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+    for (let index = 0; index < nestedResolverLambdas.length; index++) {
+      const key = nestedResolverLambdas[index];
+      const nestedLambda = configJson.nestedLambdas[key] = {} as PanacloudConfiglambdaParams
+      nestedLambda['asset_path'] = `mock_lambda/nestedResolvers/${key}/index.ts`;      
+    }
   }
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
@@ -69,7 +72,6 @@ model:ApiModel, spinner:any
   const {
     api: { microServiceFields, architecture,mutationFields,generalFields, nestedResolver,nestedResolverFieldsAndLambdas },
   } = model;
-
 
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   let panacloudConfigNew = configPanacloud;
@@ -87,7 +89,6 @@ model:ApiModel, spinner:any
   let differenceMicroServices = newMicroServices
     .filter(val => !prevMicroServices.includes(val))
     .concat(prevMicroServices.filter(val => !newMicroServices.includes(val)));
-
   
   for (let diff of differenceMicroServices) {
 
@@ -113,6 +114,12 @@ model:ApiModel, spinner:any
 
  
 
+    // for (let serv of newMicroServicesLambdas) {
+    //   const isMutation = mutationFields?.includes(serv);
+    //   if (isMutation && architecture === ARCHITECTURE.eventDriven) {
+    //     newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
+    //   }
+    // }
     if (architecture === ARCHITECTURE.eventDriven){
     // for (let serv of newMicroServicesLambdas) {
     //   const isMutation = mutationFields?.includes(serv);
@@ -131,37 +138,22 @@ model:ApiModel, spinner:any
 
 
 
-
-
     let differenceMicroServicesLambdas = newMicroServicesLambdas
       .filter(val => !prevMicroServicesMutLambdas.includes(val))
       .concat(prevMicroServicesMutLambdas.filter(val => !newMicroServicesLambdas.includes(val)));
 
 
-
-
     for (let diff of differenceMicroServicesLambdas) {
 
-
-      if (microServiceFields![service].includes(diff)) {
+      if (newMicroServicesLambdas.includes(diff)) {
         panacloudConfigNew.lambdas[service][diff] = {} as PanacloudConfiglambdaParams
         panacloudConfigNew.lambdas[service][diff].asset_path = `mock_lambda/${service}/${diff}/index.ts`
-
-        const isMutation = mutationFields?.includes(diff);
-
-        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-
-          panacloudConfigNew.lambdas[service][`${diff}_consumer`] = {} as PanacloudConfiglambdaParams
-          panacloudConfigNew.lambdas[service][`${diff}_consumer`].asset_path = `mock_lambda/${service}/${diff}_consumer/index.ts`
-        }
       }
       else {
         delete panacloudConfigNew.lambdas[service][diff];
         delete panacloudConfigNew.lambdas[service][`${diff}_consumer`];
 
       }
-
-
 
     }
 
@@ -203,8 +195,6 @@ model:ApiModel, spinner:any
   let difference = generalFields!
     .filter(val => !prevGeneralMutLambdas.includes(val))
     .concat(prevGeneralMutLambdas.filter(val => !generalFields?.includes(val)));
-
-    console.log('diff',prevGeneralMutLambdas)
 
   for (let diff of difference) {
 

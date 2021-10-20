@@ -95,6 +95,7 @@ export default class Create extends Command {
         "!*.lock",
         "!*.yaml",
         "!*.yml",
+        "editable_src/panacloudconfig.json"
       ],
       {
         gitignore: true,
