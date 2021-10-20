@@ -242,12 +242,14 @@ model:ApiModel, spinner:any
 
 
 
-
   if(nestedResolver){
-    nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
-      const lambdas = panacloudConfigNew.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `mock_lambda/nestedResolvers/${key}/index.ts`;
-    });
+    panacloudConfigNew.nestedLambdas = {}
+    const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+    for (let index = 0; index < nestedResolverLambdas.length; index++) {
+      const key = nestedResolverLambdas[index];
+      const nestedLambda = panacloudConfigNew.nestedLambdas[key] = {} as PanacloudConfiglambdaParams
+      nestedLambda['asset_path'] = `mock_lambda/nestedResolvers/${key}/index.ts`;      
+    }
   }
 
 

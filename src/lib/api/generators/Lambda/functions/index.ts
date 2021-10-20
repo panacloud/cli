@@ -159,11 +159,68 @@ export const lambdaHandlerForAuroradb = (
 
     if (generalFields) {
       let mutationAndQueries = generalFields
+      let nestedResolvers: string[] = [];
       if(nestedResolver){
         const {api:{nestedResolverFieldsAndLambdas}} = model
         const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
-        mutationAndQueries = [...generalFields,...nestedResolverLambdas]
+        nestedResolvers = [...nestedResolverLambdas]
       }
+
+      for (let i = 0; i < nestedResolvers.length; i++) {
+        const key = nestedResolvers[i];
+        const isMutation = mutationFields?.includes(key);
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            `props!.vpcRef`,
+            undefined,
+            [
+              {
+                name: "INSTANCE_CREDENTIALS",
+                value: `props!.secretRef`,
+              },
+            ],
+            undefined,
+            `props!.serviceRole`,
+            undefined,
+            nestedResolver
+          );
+          code.line();
+          if(database == DATABASE.dynamoDB){
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
+            );
+          }else{
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+            );  
+          }
+          code.line();
+        }
+        lambda.initializeLambda(
+          apiName,
+          key,
+          `props!.vpcRef`,
+          undefined,
+          [
+            {
+              name: "INSTANCE_CREDENTIALS",
+              value: `props!.secretRef`,
+            },
+          ],
+          undefined,
+          `props!.serviceRole`,
+          undefined,
+          nestedResolver
+        );
+        code.line();
+        code.line(
+          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        );
+        code.line();
+      }
+
       for (let i = 0; i < mutationAndQueries.length; i++) {
         const key = mutationAndQueries[i];
         const isMutation = mutationFields?.includes(key);
@@ -308,11 +365,65 @@ export const lambdaHandlerForNeptunedb = (
 
     if (generalFields) {
       let mutationAndQueries = generalFields
+      let nestedResolvers: string[] = [];
       if(nestedResolver){
         const {api:{nestedResolverFieldsAndLambdas}} = model
         const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
-        mutationAndQueries = [...generalFields,...nestedResolverLambdas]
+        nestedResolvers = [...nestedResolverLambdas]
       }
+
+      for (let i = 0; i < nestedResolvers.length; i++) {
+        const key = nestedResolvers[i];
+        const isMutation = mutationFields?.includes(key);
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            `props!.VPCRef`,
+            `props!.SGRef`,
+            [
+              {
+                name: "NEPTUNE_ENDPOINT",
+                value: `props!.neptuneReaderEndpoint`,
+              },
+            ],
+            `ec2.SubnetType.PRIVATE_ISOLATED`,
+            undefined,
+            undefined,
+            nestedResolver
+          );
+          code.line();
+      
+            code.line(
+              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+            );  
+          
+          code.line();
+        }
+
+        lambda.initializeLambda(
+          apiName,
+          key,
+          `props!.VPCRef`,
+          `props!.SGRef`,
+          [
+            {
+              name: "NEPTUNE_ENDPOINT",
+              value: `props!.neptuneReaderEndpoint`,
+            },
+          ],
+          `ec2.SubnetType.PRIVATE_ISOLATED`,
+          undefined,
+          undefined,
+          nestedResolver
+        );
+        code.line();
+        code.line(
+          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+        );
+        code.line();
+      }
+
       for (let i = 0; i < mutationAndQueries.length; i++) {
         const key = mutationAndQueries[i];
         const isMutation = mutationFields?.includes(key);
@@ -498,10 +609,44 @@ export const lambdaHandlerForDynamodb = (
 
     if (generalFields) {
       let mutationAndQueries = generalFields
+      let nestedResolvers: string[] = [];
       if(nestedResolver){
-        const { api : {nestedResolverFieldsAndLambdas}} = model
-        mutationAndQueries = [...generalFields, ...nestedResolverFieldsAndLambdas!.nestedResolverLambdas]
+        const {api:{nestedResolverFieldsAndLambdas}} = model
+        nestedResolvers = [...nestedResolverFieldsAndLambdas!.nestedResolverLambdas]
       }
+
+      for (let i = 0; i < nestedResolvers.length; i++) {
+        const key = nestedResolvers[i];
+        const isMutation = mutationFields?.includes(key);
+        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          lambda.initializeLambda(
+            apiName,
+            `${key}_consumer`,
+            undefined,
+            undefined,
+            [{ name: "TableName", value: "props!.tableName" }],
+            undefined,
+            undefined,
+            undefined,
+            nestedResolver
+          );
+          code.line();
+            code.line( `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
+          
+          code.line();
+        }
+        lambda.initializeLambda(apiName, key, undefined, undefined, [
+          { name: "TableName", value: "props!.tableName" },
+        ],
+        undefined,
+        undefined,
+        undefined,
+        nestedResolver);
+        code.line();
+        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+        code.line();
+      }
+
       for (let i = 0; i < mutationAndQueries.length; i++) {
         const key = mutationAndQueries[i];
         const isMutation = mutationFields?.includes(key);
