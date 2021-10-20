@@ -1,0 +1,28 @@
+type Query {
+  getMessage(
+    id: ID
+    name: String
+    age: Int
+    gender: Boolean
+    income: Float
+    friend: UserInput
+  ): String
+}
+
+input UserInput {
+  name: String
+  age: Int
+  gender: Boolean
+  bank: Bank
+}
+
+input Bank {
+  name: String
+  balance: Int
+}
+
+type User {
+  name: String
+  age: Int
+  gender: Boolean
+}
