@@ -17,11 +17,11 @@ import {
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
+const fse = require("fs-extra");
 const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
 const camelCase = require("lodash/camelCase");
-const fse = require("fs-extra");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
@@ -75,17 +75,22 @@ export default class Create extends Command {
       }
     }
 
-
-    writeFileAsync(
+    fse.writeJson(
       `./codegenconfig.json`,
-      JSON.stringify({...config, api: {...config.api, schemaPath: "./editable_src/graphql/schema/schema.graphql"}}),
+      {
+        ...config,
+        api: {
+          ...config.api,
+          schemaPath: "./editable_src/graphql/schema/schema.graphql",
+        },
+      },
       (err: string) => {
         if (err) {
           stopSpinner(validating, `Error: ${err}`, true);
           process.exit(1);
         }
       }
-    });
+    );
 
     stopSpinner(validating, "Everything's fine", false);
 

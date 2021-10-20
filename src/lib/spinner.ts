@@ -1,16 +1,16 @@
-import {error,success} from 'log-symbols'
-const ora = require('ora');
+import { error, success } from "log-symbols";
+const ora = require("ora");
 
 const startSpinner = (text: string) =>
   ora({
     text,
   }).start();
 
-const stopSpinner = (spinner: any, text: string, error: boolean) => {
+const stopSpinner = (spinner: any, text: string, err: boolean) => {
   if (!spinner) {
     return;
   }
-  const symbol = error ? error : success;
+  const symbol = err ? error : success;
   spinner.stopAndPersist({
     text,
     symbol,
