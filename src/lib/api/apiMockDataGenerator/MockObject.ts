@@ -1,7 +1,8 @@
 import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument } from "graphql";
+import { isArray } from "./helper";
 // import * as crypto from 'crypto';
 
-// type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom"
+type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom"
 export type ArgAndResponseType = { arguments?: any; response: any }
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
@@ -45,7 +46,7 @@ class QueryMockObject extends MockObject {
     this.queryName = queryName;
     // this.queryFieldObject = queryFieldObject
     this.objectArgs.push(new QueryObjectArgs(graphQLSchema, queryFieldObject.args))
-    this.objectResponses.push(new QueryObjectResponses(graphQLSchema, queryFieldObject))
+    this.objectResponses.push(new QueryObjectResponses(graphQLSchema, [queryFieldObject]))
   }
 
   write(object: TestCollectionType) {
@@ -75,36 +76,32 @@ abstract class ObjectArgs extends MockObject {
 
 class QueryObjectResponses extends ObjectResponses {
   private objectResponses: Array<ObjectResponses> = [];
-  constructor(graphQLSchema: GraphQLSchema, fieldResponse: GraphQLField<any, any, { [key: string]: any }>) {
+  constructor(graphQLSchema: GraphQLSchema, fieldResponses: GraphQLField<any, any, { [key: string]: any }>[]) {
     super(graphQLSchema);
     // this.fieldArgs = fieldArgs;
-    const fieldResponses = [fieldResponse]
 
     fieldResponses.forEach((response) => {
-      if (response.type.toString() === "String") {
-        this.objectResponses.push(
-          new StringObjectResponses(graphQLSchema, response)
-        );
-      } else if (response.type.toString() === "Int") {
-        this.objectResponses.push(
-          new IntObjectResponses(graphQLSchema, response)
-        );
-      } else if (response.type.toString() === "ID") {
-        this.objectResponses.push(
-          new IdObjectResponses(graphQLSchema, response)
-        );
-      } else if (response.type.toString() === "Float") {
-        this.objectResponses.push(
-          new FloatObjectResponses(graphQLSchema, response)
-        );
-      } else if (response.type.toString() === "Boolean") {
-        this.objectResponses.push(
-          new BoolObjectResponses(graphQLSchema, response)
-        );
+      let type = response.type.toString();
+      const _isArray = isArray(type);
+      type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+
+      if (type === "String") {
+        this.objectResponses.push(new StringObjectResponses(graphQLSchema, response, _isArray));
+
+      } else if (type === "Int") {
+        this.objectResponses.push(new IntObjectResponses(graphQLSchema, response, _isArray));
+
+      } else if (type === "ID") {
+        this.objectResponses.push(new IdObjectResponses(graphQLSchema, response, _isArray));
+
+      } else if (type === "Float") {
+        this.objectResponses.push(new FloatObjectResponses(graphQLSchema, response, _isArray));
+
+      } else if (type === "Boolean") {
+        this.objectResponses.push(new BoolObjectResponses(graphQLSchema, response, _isArray));
+
       } else {
-        this.objectResponses.push(
-          new CustomObjectResponses(graphQLSchema, response)
-        );
+        this.objectResponses.push(new CustomObjectResponses(graphQLSchema, response, _isArray));
       }
     });
 
@@ -122,30 +119,28 @@ class QueryObjectArgs extends ObjectArgs {
     // this.fieldArgs = fieldArgs;
 
     fieldArgs.forEach((arg: GraphQLArgument) => {
-      if (arg.type.toString() === "String") {
-        this.objectArgs.push(
-          new StringObjectArgs(graphQLSchema, arg)
-        );
-      } else if (arg.type.toString() === "Int") {
-        this.objectArgs.push(
-          new IntObjectArgs(graphQLSchema, arg)
-        );
-      } else if (arg.type.toString() === "ID") {
-        this.objectArgs.push(
-          new IdObjectArgs(graphQLSchema, arg)
-        );
-      } else if (arg.type.toString() === "Float") {
-        this.objectArgs.push(
-          new FloatObjectArgs(graphQLSchema, arg)
-        );
-      } else if (arg.type.toString() === "Boolean") {
-        this.objectArgs.push(
-          new BoolObjectArgs(graphQLSchema, arg)
-        );
+      let type = arg.type.toString();
+      const _isArray = isArray(type);
+      type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+      // console.log(type)
+      if (type === "String") {
+        this.objectArgs.push(new StringObjectArgs(graphQLSchema, arg, _isArray));
+
+      } else if (type === "Int") {
+        this.objectArgs.push(new IntObjectArgs(graphQLSchema, arg, _isArray));
+
+      } else if (type === "ID") {
+        this.objectArgs.push(new IdObjectArgs(graphQLSchema, arg, _isArray));
+
+      } else if (type === "Float") {
+        this.objectArgs.push(new FloatObjectArgs(graphQLSchema, arg, _isArray));
+
+      } else if (type === "Boolean") {
+        this.objectArgs.push(new BoolObjectArgs(graphQLSchema, arg, _isArray));
+
       } else {
-        this.objectArgs.push(
-          new CustomObjectArgs(graphQLSchema, arg)
-        );
+        this.objectArgs.push(new CustomObjectArgs(graphQLSchema, arg, _isArray));
+
       }
     });
 
@@ -159,203 +154,257 @@ class QueryObjectArgs extends ObjectArgs {
 
 class StringObjectResponses extends ObjectResponses {
   private arg: GraphQLField<any, any, { [key: string]: any }>;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
     super(graphQLSchema);
     // this.objectArgs = objectArgs;
     this.arg = arg;
+    this.isArray = isArray;
   }
 
-  write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.arg.name] = ["Hello1", "Hello2", "Hello3"];
+    } else {
       object[this.arg.name] = "Hello";
     }
   }
 }
 class IntObjectResponses extends ObjectResponses {
   private arg: GraphQLField<any, any, { [key: string]: any }>;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
     super(graphQLSchema);
     this.arg = arg;
+    this.isArray = isArray;
   }
 
-  write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.arg.name] = [0, 1, 2];
+    } else {
       object[this.arg.name] = 0;
     }
-    // object.fields[this.fieldObject.name][0].arguments[this.arg.name] = 0;
   }
 }
 class IdObjectResponses extends ObjectResponses {
   private arg: GraphQLField<any, any, { [key: string]: any }>;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
     super(graphQLSchema);
     this.arg = arg;
+    this.isArray = isArray;
   }
 
-  write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
-      object[this.arg.name] = "01";
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.arg.name] = ['01', '02', '03'];
+    } else {
+      object[this.arg.name] = '01';
     }
   }
 }
 class FloatObjectResponses extends ObjectResponses {
   private arg: GraphQLField<any, any, { [key: string]: any }>;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
     super(graphQLSchema);
     this.arg = arg;
+    this.isArray = isArray;
   }
 
-  write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.arg.name] = [0.1, 0.2, 0.3];
+    } else {
       object[this.arg.name] = 0.1;
     }
   }
 }
 class BoolObjectResponses extends ObjectResponses {
   private arg: GraphQLField<any, any, { [key: string]: any }>
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
     super(graphQLSchema);
     this.arg = arg;
+    this.isArray = isArray;
   }
 
-  write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
-      object[this.arg.name] = false;
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.arg.name] = [true, false, true];
+    } else {
+      object[this.arg.name] = true;
     }
   }
 }
 class CustomObjectResponses extends ObjectResponses {
-  private arg: GraphQLField<any, any, { [key: string]: any }>;
-  private objectArgs: ObjectResponses[] = []
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLField<any, any, { [key: string]: any }>) {
+  private response: GraphQLField<any, any, { [key: string]: any }>;
+  private objectResponses: ObjectResponses[] = []
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, response: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
     super(graphQLSchema);
-    this.arg = arg;
-    console.log(arg.type.toString())
-    const inputObjectType = this.graphQLSchema.getType(arg.type.toString()) as GraphQLObjectType;
-    const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
-    this.objectArgs.push(new QueryObjectArgs(graphQLSchema, Object.values(inputObjectFields)))
+    this.response = response;
+    this.isArray = isArray;
+    const type = response.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+    const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
+    const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+    this.objectResponses.push(new QueryObjectResponses(graphQLSchema, Object.values(inputObjectFields)))
     // this.queryObjectArg = new QueryObjectArgs(graphQLSchema,)
   }
 
-  write(object: ArgAndResponseType['arguments']): void {
-    object[this.arg.name] = {};
-    this.objectArgs.forEach((objectArg) => {
-      objectArg.write(object[this.arg.name])
-    })
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.response.name] = [{}, {}, {}];
+      this.objectResponses.forEach((objectResponse) => {
+        objectResponse.write(object[this.response.name][0])
+        objectResponse.write(object[this.response.name][1])
+        objectResponse.write(object[this.response.name][2])
+      })
+    } else {
+      object[this.response.name] = {};
+      this.objectResponses.forEach((objectResponse) => {
+        objectResponse.write(object[this.response.name])
+      })
+    }
   }
 
 }
 
 class StringObjectArgs extends ObjectArgs {
   private arg: GraphQLArgument;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument, isArray: boolean) {
     super(graphQLSchema);
     // this.objectArgs = objectArgs;
+    this.isArray = isArray;
     this.arg = arg;
   }
 
   write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
+    if (this.isArray) {
+      object[this.arg.name] = ["Hello1", "Hello2", "Hello3"];
+    } else {
       object[this.arg.name] = "Hello";
     }
   }
 }
 class IntObjectArgs extends ObjectArgs {
   private arg: GraphQLArgument;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument, isArray: boolean) {
     super(graphQLSchema);
+    this.isArray = isArray;
     this.arg = arg;
   }
 
   write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
+    if (this.isArray) {
+      object[this.arg.name] = [0, 1, 2];
+    } else {
       object[this.arg.name] = 0;
     }
-    // object.fields[this.fieldObject.name][0].arguments[this.arg.name] = 0;
   }
 }
 class IdObjectArgs extends ObjectArgs {
   private arg: GraphQLArgument;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument, isArray: boolean) {
     super(graphQLSchema);
     this.arg = arg;
+    this.isArray = isArray;
   }
 
   write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
-      object[this.arg.name] = "01";
+    if (this.isArray) {
+      object[this.arg.name] = ['01', '02', '03'];
+    } else {
+      object[this.arg.name] = '01';
     }
   }
 }
 class FloatObjectArgs extends ObjectArgs {
   private arg: GraphQLArgument;
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument, isArray: boolean) {
     super(graphQLSchema);
+    this.isArray = isArray;
     this.arg = arg;
   }
 
   write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
+    if (this.isArray) {
+      object[this.arg.name] = [0.1, 0.2, 0.3];
+    } else {
       object[this.arg.name] = 0.1;
     }
   }
 }
 class BoolObjectArgs extends ObjectArgs {
   private arg: GraphQLArgument
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument, isArray: boolean) {
     super(graphQLSchema);
+    this.isArray = isArray;
     this.arg = arg;
   }
 
   write(object: ArgAndResponseType['arguments']): void {
-    if (object) {
-      object[this.arg.name] = false;
+    if (this.isArray) {
+      object[this.arg.name] = [true, false, true];
+    } else {
+      object[this.arg.name] = true;
     }
   }
 }
+// class ArrayObjectArgs extends ObjectArgs {
+//   private arg: GraphQLArgument;
+//   constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
+//     super(graphQLSchema);
+//     this.arg = arg;
+//   }
+
+//   write(object: ArgAndResponseType['arguments']): void {
+//     if (object) {
+//       object[this.arg.name] = false;
+//     }
+//   }
+// }
 class CustomObjectArgs extends ObjectArgs {
   private arg: GraphQLArgument;
   private objectArgs: ObjectArgs[] = []
-  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument, isArray: boolean) {
     super(graphQLSchema);
+    this.isArray = isArray;
     this.arg = arg;
-    console.log(arg.type.toString())
-    const inputObjectType = this.graphQLSchema.getType(arg.type.toString()) as GraphQLObjectType;
+    const type = arg.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+    const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
+    // if (isArray) {
+    //   this.objectArgs.push(new QueryObjectArgs(graphQLSchema, Object.values(inputObjectFields)))
+    //   this.objectArgs.push(new QueryObjectArgs(graphQLSchema, Object.values(inputObjectFields)))
+    //   this.objectArgs.push(new QueryObjectArgs(graphQLSchema, Object.values(inputObjectFields)))
+    // } else {
+    //   this.objectArgs.push(new QueryObjectArgs(graphQLSchema, Object.values(inputObjectFields)))
+    // }
     this.objectArgs.push(new QueryObjectArgs(graphQLSchema, Object.values(inputObjectFields)))
     // this.queryObjectArg = new QueryObjectArgs(graphQLSchema,)
   }
 
   write(object: ArgAndResponseType['arguments']): void {
-    object[this.arg.name] = {};
-    this.objectArgs.forEach((objectArg) => {
-      objectArg.write(object[this.arg.name])
-    })
+    if (this.isArray) {
+      object[this.arg.name] = [{}, {}, {}];
+      this.objectArgs.forEach((objectArg, idx) => {
+        objectArg.write(object[this.arg.name][0])
+        objectArg.write(object[this.arg.name][1])
+        objectArg.write(object[this.arg.name][2])
+      })
+    } else {
+      object[this.arg.name] = {};
+      this.objectArgs.forEach((objectArg) => {
+        objectArg.write(object[this.arg.name])
+      })
+    }
   }
-
-  // writeObjectType(typeName: any) {
-  //   const type = this.graphQLSchema.getType(typeName) as GraphQLObjectType;
-  //   const dummyData: any = {};
-  //   // console.log(type.getFields());
-  //   Object.values(type.getFields()).forEach((item: any, idx) => {
-  //     dummyData[item.name] = this.dataForType(item.type.toString());
-  //   })
-  //   return dummyData
-  // }
-
-  // dataForType(typeName: ScalarType) {
-  //   let dummyData;
-  //   // let type = this.graphQLSchema?.getType(typeName as string) as GraphQLObjectType;
-  //   // _typeName = 
-  //   if (typeName === "Int") { dummyData = 10101 }
-  //   else if (typeName === "Float") { dummyData = 1.00 }
-  //   else if (typeName === "ID") { dummyData = crypto.randomBytes(8).toString("hex") }
-  //   else if (typeName === "String") { dummyData = "hello world" }
-  //   else if (typeName === "Boolean") { dummyData = true }
-  //   else {
-  //     dummyData = this.writeObjectType(typeName);
-  //   }
-  //   return dummyData
-  // }
-
 }
