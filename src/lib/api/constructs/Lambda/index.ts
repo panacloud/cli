@@ -32,8 +32,8 @@ export class Lambda {
     environments?: Environment[],
     vpcSubnets?: string,
     roleName?: string,
-    microServiceName?:string
-
+    microServiceName?:string,
+    nestedResolver?:boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
     let handlerName: string
@@ -51,11 +51,21 @@ export class Lambda {
         handlerAsset = functionName? splitPath.join("/") : "lambda";
       }
       else{
-        const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
-        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-        const splitPath = lambdas[functionName].asset_path.split("/");
-        splitPath.pop();
-        handlerAsset = functionName? splitPath.join("/") : "lambda";
+        if(nestedResolver){
+          const {nestedLambdas} = this.panacloudConfig;
+          const handlerfile = nestedLambdas[functionName].asset_path.split("/")[nestedLambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = nestedLambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
+        else{
+          const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = lambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
       }
     }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
