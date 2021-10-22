@@ -254,6 +254,18 @@ class CustomObjectResponses extends ObjectResponses {
   }
 
   write(object: ArgAndResponseType['response']): void {
+    console.log('call')
+    // if resposne name is equal to query name
+    // if (this.graphQLSchema.getQueryType()?.getFields()[this.response.name]) {
+    //   object = "[{}, {}, {}]";
+    //   // object = { 'he': 'he' };
+    //   // this.objectResponses.forEach((objectResponse) => {
+    //   //   objectResponse.write(object[0])
+    //   //   objectResponse.write(object[1])
+    //   //   objectResponse.write(object[2])
+    //   // })
+    //   return
+    // }
     if (this.isArray) {
       object[this.response.name] = [{}, {}, {}];
       this.objectResponses.forEach((objectResponse) => {
@@ -261,12 +273,21 @@ class CustomObjectResponses extends ObjectResponses {
         objectResponse.write(object[this.response.name][1])
         objectResponse.write(object[this.response.name][2])
       })
+
     } else {
+      // if resposne name is equal to query name
+      if (this.graphQLSchema.getQueryType()?.getFields()[this.response.name]) {
+        this.objectResponses.forEach((objectResponse) => {
+          objectResponse.write(object)
+        })
+        return
+      }
       object[this.response.name] = {};
       this.objectResponses.forEach((objectResponse) => {
         objectResponse.write(object[this.response.name])
       })
     }
+
   }
 
 }
