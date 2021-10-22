@@ -40,23 +40,23 @@ class QueryMockObject extends MockObject {
   private queryName: string;
   private objectArgs: ObjectArgs[] = [];
   private objectResponses: ObjectResponses[] = [];
-  // private queryFieldObject: GraphQLField<any, any, any>
   constructor(graphQLSchema: GraphQLSchema, queryName: string, queryFieldObject: GraphQLField<any, any, any>) {
     super(graphQLSchema);
     this.queryName = queryName;
-    // this.queryFieldObject = queryFieldObject
     this.objectArgs.push(new QueryObjectArgs(graphQLSchema, queryFieldObject.args))
     this.objectResponses.push(new QueryObjectResponses(graphQLSchema, [queryFieldObject]))
   }
 
   write(object: TestCollectionType) {
-    object.fields[this.queryName] = [{ response: {}, arguments: {} }];
+    object.fields[this.queryName] = [{ arguments: {}, response: {} }];
     this.objectArgs.forEach((v) => {
       v.write(object.fields[this.queryName][0].arguments);
     });
     this.objectResponses.forEach((v) => {
       v.write(object.fields[this.queryName][0].response);
     });
+    object.fields[this.queryName][0].response =
+      Object.values(object.fields[this.queryName][0].response)[0]
   }
 
 }
@@ -250,22 +250,10 @@ class CustomObjectResponses extends ObjectResponses {
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
     this.objectResponses.push(new QueryObjectResponses(graphQLSchema, Object.values(inputObjectFields)))
-    // this.queryObjectArg = new QueryObjectArgs(graphQLSchema,)
   }
 
   write(object: ArgAndResponseType['response']): void {
     console.log('call')
-    // if resposne name is equal to query name
-    // if (this.graphQLSchema.getQueryType()?.getFields()[this.response.name]) {
-    //   object = "[{}, {}, {}]";
-    //   // object = { 'he': 'he' };
-    //   // this.objectResponses.forEach((objectResponse) => {
-    //   //   objectResponse.write(object[0])
-    //   //   objectResponse.write(object[1])
-    //   //   objectResponse.write(object[2])
-    //   // })
-    //   return
-    // }
     if (this.isArray) {
       object[this.response.name] = [{}, {}, {}];
       this.objectResponses.forEach((objectResponse) => {
@@ -275,13 +263,6 @@ class CustomObjectResponses extends ObjectResponses {
       })
 
     } else {
-      // if resposne name is equal to query name
-      if (this.graphQLSchema.getQueryType()?.getFields()[this.response.name]) {
-        this.objectResponses.forEach((objectResponse) => {
-          objectResponse.write(object)
-        })
-        return
-      }
       object[this.response.name] = {};
       this.objectResponses.forEach((objectResponse) => {
         objectResponse.write(object[this.response.name])

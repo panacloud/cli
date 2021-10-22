@@ -6,14 +6,14 @@ type Query {
     gender: Boolean
     income: Float
     friend: UserInput
-  ): String
+  ): [UserInput]
 }
 
 input UserInput {
   name: String
   age: Int
-  gender: Boolean
-  bank: Bank
+  gender: [Boolean]
+  banks: Bank
 }
 
 input Bank {
