@@ -36,6 +36,7 @@ class MockApiTestCollectionsFile {
     code.openFile(this.outputFile);
 
     ts.writeImports("./testCollectionsTypes", ["TestCollection"]);
+    
     if (this.config.api.mockApiData?.enumImports.length !== 0) {
       ts.writeImports("./types", [
         ...this.config.api.mockApiData?.enumImports!,
