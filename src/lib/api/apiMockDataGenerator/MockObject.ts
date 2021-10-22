@@ -1,4 +1,4 @@
-import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument } from "graphql";
+import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType } from "graphql";
 import { isArray } from "./helper";
 // import * as crypto from 'crypto';
 
@@ -100,6 +100,9 @@ class QueryObjectResponse extends ObjectResponse {
       } else if (type === "Boolean") {
         this.objectResponses.push(new BoolObjectResponse(graphQLSchema, response, _isArray));
 
+      } else if (this.isEnum(type)) {
+        this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
+
       } else {
         this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray));
       }
@@ -111,35 +114,41 @@ class QueryObjectResponse extends ObjectResponse {
       objectResponse.write(object)
     })
   }
+  isEnum(typeName: string) {
+    return this.graphQLSchema.getType(typeName)?.astNode?.kind === "EnumTypeDefinition"
+  }
 }
 class QueryObjectRequest extends ObjectRequest {
   private objectRequests: Array<ObjectRequest> = [];
-  constructor(graphQLSchema: GraphQLSchema, fieldArgs: Array<GraphQLArgument>) {
+  constructor(graphQLSchema: GraphQLSchema, fieldRequests: Array<GraphQLArgument>) {
     super(graphQLSchema);
     // this.fieldArgs = fieldArgs;
 
-    fieldArgs.forEach((arg: GraphQLArgument) => {
-      let type = arg.type.toString();
+    fieldRequests.forEach((request: GraphQLArgument) => {
+      let type = request.type.toString();
       const _isArray = isArray(type);
       type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
       // console.log(type)
       if (type === "String") {
-        this.objectRequests.push(new StringObjectRequest(graphQLSchema, arg, _isArray));
+        this.objectRequests.push(new StringObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (type === "Int") {
-        this.objectRequests.push(new IntObjectRequest(graphQLSchema, arg, _isArray));
+        this.objectRequests.push(new IntObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (type === "ID") {
-        this.objectRequests.push(new IdObjectRequest(graphQLSchema, arg, _isArray));
+        this.objectRequests.push(new IdObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (type === "Float") {
-        this.objectRequests.push(new FloatObjectRequest(graphQLSchema, arg, _isArray));
+        this.objectRequests.push(new FloatObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (type === "Boolean") {
-        this.objectRequests.push(new BoolObjectRequest(graphQLSchema, arg, _isArray));
+        this.objectRequests.push(new BoolObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (this.isEnum(type)) {
+        this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
 
       } else {
-        this.objectRequests.push(new CustomObjectRequest(graphQLSchema, arg, _isArray));
+        this.objectRequests.push(new CustomObjectRequest(graphQLSchema, request, _isArray));
 
       }
     });
@@ -149,6 +158,9 @@ class QueryObjectRequest extends ObjectRequest {
     this.objectRequests.forEach((objectRequest) => {
       objectRequest.write(object)
     })
+  }
+  isEnum(typeName: string) {
+    return this.graphQLSchema.getType(typeName)?.astNode?.kind === "EnumTypeDefinition"
   }
 }
 
@@ -238,6 +250,30 @@ class BoolObjectResponse extends ObjectResponse {
     }
   }
 }
+class EnumObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  private enumList: string[];
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+    const enumType = responseField.type.toString().replace(/[\[|\]!]/g, ''); //removing braces and "!" eg: [String!]! ==> String
+    const enumObjectType = this.graphQLSchema.getType(enumType) as GraphQLEnumType;
+    this.enumList = enumObjectType.getValues().map(v => v.name);
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [this.getRandomEnum(), this.getRandomEnum(), this.getRandomEnum()];
+    } else {
+      object[this.responseField.name] = this.getRandomEnum();
+    }
+  }
+  getRandomEnum() {
+    return this.enumList[Math.floor(Math.random() * this.enumList.length)]
+  }
+}
 class CustomObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>;
   private objectResponses: ObjectResponse[] = []
@@ -253,7 +289,6 @@ class CustomObjectResponse extends ObjectResponse {
   }
 
   write(object: ArgAndResponseType['response']): void {
-    console.log('call')
     if (this.isArray) {
       object[this.responseField.name] = [{}, {}, {}];
       this.objectResponses.forEach((objectResponse) => {
@@ -358,19 +393,32 @@ class BoolObjectRequest extends ObjectRequest {
     }
   }
 }
-// class ArrayObjectArgs extends ObjectArgs {
-//   private arg: GraphQLArgument;
-//   constructor(graphQLSchema: GraphQLSchema, arg: GraphQLArgument) {
-//     super(graphQLSchema);
-//     this.arg = arg;
-//   }
+class EnumObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  private enumList: string[];
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+    const enumType = requestField.type.toString().replace(/[\[|\]!]/g, ''); //removing braces and "!" eg: [String!]! ==> String
+    const enumObjectType = this.graphQLSchema.getType(enumType) as GraphQLEnumType;
+    this.enumList = enumObjectType.getValues().map(v => v.name);
+  }
 
-//   write(object: ArgAndResponseType['arguments']): void {
-//     if (object) {
-//       object[this.arg.name] = false;
-//     }
-//   }
-// }
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [this.getRandomEnum(), this.getRandomEnum(), this.getRandomEnum()];
+    } else {
+      object[this.requestField.name] = this.getRandomEnum();
+    }
+  }
+
+  getRandomEnum() {
+    return this.enumList[Math.floor(Math.random() * this.enumList.length)]
+  }
+
+}
 class CustomObjectRequest extends ObjectRequest {
   private requestField: GraphQLArgument;
   private objectRequests: ObjectRequest[] = []

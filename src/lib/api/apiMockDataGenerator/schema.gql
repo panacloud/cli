@@ -17,7 +17,7 @@ input UserInput {
 }
 
 input Bank {
-  name: String
+  name: [BankName]
   balance: Int
 }
 
@@ -25,4 +25,12 @@ type User {
   name: String
   age: Int
   gender: Boolean
+}
+
+enum BankName {
+  FBL
+  HBL
+  Meezan
+  BAHL
+  UBL
 }
