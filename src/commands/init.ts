@@ -140,9 +140,9 @@ export default class Create extends Command {
       const nextData = prettier.format(data, {
         parser: path.extname(file) === ".json" ? "json" : "typescript",
       });
-      await fse.write(file, nextData, "utf8");
+      await fs.writeFileSync(file, nextData, "utf8");
     });
-
+    
     stopSpinner(formatting, "Formatting Done", false);
 
     this.log(chalk.greenBright("Build your Billion Dollar API"));

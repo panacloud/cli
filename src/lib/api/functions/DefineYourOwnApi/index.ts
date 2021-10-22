@@ -73,7 +73,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   });
 
-  fse.writeJson(
+  await fse.writeJson(
     `./cdk.context.json`,
     contextInfo(api_token, entityId),
     (err: string) => {
