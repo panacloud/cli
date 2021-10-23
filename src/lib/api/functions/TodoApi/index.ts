@@ -20,16 +20,16 @@ async function todoApi(config: Config) {
     singleBranch: true,
   });
 
-  await writeFileAsync(
-    `cdk.context.json`,
-    JSON.stringify(contextInfo(config.api_token, config.entityId)),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // await writeFileAsync(
+  //   `cdk.context.json`,
+  //   JSON.stringify(contextInfo(config.api_token, config.entityId)),
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

@@ -1,6 +1,6 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
 import { mkdirRecursiveAsync } from "../../../fs";
-import { contextInfo, generatePanacloudConfig } from "../../info";
+import { generatePanacloudConfig } from "../../info";
 import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
@@ -16,7 +16,7 @@ const fse = require("fs-extra");
 const snakeCase = require("lodash/snakeCase");
 
 async function defineYourOwnApi(config: Config, templateDir: string) {
-  const { api_token, entityId } = config;
+  // const { api_token, entityId } = config;
 
   const {
     api: { schemaPath, apiType, nestedResolver },
@@ -73,16 +73,16 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   });
 
-  await fse.writeJson(
-    `./cdk.context.json`,
-    contextInfo(api_token, entityId),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // await fse.writeJson(
+  //   `./cdk.context.json`,
+  //   contextInfo(api_token, entityId),
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   if (apiType === APITYPE.graphql) {
     await mkdirRecursiveAsync(`editable_src`);
