@@ -82,7 +82,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3
 
 ## `panacloud init`
 
-Generates CDK code based on the given schema
+Generates CDK code, mock lambdas, and actual lambdas based on the given schema
 
 ```
 USAGE
@@ -92,5 +92,38 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/init.ts](https://github.com/panacloud/cli/blob/v0.0.3/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/panacloud/cli/commands/init.ts)_
 <!-- commandsstop -->
+
+## `panacloud update`
+
+Update CDK code and mock lambdas based on the updated schema. This command doesnot overwrite code in the editiable_src directory.
+
+```
+USAGE
+  $ panacloud update
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/update.ts)_
+<!-- commandsstop -->
+
+## `panacloud merge`
+
+Merges GraphQL schema files.
+
+```
+USAGE
+  $ panacloud merge
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/merge.ts)_
+<!-- commandsstop -->
+
+
+
