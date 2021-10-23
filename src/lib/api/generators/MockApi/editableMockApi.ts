@@ -21,9 +21,6 @@ class EditableMockApiTestCollectionsFile {
 
     let new_config = JSON.parse(JSON.stringify(this.config));
 
-
-    console.log("new_config editable", new_config.api.mockApiData?.types)
-
     for (const key in this.config.api.mockApiData?.collections.fields) {
       const code = new CodeMaker();
       const ts = new TypeScriptWriter(code);

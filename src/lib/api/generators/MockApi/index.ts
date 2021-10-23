@@ -20,9 +20,6 @@ class MockApiTestCollectionsFile {
 
     let new_config = JSON.parse(JSON.stringify(this.config));
 
-
-    console.log("new_config ", new_config.api.mockApiData?.types)
-
     for (const key in new_config.api.mockApiData?.collections.fields) {
       const code = new CodeMaker();
       const ts = new TypeScriptWriter(code);
