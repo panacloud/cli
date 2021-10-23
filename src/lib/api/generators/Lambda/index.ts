@@ -146,6 +146,30 @@ class lambdaConstruct {
               this.code.line();
             }
           }
+
+          if(nestedResolver){
+            const {api:{nestedResolverFieldsAndLambdas}} = this.config
+            const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+            for (let i = 0; i < nestedResolverLambdas.length; i++) {
+              const key = nestedResolverLambdas[i];
+              const isMutation = this.config.api.mutationFields?.includes(key);
+              if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+                lambda.initializeLambda(apiName, `${key}_consumer`);
+                this.code.line();
+                this.code.line(
+                  `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
+                );
+                this.code.line();
+              }
+              lambda.initializeLambda(apiName, key,undefined,undefined,undefined,undefined,undefined,undefined,nestedResolver);
+              this.code.line();
+              this.code.line(
+                `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
+              );
+              this.code.line();
+            }
+          }
+    
           for (let i = 0; i < general_Fields.length; i++) {
             const key = general_Fields[i];
             const isMutation = this.config.api.mutationFields?.includes(key);

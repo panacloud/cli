@@ -152,7 +152,6 @@ model:ApiModel, spinner:any
       else {
         delete panacloudConfigNew.lambdas[service][diff];
         delete panacloudConfigNew.lambdas[service][`${diff}_consumer`];
-
       }
 
     }
@@ -205,7 +204,6 @@ model:ApiModel, spinner:any
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
 
-
       if (architecture === ARCHITECTURE.eventDriven && isMutation) {
 
         panacloudConfigNew.lambdas[`${diff}_consumer`] = {} as PanacloudConfiglambdaParams
@@ -242,12 +240,16 @@ model:ApiModel, spinner:any
 
 
 
-
   if(nestedResolver){
-    nestedResolverFieldsAndLambdas?.nestedResolverLambdas!.forEach((key: string) => {
-      const lambdas = panacloudConfigNew.lambdas[key] = {} as PanacloudConfiglambdaParams
-      lambdas.asset_path = `mock_lambda/nestedResolvers/${key}/index.ts`;
-    });
+    panacloudConfigNew.nestedLambdas = {}
+    const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+    for (let index = 0; index < nestedResolverLambdas.length; index++) {
+      const key = nestedResolverLambdas[index];
+      const nestedLambda = panacloudConfigNew.nestedLambdas[key] = {} as PanacloudConfiglambdaParams
+      nestedLambda['asset_path'] = `mock_lambda/nestedResolvers/${key}/index.ts`;      
+    }
+  }else{
+    panacloudConfigNew.nestedLambdas && delete panacloudConfigNew.nestedLambdas
   }
 
 
