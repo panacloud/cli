@@ -17,19 +17,19 @@ abstract class MockObject {
 }
 
 export class RootMockObject extends MockObject {
-  //   private graphQLSchema: GraphQLSchema;
   private queryMockObjects: QueryMockObject[] = [];
+
   constructor(schema: string) {
     super(buildSchema(schema));
     const queries = this.graphQLSchema?.getQueryType()?.getFields();
-    Object.entries(queries!).forEach(([queryName, queryFieldObject]) => {
+    const mutations = this.graphQLSchema?.getMutationType()?.getFields();
+    Object.entries(queries || []).forEach(([queryName, queryFieldObject]) => {
       const queryMockObject = new QueryMockObject(this.graphQLSchema, queryName, queryFieldObject);
       this.queryMockObjects.push(queryMockObject);
-      //   console.log(key, ":RootMockObject");
     });
+
   }
-  write(object: TestCollectionType): void {
-    // object.fields = {};
+  write(object: TestCollectionType) {
     this.queryMockObjects.forEach((v) => {
       v.write(object);
     });
@@ -43,8 +43,8 @@ class QueryMockObject extends MockObject {
   constructor(graphQLSchema: GraphQLSchema, queryName: string, queryFieldObject: GraphQLField<any, any, any>) {
     super(graphQLSchema);
     this.queryName = queryName;
-    this.objectRequests.push(new QueryObjectRequest(graphQLSchema, queryFieldObject.args))
-    this.objectResponses.push(new QueryObjectResponse(graphQLSchema, [queryFieldObject]))
+    this.objectRequests.push(new RootObjectRequest(graphQLSchema, queryFieldObject.args))
+    this.objectResponses.push(new RootObjectResponse(graphQLSchema, [queryFieldObject]))
   }
 
   write(object: TestCollectionType) {
@@ -74,7 +74,7 @@ abstract class ObjectRequest extends MockObject {
   }
 }
 
-class QueryObjectResponse extends ObjectResponse {
+class RootObjectResponse extends ObjectResponse {
   private objectResponses: Array<ObjectResponse> = [];
   constructor(graphQLSchema: GraphQLSchema, fieldResponses: GraphQLField<any, any, { [key: string]: any }>[]) {
     super(graphQLSchema);
@@ -118,7 +118,7 @@ class QueryObjectResponse extends ObjectResponse {
     return this.graphQLSchema.getType(typeName)?.astNode?.kind === "EnumTypeDefinition"
   }
 }
-class QueryObjectRequest extends ObjectRequest {
+class RootObjectRequest extends ObjectRequest {
   private objectRequests: Array<ObjectRequest> = [];
   constructor(graphQLSchema: GraphQLSchema, fieldRequests: Array<GraphQLArgument>) {
     super(graphQLSchema);
@@ -285,7 +285,7 @@ class CustomObjectResponse extends ObjectResponse {
     const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
-    this.objectResponses.push(new QueryObjectResponse(graphQLSchema, Object.values(inputObjectFields)))
+    this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(inputObjectFields)))
   }
 
   write(object: ArgAndResponseType['response']): void {
@@ -430,7 +430,7 @@ class CustomObjectRequest extends ObjectRequest {
     const type = requestField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
-    this.objectRequests.push(new QueryObjectRequest(graphQLSchema, Object.values(inputObjectFields)))
+    this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields)))
   }
 
   write(object: ArgAndResponseType['arguments']): void {
