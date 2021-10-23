@@ -61,6 +61,7 @@ export default class Create extends Command {
 
 
     fse.removeSync('mock_lambda', { recursive: true });
+    // fse.removeSync('lambdaLayer', { recursive: true });
     fse.removeSync('consumer_lambda', { recursive: true });
     fse.removeSync('lib', { recursive: true });
 

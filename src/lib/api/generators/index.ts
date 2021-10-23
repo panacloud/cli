@@ -20,11 +20,12 @@ import { multipleLambda } from "./Lambda/multipleLambda";
 import { customLambda } from "./Lambda/customLambda";
 import { singleLambda } from "./Lambda/singleLambda";
 import { mockApiTestCollections } from "./MockApi";
+import { EditableMockApiTestCollections } from "./MockApi/editableMockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 
-export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile) => {
+export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile, type: string) => {
   // bin file
   CdkAppClass({ config });
 
@@ -63,12 +64,15 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
 
   // Single or Multi
   if (config.api.apiType === APITYPE.rest) {
-        singleLambda({ config });
+    singleLambda({ config });
   }
   else if (config.api.apiType === APITYPE.graphql) {
     multipleLambda({ config });
-    mockApiTestCollections({ config });
-    customLambda({ config });
+    await mockApiTestCollections({ config });
+    if (type !== "update") {
+      await EditableMockApiTestCollections({ config })
+      customLambda({ config });
+    }
   }
 
   if (config.api.architecture === ARCHITECTURE.eventDriven) {

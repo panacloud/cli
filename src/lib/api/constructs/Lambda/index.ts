@@ -79,7 +79,7 @@ export class Lambda {
       ? `vpcSubnets: { subnetType: ${vpcSubnets} },`
       : "";
     let role = roleName ? `role: ${roleName},` : "";
-    let lambdaLayer = `layers:[${apiName}_lambdaLayer],`;
+    let lambdaLayer = `layers:[${apiName}_lambdaLayer, editable_lambdaLayer],`;
 
     ts.writeVariableDeclaration(
       {
@@ -114,6 +114,23 @@ export class Lambda {
           this.code
             .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
           code: lambda.Code.fromAsset('lambdaLayer'),
+        })`);
+        },
+      },
+      "const"
+    );
+  }
+
+  public editableLambdaLayer() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeVariableDeclaration(
+      {
+        name: `editable_lambdaLayer`,
+        typeName: "lambda.LayerVersion",
+        initializer: () => {
+          this.code
+            .line(`new lambda.LayerVersion(this, "editable_lambdaLayer", {
+          code: lambda.Code.fromAsset('editable_src/lambdaLayer'),
         })`);
         },
       },

@@ -77,6 +77,7 @@ export const lambdaHandlerForAuroradb = (
   const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,database}} = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
+  lambda.editableLambdaLayer();
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       apiName,
@@ -289,6 +290,7 @@ export const lambdaHandlerForNeptunedb = (
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
   lambda.lambdaLayer(apiName);
+  lambda.editableLambdaLayer();
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       apiName,
@@ -561,6 +563,7 @@ export const lambdaHandlerForDynamodb = (
 }
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
+  lambda.editableLambdaLayer();
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(apiName, undefined, undefined, undefined, [{ name: "TableName", value: "props!.tableName" }]);
     code.line();

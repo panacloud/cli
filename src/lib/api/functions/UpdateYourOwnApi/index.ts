@@ -24,6 +24,7 @@ const _ = require("lodash");
 
 async function updateYourOwnApi(config: Config, spinner:any) {
 
+
     const workingDir = _.snakeCase(path.basename(process.cwd()));
 
     const model: ApiModel = {
@@ -107,7 +108,7 @@ async function updateYourOwnApi(config: Config, spinner:any) {
 
 
     // Codegenerator Function
-    await generator(model, updatedPanacloudConfig);
+    await generator(model, updatedPanacloudConfig, 'update');
 
 }
 
