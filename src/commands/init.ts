@@ -28,6 +28,7 @@ export default class Create extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
+    test: flags.boolean({ char: "t" }),
   };
 
   async run() {
@@ -35,42 +36,63 @@ export default class Create extends Command {
 
     let templateDir;
 
-    // Questions
-    let usrInput = await userInput();
+    let config: Config;
 
-    // Config to generate code.
-    const config: Config = {
-      // entityId: usrInput.entityId,
-      // api_token: usrInput.api_token,
-      saasType: SAASTYPE.api,
-      api: {
-        template: usrInput.template,
-        nestedResolver: usrInput.nestedResolver,
-        // language: usrInput.language,
-        // cloudprovider: usrInput.cloud_provider,
-        apiName: camelCase(usrInput.api_name),
-        schemaPath: usrInput.schema_path,
-        apiType:
-          usrInput.architecture === ARCHITECTURE.eventDriven
-            ? APITYPE.graphql
-            : usrInput.api_type,
-        database:
-          usrInput.database === DATABASE.none ? undefined : usrInput.database,
-        architecture: usrInput.architecture,
-      },
-    };
+    if (
+      flags.test &&
+      !process.argv.includes("Panacloud") &&
+      !process.argv.includes("cli")
+    ) {
+      config = {
+        saasType: SAASTYPE.api,
+        api: {
+          template: TEMPLATE.defineApi,
+          nestedResolver: true,
+          // language: usrInput.language,
+          // cloudprovider: usrInput.cloud_provider,
+          apiName: camelCase("ApiName"),
+          schemaPath: "../../schema.graphql",
+          apiType: APITYPE.graphql,
+          database: DATABASE.neptuneDB,
+          architecture: ARCHITECTURE.eventDriven,
+        },
+      };
+    } else {
+      let usrInput = await userInput();
+      // Config to generate code.
+      config = {
+        // entityId: usrInput.entityId,
+        // api_token: usrInput.api_token,
+        saasType: SAASTYPE.api,
+        api: {
+          template: usrInput.template,
+          nestedResolver: usrInput.nestedResolver,
+          // language: usrInput.language,
+          // cloudprovider: usrInput.cloud_provider,
+          apiName: camelCase(usrInput.api_name),
+          schemaPath: usrInput.schema_path,
+          apiType:
+            usrInput.architecture === ARCHITECTURE.eventDriven
+              ? APITYPE.graphql
+              : usrInput.api_type,
+          database:
+            usrInput.database === DATABASE.none ? undefined : usrInput.database,
+          architecture: usrInput.architecture,
+        },
+      };
+    }
 
     // Error handling
     const validating = startSpinner("Validating Everything");
 
-    if (config.saasType === SAASTYPE.api) {
+    if (config!.saasType === SAASTYPE.api) {
       templateDir = path.resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      if (config.api?.template === TEMPLATE.defineApi) {
+      if (config!.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
-          config.api?.schemaPath,
+          config!.api?.schemaPath,
           validating,
-          config.api?.apiType
+          config!.api?.apiType
         );
       }
     }
