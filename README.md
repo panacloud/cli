@@ -62,6 +62,8 @@ USAGE
 <!-- commands -->
 * [`panacloud help [COMMAND]`](#panacloud-help-command)
 * [`panacloud init`](#panacloud-init)
+* [`panacloud update`](#panacloud-update)
+* [`panacloud merge`](#panacloud-merge)
 
 ## `panacloud help [COMMAND]`
 
