@@ -48,8 +48,8 @@ export interface ApiModel {
 }
 
 export interface Config {
-  entityId: string;
-  api_token: string;
+  entityId?: string;
+  api_token?: string;
   saasType: SAASTYPE;
   api: API;
 }
@@ -67,8 +67,8 @@ export type nestedResolverFieldsAndLambda = {
 }
 export interface API {
   template: TEMPLATE;
-  language: LANGUAGE;
-  cloudprovider: CLOUDPROVIDER;
+  language?: LANGUAGE;
+  cloudprovider?: CLOUDPROVIDER;
   architecture: ARCHITECTURE;
   apiName: string;
   schemaPath: string;
