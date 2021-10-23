@@ -18,7 +18,7 @@ abstract class MockObject {
 
 export class RootMockObject extends MockObject {
   private queryMockObjects: QueryMockObject[] = [];
-
+  private mutationMockObjects: MutationMockObject[] = [];
   constructor(schema: string) {
     super(buildSchema(schema));
     const queries = this.graphQLSchema?.getQueryType()?.getFields();
@@ -27,10 +27,16 @@ export class RootMockObject extends MockObject {
       const queryMockObject = new QueryMockObject(this.graphQLSchema, queryName, queryFieldObject);
       this.queryMockObjects.push(queryMockObject);
     });
-
+    Object.entries(mutations || []).forEach(([mutationName, mutationFieldObject]) => {
+      const mutationMockObject = new MutationMockObject(this.graphQLSchema, mutationName, mutationFieldObject);
+      this.mutationMockObjects.push(mutationMockObject);
+    });
   }
   write(object: TestCollectionType) {
     this.queryMockObjects.forEach((v) => {
+      v.write(object);
+    });
+    this.mutationMockObjects.forEach((v) => {
       v.write(object);
     });
   }
@@ -57,6 +63,31 @@ class QueryMockObject extends MockObject {
     });
     object.fields[this.queryName][0].response =
       Object.values(object.fields[this.queryName][0].response)[0]
+  }
+
+}
+
+class MutationMockObject extends MockObject {
+  private mutationName: string;
+  private objectRequests: ObjectRequest[] = [];
+  private objectResponses: ObjectResponse[] = [];
+  constructor(graphQLSchema: GraphQLSchema, mutationName: string, mutationFieldObject: GraphQLField<any, any, any>) {
+    super(graphQLSchema);
+    this.mutationName = mutationName;
+    this.objectRequests.push(new RootObjectRequest(graphQLSchema, mutationFieldObject.args))
+    this.objectResponses.push(new RootObjectResponse(graphQLSchema, [mutationFieldObject]))
+  }
+
+  write(object: TestCollectionType) {
+    object.fields[this.mutationName] = [{ arguments: {}, response: {} }];
+    this.objectRequests.forEach((v) => {
+      v.write(object.fields[this.mutationName][0].arguments);
+    });
+    this.objectResponses.forEach((v) => {
+      v.write(object.fields[this.mutationName][0].response);
+    });
+    object.fields[this.mutationName][0].response =
+      Object.values(object.fields[this.mutationName][0].response)[0]
   }
 
 }

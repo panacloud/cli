@@ -9,6 +9,10 @@ type Query {
   ): [UserInput]
 }
 
+type Mutation {
+  createMessage(id: ID, name: String): UserInput
+}
+
 input UserInput {
   name: String
   age: Int
