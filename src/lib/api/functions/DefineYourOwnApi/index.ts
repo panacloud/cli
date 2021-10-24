@@ -8,6 +8,7 @@ import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
+import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -149,7 +150,14 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     );
 
+    const dummyData: TestCollectionType = { fields: {} };
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
+    
+    const mockObject = new RootMockObject(gqlSchema);
+    mockObject.write(dummyData);
+    
+    console.log(JSON.stringify(dummyData, null, 2));
+
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
