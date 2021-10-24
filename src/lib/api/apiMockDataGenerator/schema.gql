@@ -1,0 +1,41 @@
+type Query {
+  getMessage(
+    id: ID
+    name: String
+    age: Int
+    gender: [UserInput]
+    income: Float
+    friend: [UserInput]
+  ): [UserInput]
+}
+
+# type Mutation {
+#   # createMessage(id: ID, name: String): UserInput
+# }
+
+input UserInput {
+  name: String
+  # age: Int
+  gender: [Boolean]
+  banks: Bank
+}
+
+input Bank {
+  # name: [BankName]
+  balance: Int
+  of: UserInput
+}
+
+type User {
+  name: String
+  age: Int
+  gender: Boolean
+}
+
+enum BankName {
+  FBL
+  HBL
+  Meezan
+  BAHL
+  UBL
+}
