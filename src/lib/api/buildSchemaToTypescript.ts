@@ -1,4 +1,5 @@
 let upperFirst = require("lodash/upperFirst");
+const fse = require("fs-extra");
 
 export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
   let includeDeprecatedFields = false;
@@ -11,11 +12,12 @@ export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
 
   let allImports: string[] = [];
   let allEnumImports: string[] = [];
-
-  let typeStr = "type TestCollection = {\n fields: {\n";
+  let typeStrings: any = {};
 
   const generateCollections = (obj: any, description: "Query" | "Mutation") => {
     Object.keys(obj).forEach((type: string) => {
+      let typeStr: any = {}
+      // let typeStr = "type TestCollection = {\n fields: {\n";
       const field = gqlSchema.getType(description).getFields()[type];
       if (includeDeprecatedFields || !field.isDeprecated) {
         const responseTypeName = field.type.inspect().replace(/[[\]!]/g, "");
@@ -47,10 +49,8 @@ export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
             : `${responseTypeName}`;
 
         field.args.length > 0
-          ? (typeStr += `${type}: {arguments: ${description}${upperFirst(
-              type
-            )}Args; response: ${responseType} }[];\n`)
-          : (typeStr += `${type}: { response: ${responseType} }[];\n`);
+        ? typeStr = {"fields" : {[type]: [ {arguments: `${description}${upperFirst(type)}Args`, response: responseType } ]}}
+        : typeStr = {"fields" : {[type]: [{ response: responseType } ]}}
 
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
@@ -59,6 +59,10 @@ export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
             }
           }
         });
+
+        // typeStr += "}\n}";
+
+        typeStrings = {...typeStrings, [type]: typeStr};
 
         if (
           (responseTypeName === "String" ||
@@ -85,15 +89,13 @@ export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
     generateCollections(gqlSchema?.getQueryType()?.getFields(), "Query");
   }
 
-  typeStr += "}\n}";
-
   // Remove Duplication from Imports array
   let imports: string[] = [...new Set(allImports)];
   let enumImports: string[] = [...new Set(allEnumImports)];
 
   return {
     collections: collectionsObject,
-    types: typeStr,
+    types: typeStrings,
     imports: imports,
     enumImports: enumImports,
   };

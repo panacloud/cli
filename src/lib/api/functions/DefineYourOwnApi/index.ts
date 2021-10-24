@@ -1,6 +1,6 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
 import { mkdirRecursiveAsync } from "../../../fs";
-import { contextInfo, generatePanacloudConfig } from "../../info";
+import { generatePanacloudConfig } from "../../info";
 import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
@@ -16,7 +16,7 @@ const fse = require("fs-extra");
 const snakeCase = require("lodash/snakeCase");
 
 async function defineYourOwnApi(config: Config, templateDir: string) {
-  const { api_token, entityId } = config;
+  // const { api_token, entityId } = config;
 
   const {
     api: { schemaPath, apiType, nestedResolver },
@@ -32,13 +32,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   };
 
   const generatingCode = startSpinner("Generating CDK Code...");
-
   /* copy files from global package dir to cwd */
   fs.readdirSync(templateDir).forEach(async (file: any) => {
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         fse.copy(`${templateDir}/${file}`, ".gitignore");
-      } else {
+      }
+      else {
         await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
@@ -73,22 +73,29 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   });
 
-  await fse.writeJson(
-    `./cdk.context.json`,
-    contextInfo(api_token, entityId),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // await fse.writeJson(
+  //   `./cdk.context.json`,
+  //   contextInfo(api_token, entityId),
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   if (apiType === APITYPE.graphql) {
     await mkdirRecursiveAsync(`editable_src`);
     await mkdirRecursiveAsync(`editable_src/graphql`);
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
     await mkdirRecursiveAsync(`editable_src/aspects`);
+
+    fs.readdirSync(templateDir).forEach(async (file: any) => {
+      if (file === "lambdaLayer") {
+        await fse.copy(`${templateDir}/${file}`, "editable_src/lambdaLayer");
+      }
+    });
+
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -202,7 +209,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   await CreateAspects({ config: model });
 
   // Codegenerator Function
-  await generator(model, PanacloudConfig);
+  await generator(model, PanacloudConfig, 'init');
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
@@ -216,7 +223,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   }
 
   try {
-    await exec(`cd lambdaLayer/nodejs && npm install`);
+    await exec(`cd editable_src/lambdaLayer/nodejs && npm install`);
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);

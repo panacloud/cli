@@ -6,3 +6,6 @@ generates:
   ./lambdaLayer/mockApi/types.ts:
     plugins:
       - typescript
+  ./editable_src/lambdaLayer/mockApi/types.ts:
+    plugins:
+      - typescript

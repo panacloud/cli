@@ -40,14 +40,14 @@ export default class Create extends Command {
 
     // Config to generate code.
     const config: Config = {
-      entityId: usrInput.entityId,
-      api_token: usrInput.api_token,
-      saasType: usrInput.saas_type,
+      // entityId: usrInput.entityId,
+      // api_token: usrInput.api_token,
+      saasType: SAASTYPE.api,
       api: {
         template: usrInput.template,
         nestedResolver: usrInput.nestedResolver,
-        language: usrInput.language,
-        cloudprovider: usrInput.cloud_provider,
+        // language: usrInput.language,
+        // cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
         apiType:
@@ -142,7 +142,7 @@ export default class Create extends Command {
       });
       await fs.writeFileSync(file, nextData, "utf8");
     });
-    
+
     stopSpinner(formatting, "Formatting Done", false);
 
     this.log(chalk.greenBright("Build your Billion Dollar API"));
