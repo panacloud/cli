@@ -12,30 +12,30 @@ const inquirer = require("inquirer");
 
 export const userInput = async () => {
   return await inquirer.prompt([
-    {
-      type: "list",
-      name: "cloud_provider",
-      message: "Your Cloud Provider?",
-      choices: [CLOUDPROVIDER.aws],
-      default: CLOUDPROVIDER.aws,
-      validate: Boolean,
-    },
-    {
-      type: "list",
-      name: "language",
-      message: "Your Language?",
-      choices: [LANGUAGE.typescript],
-      default: LANGUAGE.typescript,
-      validate: Boolean,
-    },
-    {
-      type: "list",
-      name: "saas_type",
-      message: "Select SaaS Type?",
-      choices: [SAASTYPE.api],
-      default: SAASTYPE.api,
-      validate: Boolean,
-    },
+    // {
+    //   type: "list",
+    //   name: "cloud_provider",
+    //   message: "Your Cloud Provider?",
+    //   choices: [CLOUDPROVIDER.aws],
+    //   default: CLOUDPROVIDER.aws,
+    //   validate: Boolean,
+    // },
+    // {
+    //   type: "list",
+    //   name: "language",
+    //   message: "Your Language?",
+    //   choices: [LANGUAGE.typescript],
+    //   default: LANGUAGE.typescript,
+    //   validate: Boolean,
+    // },
+    // {
+    //   type: "list",
+    //   name: "saas_type",
+    //   message: "Select SaaS Type?",
+    //   choices: [SAASTYPE.api],
+    //   default: SAASTYPE.api,
+    //   validate: Boolean,
+    // },
     {
       type: "list",
       name: "template",
@@ -53,39 +53,45 @@ export const userInput = async () => {
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
-    {
-      type: "string",
-      name: "entityId",
-      message: "Enter Your Panacloud Portal User ID",
-      validate: Boolean,
-    },
-    {
-      type: "string",
-      name: "api_token",
-      message: "Enter Your Panacloud Portal API Key",
-      validate: Boolean,
-    },
+    // {
+    //   type: "string",
+    //   name: "entityId",
+    //   message: "Enter Your Panacloud Portal User ID",
+    //   validate: Boolean,
+    // },
+    // {
+    //   type: "string",
+    //   name: "api_token",
+    //   message: "Enter Your Panacloud Portal API Key",
+    //   validate: Boolean,
+    // },
     {
       type: "list",
       name: "api_type",
       message: "Select API Type?",
       choices: [APITYPE.graphql, APITYPE.rest],
       default: APITYPE.graphql,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      when: (answers: any) =>
+        answers.template === TEMPLATE.defineApi &&
+        answers.architecture !== ARCHITECTURE.eventDriven,
       validate: Boolean,
     },
     {
       type: "string",
       name: "schema_path",
       message: "GraphQL Schema File Path",
-      when: (answers: any) => answers.api_type === APITYPE.graphql,
+      when: (answers: any) =>
+        answers.api_type === APITYPE.graphql ||
+        answers.architecture === ARCHITECTURE.eventDriven,
       validate: (val: string) => fileExistsAsync(val),
     },
     {
       type: "string",
       name: "schema_path",
       message: "REST OpenAPI Specifications File Path",
-      when: (answers: any) => answers.api_type === APITYPE.rest,
+      when: (answers: any) =>
+        answers.api_type === APITYPE.rest ||
+        answers.architecture !== ARCHITECTURE.eventDriven,
       validate: (val: string) => fileExistsAsync(val),
     },
     {

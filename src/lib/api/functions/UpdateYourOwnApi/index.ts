@@ -1,13 +1,6 @@
-import { startSpinner, stopSpinner } from "../../../spinner";
-
-import { contextInfo, generatePanacloudConfig, updatePanacloudConfig } from "../../info";
-import {
-    Config,
-    APITYPE,
-    ApiModel,
-    PanacloudconfigFile
-    // LAMBDASTYLE,
-} from "../../../../utils/constants";
+import { stopSpinner } from "../../../spinner";
+import { updatePanacloudConfig } from "../../info";
+import { Config, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -16,99 +9,89 @@ import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 
 const path = require("path");
 const fs = require("fs");
-const YAML = require("yamljs");
-const exec = require("await-exec");
-const fse = require("fs-extra");
-const _ = require("lodash");
+const snakeCase = require("lodash/snakeCase");
 
+async function updateYourOwnApi(config: Config, spinner: any) {
+  const workingDir = snakeCase(path.basename(process.cwd()));
+  const { schemaPath } = config.api;
 
-async function updateYourOwnApi(config: Config, spinner:any) {
+  const model: ApiModel = {
+    api: {
+      ...config.api,
+    },
+    workingDir: workingDir,
+  };
 
-    const workingDir = _.snakeCase(path.basename(process.cwd()));
+  let directivesPath = path.resolve(
+    __dirname,
+    "../../../../utils/awsAppsyncDirectives.graphql"
+  );
 
-    const model: ApiModel = {
-        api: {
-            ...config.api,
-        },
-        workingDir: workingDir,
-    };
+  let scalarPath = path.resolve(
+    __dirname,
+    "../../../../utils/awsAppsyncScalars.graphql"
+  );
 
-    let directivesPath = path.resolve(
-        __dirname,
-        "../../../../utils/awsAppsyncDirectives.graphql"
-      );
-  
-      let scalarPath = path.resolve(
-        __dirname,
-        "../../../../utils/awsAppsyncScalars.graphql"
-      );
-
-    let schema = fs.readFileSync(config.api.schemaPath, "utf8", (err: string) => {
-        if (err) {
-            stopSpinner(spinner, `Error: ${err}`, true);
-            process.exit(1);
-        }
-    });
-
-    let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
-        if (err) {
-          stopSpinner(spinner, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      });
-  
-      let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
-        if (err) {
-          stopSpinner(spinner, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      });
-
-    const gqlSchema = buildSchema(`${directives}\n${schema}`);
-
-    // Model Config
-    const queriesFields: any = gqlSchema.getQueryType()?.getFields();
-    const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    const introspection = introspectionFromSchema(gqlSchema);
-    model.api.schema = introspection;
-    model.api.queiresFields = [...Object.keys(queriesFields)];
-    model.api.mutationFields = [...Object.keys(mutationsFields)];
-
-   
-    const fieldSplitterOutput = microServicesDirectiveFieldSplitter(queriesFields,mutationsFields);
-
-    
-
-    model.api.generalFields = fieldSplitterOutput.generalFields;
-    model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
-
-
-    const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
-    model.api.mockApiData = mockApiCollection;
-    
-    if (model.api.nestedResolver) {
-      const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model,gqlSchema)
-      if (Object.keys(fieldsAndLambdas.nestedResolverFields).length <= 0) {
-        stopSpinner(
-          spinner,
-          "nested resolvers are not possible with this schema normal resolvers are created",
-          false
-        );
-        model.api.nestedResolver = false;
-      } else {
-          model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas
-      }
+  let schema = fs.readFileSync(schemaPath, "utf8", (err: string) => {
+    if (err) {
+      stopSpinner(spinner, `Error: ${err}`, true);
+      process.exit(1);
     }
+  });
 
-    const updatedPanacloudConfig = await updatePanacloudConfig(
-      model,
+  let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
+    if (err) {
+      stopSpinner(spinner, `Error: ${err}`, true);
+      process.exit(1);
+    }
+  });
+
+  let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
+    if (err) {
+      stopSpinner(spinner, `Error: ${err}`, true);
+      process.exit(1);
+    }
+  });
+
+  const gqlSchema = buildSchema(`${directives}\n${schema}`);
+
+  // Model Config
+  const queriesFields: any = gqlSchema.getQueryType()?.getFields();
+  const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+  const introspection = introspectionFromSchema(gqlSchema);
+  model.api.schema = introspection;
+  model.api.queiresFields = [...Object.keys(queriesFields)];
+  model.api.mutationFields = [...Object.keys(mutationsFields)];
+
+  const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
+    queriesFields,
+    mutationsFields
+  );
+
+  model.api.generalFields = fieldSplitterOutput.generalFields;
+  model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+
+  const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
+  model.api.mockApiData = mockApiCollection;
+
+  if (model.api.nestedResolver) {
+    const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model, gqlSchema);
+    if (Object.keys(fieldsAndLambdas.nestedResolverFields).length <= 0) {
+      stopSpinner(
         spinner,
-    );
+        "Nested Resolvers Are Not Possible With This Schema Normal Resolvers Are Created",
+        true
+      );
+      model.api.nestedResolver = false;
+    } else {
+      model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas;
+    }
+  }
 
+  const updatedPanacloudConfig = await updatePanacloudConfig(model, spinner);
 
-    // Codegenerator Function
-    await generator(model, updatedPanacloudConfig);
-
+  // Codegenerator Function
+  await generator(model, updatedPanacloudConfig);
 }
 
 export default updateYourOwnApi;

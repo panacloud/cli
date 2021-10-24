@@ -3,7 +3,9 @@ let upperFirst = require("lodash/upperFirst");
 export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
   let includeDeprecatedFields = false;
 
-  let collectionsObject: {fields: { [k: string]: [{ arguments?: any; response: any }] }} = {
+  let collectionsObject: {
+    fields: { [k: string]: { arguments?: any; response: any }[] };
+  } = {
     fields: {},
   };
 
@@ -45,10 +47,10 @@ export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
             : `${responseTypeName}`;
 
         field.args.length > 0
-          ? (typeStr += `${type}: [{arguments: ${description}${upperFirst(
+          ? (typeStr += `${type}: {arguments: ${description}${upperFirst(
               type
-            )}Args; response: ${responseType} } ];\n`)
-          : (typeStr += `${type}: [{ response: ${responseType} }];\n`);
+            )}Args; response: ${responseType} }[];\n`)
+          : (typeStr += `${type}: { response: ${responseType} }[];\n`);
 
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {

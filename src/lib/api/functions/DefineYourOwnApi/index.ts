@@ -1,24 +1,11 @@
 import { startSpinner, stopSpinner } from "../../../spinner";
-import {
-  writeFileAsync,
-  copyFileAsync,
-  mkdirRecursiveAsync,
-} from "../../../fs";
-import { contextInfo, generatePanacloudConfig } from "../../info";
-import {
-  Config,
-  APITYPE,
-  ApiModel,
-  PanacloudconfigFile,
-} from "../../../../utils/constants";
+import { mkdirRecursiveAsync } from "../../../fs";
+import { generatePanacloudConfig } from "../../info";
+import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
-import {
-  introspectionFromSchema,
-  buildSchema,
-  GraphQLObjectType,
-} from "graphql";
+import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
-import { EliminateScalarTypes, FieldsAndLambdaForNestedResolver, ScalarAndEnumKindFinder } from "../../helpers";
+import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 const path = require("path");
@@ -29,7 +16,7 @@ const fse = require("fs-extra");
 const snakeCase = require("lodash/snakeCase");
 
 async function defineYourOwnApi(config: Config, templateDir: string) {
-  const { api_token, entityId } = config;
+  // const { api_token, entityId } = config;
 
   const {
     api: { schemaPath, apiType, nestedResolver },
@@ -63,49 +50,39 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   });
 
   // Updating fileName
-  const stackPackageJson = JSON.parse(
-    fs.readFileSync(`${templateDir}/package.json`)
-  );
+  const stackPackageJson = await fse.readJson(`${templateDir}/package.json`);
 
-  const cdkJson = JSON.parse(fs.readFileSync(`${templateDir}/cdk.json`));
+  const cdkJson = await fse.readJson(`${templateDir}/cdk.json`);
 
   stackPackageJson.bin = `bin/${workingDir}.js`;
   stackPackageJson.name = workingDir;
 
   cdkJson.app = `npx ts-node --prefer-ts-exts bin/${workingDir}.ts`;
 
-  await fs.writeFileSync(
-    `./package.json`,
-    JSON.stringify(stackPackageJson),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
+  await fse.writeJson(`./package.json`, stackPackageJson, (err: string) => {
+    if (err) {
+      stopSpinner(generatingCode, `Error: ${err}`, true);
+      process.exit(1);
     }
-  );
+  });
 
-  await fs.writeFileSync(
-    `./cdk.json`,
-    JSON.stringify(cdkJson),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
+  await fse.writeJson(`./cdk.json`, cdkJson, (err: string) => {
+    if (err) {
+      stopSpinner(generatingCode, `Error: ${err}`, true);
+      process.exit(1);
     }
-  );
+  });
 
-  writeFileAsync(
-    `./cdk.context.json`,
-    JSON.stringify(contextInfo(api_token, entityId)),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // await fse.writeJson(
+  //   `./cdk.context.json`,
+  //   contextInfo(api_token, entityId),
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   if (apiType === APITYPE.graphql) {
     await mkdirRecursiveAsync(`editable_src`);
@@ -122,6 +99,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       process.exit(1);
     }
   });
+
   let PanacloudConfig: any;
 
   if (apiType === APITYPE.graphql) {
@@ -135,14 +113,18 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       "../../../../utils/awsAppsyncScalars.graphql"
     );
 
-    let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
+    let directives = await fs.readFileSync(
+      directivesPath,
+      "utf8",
+      (err: string) => {
+        if (err) {
+          stopSpinner(generatingCode, `Error: ${err}`, true);
+          process.exit(1);
+        }
       }
-    });
+    );
 
-    let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
+    let scalars = await fs.readFileSync(scalarPath, "utf8", (err: string) => {
       if (err) {
         stopSpinner(generatingCode, `Error: ${err}`, true);
         process.exit(1);
@@ -168,36 +150,37 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
-  
-    const fieldSplitterOutput = microServicesDirectiveFieldSplitter(queriesFields,mutationsFields);
-    
+
+    const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
+      queriesFields,
+      mutationsFields
+    );
+
     model.api.generalFields = fieldSplitterOutput.generalFields;
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
-    if (apiType === APITYPE.graphql) {
-      const mockApiCollection = buildSchemaToTypescript(
-        gqlSchema,
-        introspection
+    const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
+    model.api.mockApiData = mockApiCollection;
+    // if user selects nested resolver
+    if (nestedResolver) {
+      const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(
+        model,
+        gqlSchema
       );
-      model.api.mockApiData = mockApiCollection;
-      // if user selects nested resolver
-      if (nestedResolver) {
-        const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model,gqlSchema)
-        if (Object.keys(fieldsAndLambdas.nestedResolverFields).length <= 0) {
-          stopSpinner(
-            generatingCode,
-            "nested resolvers are not possible with this schema normal resolvers are created",
-            false
-          );
-          model.api.nestedResolver = false;
-        } else {
-            model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas
-        }
+      if (Object.keys(fieldsAndLambdas.nestedResolverFields).length <= 0) {
+        stopSpinner(
+          generatingCode,
+          "Nested Resolvers Are Not Possible With This Schema Normal Resolvers Are Created",
+          true
+        );
+        model.api.nestedResolver = false;
+      } else {
+        model.api.nestedResolverFieldsAndLambdas = fieldsAndLambdas;
       }
-      PanacloudConfig = await generatePanacloudConfig(model);
     }
+    PanacloudConfig = await generatePanacloudConfig(model);
   } else {
-    copyFileAsync(
+    fse.copy(
       schemaPath,
       `./schema/${path.basename(schemaPath)}`,
       (err: string) => {
@@ -216,9 +199,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     }
   }
 
-
-
-  await CreateAspects({config:model});
+  await CreateAspects({ config: model });
 
   // Codegenerator Function
   await generator(model, PanacloudConfig);
