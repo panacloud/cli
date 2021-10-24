@@ -2,7 +2,7 @@ import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArg
 import { isArray } from "./helper";
 // import * as crypto from 'crypto';
 
-type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom"
+type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp"
 export type ArgAndResponseType = { arguments?: any; response: any }
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
@@ -115,7 +115,7 @@ class RootObjectResponse extends ObjectResponse {
     this.childNumber = childNumber + 1;
 
     fieldResponses.forEach((response) => {
-      let type = response.type.toString();
+      let type = response.type.toString() as ScalarType;
       const _isArray = isArray(type);
       type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
 
@@ -133,6 +133,12 @@ class RootObjectResponse extends ObjectResponse {
 
       } else if (type === "Boolean") {
         this.objectResponses.push(new BoolObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSTimestamp") {
+        this.objectResponses.push(new AWSTimeStampObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSURL") {
+        this.objectResponses.push(new AWSURLObjectResponse(graphQLSchema, response, _isArray));
 
       } else if (this.isEnum(type)) {
         this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
@@ -167,7 +173,7 @@ class RootObjectRequest extends ObjectRequest {
     // console.log("childNumber", this.childNumber)
 
     fieldRequests.forEach((request: GraphQLArgument) => {
-      let type = request.type.toString();
+      let type = request.type.toString() as ScalarType;
       const _isArray = isArray(type);
       type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
       // console.log(type)
@@ -185,6 +191,12 @@ class RootObjectRequest extends ObjectRequest {
 
       } else if (type === "Boolean") {
         this.objectRequests.push(new BoolObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSTimestamp") {
+        this.objectRequests.push(new AWSTimeStampObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSURL") {
+        this.objectRequests.push(new AWSURLObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (this.isEnum(type)) {
         this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
@@ -296,6 +308,40 @@ class BoolObjectResponse extends ObjectResponse {
     }
   }
 }
+class AWSURLObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = ["https://google.com", "https://google.com", "https://google.com"];
+    } else {
+      object[this.responseField.name] = "https://google.com";
+    }
+  }
+}
+class AWSTimeStampObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [1635081727478, 1635081727478, 1635081727478];
+    } else {
+      object[this.responseField.name] = 1635081727478;
+    }
+  }
+}
 class EnumObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>
   private isArray?: boolean;
@@ -371,6 +417,7 @@ class CustomObjectResponse extends ObjectResponse {
   }
 
 }
+
 
 class StringObjectRequest extends ObjectRequest {
   private requestField: GraphQLArgument;
@@ -454,6 +501,40 @@ class BoolObjectRequest extends ObjectRequest {
       object[this.requestField.name] = [true, false, true];
     } else {
       object[this.requestField.name] = true;
+    }
+  }
+}
+class AWSURLObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = ["https://google.com", "https://google.com", "https://google.com"];
+    } else {
+      object[this.requestField.name] = "https://google.com";
+    }
+  }
+}
+class AWSTimeStampObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [1635081727478, 1635081727478, 1635081727478];
+    } else {
+      object[this.requestField.name] = 1635081727478;
     }
   }
 }

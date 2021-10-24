@@ -8,13 +8,13 @@ import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
+import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
 const exec = require("await-exec");
 const fse = require("fs-extra");
 const snakeCase = require("lodash/snakeCase");
-import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator/MockObject";
 
 async function defineYourOwnApi(config: Config, templateDir: string) {
   // const { api_token, entityId } = config;
