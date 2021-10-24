@@ -40,20 +40,9 @@ export const lambdaInitializerForNestedResolvers = (
     const isMutation = model.mutationFields?.includes(key);
     if (architecture === ARCHITECTURE.eventDriven && isMutation) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
-      // lambda.initializeLambda(apiName, `${key}_consumer`);
-      // code.line();
-      // code.line(
-      //   `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-      // );
-      // code.line();
     }
     lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,undefined,true);
     code.line();
-    if(database === DATABASE.dynamoDB){
-      code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-    }else {
-      code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
-    }
     code.line();
   }
 };
@@ -112,12 +101,6 @@ export const lambdaInitializerForMicroServices = (
         microService
       );
       code.line();
-      if(database === DATABASE.dynamoDB){
-        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-      }else {
-        code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
-      }
-      code.line();
     }
   }
 };
@@ -158,11 +141,6 @@ export const lambdaInitializerForGeneralFields = (
     }
     lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole);
     code.line();
-    if(database === DATABASE.dynamoDB){
-      code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-    }else{
-      code.line(`this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
-    }
     code.line();
   }
 };
@@ -197,12 +175,6 @@ export const lambdaInitializerForEventDriven = (
 
   lambda.initializeLambda(apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");
   code.line();
-  //myApi_lambdaFn_createApi_consumerArn
-  if(database === DATABASE.dynamoDB){
-    code.line(`this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
-  }else{
-  code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);
-  }
   code.line();
 };
 
@@ -311,7 +283,6 @@ export const lambdaHandlerForAuroradb = (
     code.line();
   } else {
     if (microServiceFields) {
-      const microServices = Object.keys(microServiceFields);
       lambdaInitializerForMicroServices(model.api,panacloudConfig,code)
     }
 

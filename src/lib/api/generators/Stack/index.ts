@@ -65,6 +65,7 @@ export class CdkStack {
     const eventBridge = new EventBridge(this.code);
     importHandlerForStack(database, apiType, this.config.api.architecture, this.code);
     imp.importLambda();
+    database !== DATABASE.dynamoDB && imp.importEc2()
     this.code.line();
 
     cdk.initializeStack(
