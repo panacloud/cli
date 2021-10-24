@@ -345,13 +345,14 @@ class AWSTimeStampObjectResponse extends ObjectResponse {
 class EnumObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>
   private isArray?: boolean;
+  private enumType: string;
   private enumList: string[];
   constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
-    const enumType = responseField.type.toString().replace(/[\[|\]!]/g, ''); //removing braces and "!" eg: [String!]! ==> String
-    const enumObjectType = this.graphQLSchema.getType(enumType) as GraphQLEnumType;
+    this.enumType = responseField.type.toString().replace(/[\[|\]!]/g, ''); //removing braces and "!" eg: [String!]! ==> String
+    const enumObjectType = this.graphQLSchema.getType(this.enumType) as GraphQLEnumType;
     this.enumList = enumObjectType.getValues().map(v => v.name);
   }
 
@@ -363,7 +364,8 @@ class EnumObjectResponse extends ObjectResponse {
     }
   }
   getRandomEnum() {
-    return this.enumList[Math.floor(Math.random() * this.enumList.length)]
+    const enumValue = this.enumList[Math.floor(Math.random() * this.enumList.length)];
+    return `${this.enumType}.${enumValue}`;
   }
 }
 class RepeatCustomObjectResponse extends ObjectResponse {
@@ -541,12 +543,13 @@ class EnumObjectRequest extends ObjectRequest {
   private requestField: GraphQLArgument
   private isArray?: boolean;
   private enumList: string[];
+  private enumType: string;
   constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
     super(graphQLSchema);
     this.isArray = isArray;
     this.requestField = requestField;
-    const enumType = requestField.type.toString().replace(/[\[|\]!]/g, ''); //removing braces and "!" eg: [String!]! ==> String
-    const enumObjectType = this.graphQLSchema.getType(enumType) as GraphQLEnumType;
+    this.enumType = requestField.type.toString().replace(/[\[|\]!]/g, ''); //removing braces and "!" eg: [String!]! ==> String
+    const enumObjectType = this.graphQLSchema.getType(this.enumType) as GraphQLEnumType;
     this.enumList = enumObjectType.getValues().map(v => v.name);
   }
 
@@ -559,7 +562,8 @@ class EnumObjectRequest extends ObjectRequest {
   }
 
   getRandomEnum() {
-    return this.enumList[Math.floor(Math.random() * this.enumList.length)]
+    const enumValue = this.enumList[Math.floor(Math.random() * this.enumList.length)];
+    return `${this.enumType}.${enumValue}`;
   }
 
 }
