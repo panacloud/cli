@@ -6,11 +6,18 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE, Config, DATABASE, LANGUAGE, CLOUDPROVIDER, APITYPE } from "../utils/constants";
-import { writeFileAsync } from "../lib/fs";
+import {
+  TEMPLATE,
+  SAASTYPE,
+  Config,
+  DATABASE,
+  ARCHITECTURE,
+  APITYPE,
+} from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
+const fse = require("fs-extra");
 const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
@@ -33,18 +40,22 @@ export default class Create extends Command {
 
     // Config to generate code.
     const config: Config = {
-      entityId: usrInput.entityId,
-      api_token: usrInput.api_token,
-      saasType: usrInput.saas_type,
+      // entityId: usrInput.entityId,
+      // api_token: usrInput.api_token,
+      saasType: SAASTYPE.api,
       api: {
         template: usrInput.template,
         nestedResolver: usrInput.nestedResolver,
-        language: usrInput.language,
-        cloudprovider: usrInput.cloud_provider,
+        // language: usrInput.language,
+        // cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
-        apiType: usrInput.api_type,
-        database: usrInput.database === DATABASE.none? undefined : usrInput.database,
+        apiType:
+          usrInput.architecture === ARCHITECTURE.eventDriven
+            ? APITYPE.graphql
+            : usrInput.api_type,
+        database:
+          usrInput.database === DATABASE.none ? undefined : usrInput.database,
         architecture: usrInput.architecture,
       },
     };
@@ -64,10 +75,15 @@ export default class Create extends Command {
       }
     }
 
-
-    writeFileAsync(
+    fse.writeJson(
       `./codegenconfig.json`,
-      JSON.stringify({...config, api: {...config.api, schemaPath: "./editable_src/graphql/schema/schema.graphql"}}),
+      {
+        ...config,
+        api: {
+          ...config.api,
+          schemaPath: "./editable_src/graphql/schema/schema.graphql",
+        },
+      },
       (err: string) => {
         if (err) {
           stopSpinner(validating, `Error: ${err}`, true);
@@ -89,14 +105,14 @@ export default class Create extends Command {
     }
 
     const generatingTypes = startSpinner("Generating Types");
-    
+
     try {
       await exec(`npx graphql-codegen`);
     } catch (error) {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
-    
+
     stopSpinner(generatingTypes, "Generating Types", false);
 
     const formatting = startSpinner("Formatting Code");
@@ -112,13 +128,13 @@ export default class Create extends Command {
         "!*.lock",
         "!*.yaml",
         "!*.yml",
-        "editable_src/panacloudconfig.json"
+        "editable_src/panacloudconfig.json",
       ],
       {
         gitignore: true,
       }
     );
-    
+
     files.forEach(async (file: any) => {
       const data = fs.readFileSync(file, "utf8");
       const nextData = prettier.format(data, {

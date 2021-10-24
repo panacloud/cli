@@ -4,7 +4,9 @@ const fse = require("fs-extra");
 export const buildSchemaToTypescript = (gqlSchema: any, introspection: any) => {
   let includeDeprecatedFields = false;
 
-  let collectionsObject: {fields: { [k: string]: [{ arguments?: any; response: any }] }} = {
+  let collectionsObject: {
+    fields: { [k: string]: { arguments?: any; response: any }[] };
+  } = {
     fields: {},
   };
 

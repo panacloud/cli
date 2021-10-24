@@ -15,7 +15,6 @@ import { dynamodbConstructTest } from "./CdkTests/Dynamodb";
 import { lambdaConstructTest } from "./CdkTests/Lambda";
 import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
-import { LambdaConstruct } from "./Lambda";
 import { multipleLambda } from "./Lambda/multipleLambda";
 import { customLambda } from "./Lambda/customLambda";
 import { singleLambda } from "./Lambda/singleLambda";
@@ -60,11 +59,14 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   // lambda Construct
 
 
-  LambdaConstruct({ config, panacloudConfig });
 
   // Single or Multi
   if (config.api.apiType === APITYPE.rest) {
+<<<<<<< HEAD
     singleLambda({ config });
+=======
+      singleLambda({ config });
+>>>>>>> 11808cd032eb8288ae3bbf552b7c7fecb14e36e9
   }
   else if (config.api.apiType === APITYPE.graphql) {
     multipleLambda({ config });
