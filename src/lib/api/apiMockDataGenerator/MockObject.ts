@@ -46,12 +46,11 @@ class QueryMockObject extends MockObject {
   private queryName: string;
   private objectRequests: ObjectRequest[] = [];
   private objectResponses: ObjectResponse[] = [];
-  private resolvedCustomeObjectType: string[] = [];
   constructor(graphQLSchema: GraphQLSchema, queryName: string, queryFieldObject: GraphQLField<any, any, any>,) {
     super(graphQLSchema);
     this.queryName = queryName;
     this.objectRequests.push(new RootObjectRequest(graphQLSchema, queryFieldObject.args, 0))
-    this.objectResponses.push(new RootObjectResponse(graphQLSchema, [queryFieldObject]))
+    this.objectResponses.push(new RootObjectResponse(graphQLSchema, [queryFieldObject], 0))
   }
 
   write(object: TestCollectionType) {
@@ -76,7 +75,7 @@ class MutationMockObject extends MockObject {
     super(graphQLSchema);
     this.mutationName = mutationName;
     this.objectRequests.push(new RootObjectRequest(graphQLSchema, mutationFieldObject.args, 0))
-    this.objectResponses.push(new RootObjectResponse(graphQLSchema, [mutationFieldObject]))
+    this.objectResponses.push(new RootObjectResponse(graphQLSchema, [mutationFieldObject], 0))
   }
 
   write(object: TestCollectionType) {
@@ -107,11 +106,13 @@ abstract class ObjectRequest extends MockObject {
 }
 
 class RootObjectResponse extends ObjectResponse {
-  private resolvedCustomeObjectType: string[] = [];
+  private resolvedCustomObjectTypes: string[] = [];
   private objectResponses: Array<ObjectResponse> = [];
-  constructor(graphQLSchema: GraphQLSchema, fieldResponses: Array<GraphQLField<any, any, { [key: string]: any }>>, resolvedCustomeObjectType?: string[]) {
+  private childNumber: number
+  constructor(graphQLSchema: GraphQLSchema, fieldResponses: Array<GraphQLField<any, any, { [key: string]: any }>>, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
-    this.resolvedCustomeObjectType = resolvedCustomeObjectType || [];
+    this.resolvedCustomObjectTypes = resolvedCustomObjectTypes || [];
+    this.childNumber = childNumber + 1;
 
     fieldResponses.forEach((response) => {
       let type = response.type.toString();
@@ -136,8 +137,12 @@ class RootObjectResponse extends ObjectResponse {
       } else if (this.isEnum(type)) {
         this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
 
+        // } else if (this.resolvedCustomObjectType.includes(type)) {
+      } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
+        this.objectResponses.push(new RepeatCustomObjectResponse(graphQLSchema, response, _isArray));
+
       } else {
-        this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray));
+        this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
       }
     });
 
@@ -159,7 +164,7 @@ class RootObjectRequest extends ObjectRequest {
     super(graphQLSchema);
     this.resolvedCustomObjectTypes = resolvedCustomObjectTypes || [];
     this.childNumber = childNumber + 1;
-    console.log("childNumber", this.childNumber)
+    // console.log("childNumber", this.childNumber)
 
     fieldRequests.forEach((request: GraphQLArgument) => {
       let type = request.type.toString();
@@ -315,21 +320,35 @@ class EnumObjectResponse extends ObjectResponse {
     return this.enumList[Math.floor(Math.random() * this.enumList.length)]
   }
 }
+class RepeatCustomObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.responseField = responseField;
+  }
+  write(object: ArgAndResponseType['response']) {
+    if (this.isArray) {
+      object[this.responseField.name] = [{}, {}, {}];
+    } else {
+      object[this.responseField.name] = {};
+    }
+  }
+}
 class CustomObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>;
   private objectResponses: ObjectResponse[] = []
-  private resolvedCustomeObjectType: string[] = [];
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, resolvedCustomeObjectType?: string[]) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
     this.responseField = responseField;
-    this.resolvedCustomeObjectType = resolvedCustomeObjectType || [];
     this.isArray = isArray;
     const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
-    // this.resolvedCustomeObjectType.push(type);
+    resolvedCustomObjectTypes?.push(type);
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
-    this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(inputObjectFields),))
+    this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
   }
 
   write(object: ArgAndResponseType['response']): void {
@@ -482,31 +501,21 @@ class RepeatCustomObjectRequest extends ObjectRequest {
 class CustomObjectRequest extends ObjectRequest {
   private requestField: GraphQLArgument;
   private objectRequests: ObjectRequest[] = []
-  private resolvedCustomObjectType: string[] = [];
   private isArray?: boolean;
-  private type: string;
-  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean, childNumber: number, resolvedCustomObjectType?: string[]) {
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
     this.isArray = isArray;
-    this.resolvedCustomObjectType = resolvedCustomObjectType || [];
     this.requestField = requestField;
-    this.type = requestField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
-    this.resolvedCustomObjectType.push(this.type)
-    const inputObjectType = this.graphQLSchema.getType(this.type) as GraphQLObjectType;
+    const type = requestField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+    resolvedCustomObjectTypes?.push(type)
+    const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
     // console.log(this.resolvedCustomeObjectType);
 
-    this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, this.resolvedCustomObjectType))
+    this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
   }
 
   write(object: ArgAndResponseType['arguments']) {
-    // console.log(this.type);
-    // console.log(this.resolvedCustomeObjectType);
-    // if (this.resolvedCustomeObjectType.includes(this.type)) {
-    //   object[this.requestField.name] = {};
-    //   return
-    // }
-    // this.resolvedCustomeObjectType.push(this.type)
     if (this.isArray) {
       object[this.requestField.name] = [{}, {}, {}];
       this.objectRequests.forEach((objectRequest, idx) => {
