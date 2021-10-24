@@ -29,7 +29,7 @@ class MockApiTestCollectionsFile {
       const code = new CodeMaker();
       const ts = new TypeScriptWriter(code);
 
-      if(new_config.api.mockApiData){
+      if (new_config.api.mockApiData) {
         new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0])}[]`;
       }
 
@@ -41,7 +41,7 @@ class MockApiTestCollectionsFile {
         ]);
       }
       code.line();
-      
+
       code.indent(`export type TestCollection =
           ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}
       `);
@@ -63,9 +63,19 @@ class MockApiTestCollectionsFile {
         ]);
       }
       code1.line();
+
+      const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
+      let mockDataStr = `${JSON.stringify({ [key]: this.dummyData.fields[key] }, null, 2)}`;
+      const matchEnums = mockDataStr.match(enumPattern);
+      // console.log(matchEnums);
+
+      matchEnums?.forEach(enumStr => {
+        mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+      })
+
       code1.indent(`export const testCollections: TestCollection = {
-          fields: 
-          ${JSON.stringify({[key]: this.dummyData.fields[key]})} 
+          fields: ${mockDataStr}
+          
       }
       `);
 
