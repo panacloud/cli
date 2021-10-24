@@ -7,6 +7,9 @@ import {
   lambdaHandlerForAuroradb,
   lambdaHandlerForDynamodb,
   lambdaHandlerForNeptunedb,
+  lambdaInitializerForGeneralFields,
+  lambdaInitializerForMicroServices,
+  lambdaInitializerForNestedResolvers,
   lambdaProperiesHandlerForAuroraDb,
   lambdaProperiesHandlerForDynoDb,
   lambdaProperiesHandlerForMockApi,
@@ -32,15 +35,12 @@ class lambdaConstruct {
     this.config = props.config;
     this.panacloudConfig = props.panacloudConfig;
     this.code = new CodeMaker();
-
-
   }
 
   async LambdaConstructFile() {
     const {api: { apiName,apiType, database,architecture,nestedResolverFieldsAndLambdas,nestedResolver}} = this.config;
     let mutationsAndQueries: string[] = [];
     let general_Fields: string[] = [];
-    let microService_Fields: { [k: string]: any[] } = {};
     let lambdaPropsWithName: string | undefined;
     let lambdaProps: { name: string; type: string }[] | undefined;
     let lambdaProperties: Property[] = [];
@@ -49,7 +49,6 @@ class lambdaConstruct {
       const {queiresFields,mutationFields,generalFields,microServiceFields} = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
       general_Fields = generalFields!;
-      microService_Fields = microServiceFields!;
     }
 
     this.code.openFile(this.outputFile);
@@ -117,77 +116,10 @@ class lambdaConstruct {
       () => {
         if (!database) {
           lambda.lambdaLayer(apiName);
-          const microServices = Object.keys(microService_Fields);
-          for (let i = 0; i < microServices.length; i++) {
-            for (let j = 0;j < microService_Fields[microServices[i]].length;j++) {
-              const key = microService_Fields[microServices[i]][j];
-              const microService = microServices[i];
-              const isMutation = this.config.api.mutationFields?.includes(key);
-              if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-                lambda.initializeLambda(
-                  apiName,
-                  `${key}_consumer`,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                  microService
-                );
-                this.code.line();
-                //myApi_lambdaFn_createApi_consumerArn
-                this.code.line(`this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`);
-                this.code.line();
-              }
-
-              lambda.initializeLambda(apiName, key, undefined, undefined, undefined, undefined, undefined, microService);
-              this.code.line();
-              this.code.line( `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`);
-              this.code.line();
-            }
-          }
-
+          lambdaInitializerForMicroServices(this.config.api,this.panacloudConfig,this.code)
+          lambdaInitializerForGeneralFields(this.config.api,this.panacloudConfig,this.code,general_Fields)
           if(nestedResolver){
-            const {api:{nestedResolverFieldsAndLambdas}} = this.config
-            const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
-            for (let i = 0; i < nestedResolverLambdas.length; i++) {
-              const key = nestedResolverLambdas[i];
-              const isMutation = this.config.api.mutationFields?.includes(key);
-              if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-                lambda.initializeLambda(apiName, `${key}_consumer`);
-                this.code.line();
-                this.code.line(
-                  `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-                );
-                this.code.line();
-              }
-              lambda.initializeLambda(apiName, key,undefined,undefined,undefined,undefined,undefined,undefined,nestedResolver);
-              this.code.line();
-              this.code.line(
-                `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-              );
-              this.code.line();
-            }
-          }
-    
-          for (let i = 0; i < general_Fields.length; i++) {
-            const key = general_Fields[i];
-            const isMutation = this.config.api.mutationFields?.includes(key);
-            if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-              lambda.initializeLambda(apiName, `${key}_consumer`);
-              this.code.line();
-              this.code.line(
-                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-              );
-              this.code.line();
-            }
-
-            lambda.initializeLambda(apiName, key);
-            this.code.line();
-            this.code.line(
-              `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-            );
-            this.code.line();
+            lambdaInitializerForNestedResolvers(this.config.api,this.panacloudConfig,this.code)
           }
         }
         else if (database === DATABASE.dynamoDB) {
