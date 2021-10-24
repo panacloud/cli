@@ -19,8 +19,8 @@ abstract class MockObject {
 export class RootMockObject extends MockObject {
   private queryMockObjects: QueryMockObject[] = [];
   private mutationMockObjects: MutationMockObject[] = [];
-  constructor(schema: string) {
-    super(buildSchema(schema));
+  constructor(schema: GraphQLSchema) {
+    super(schema);
     const queries = this.graphQLSchema?.getQueryType()?.getFields();
     const mutations = this.graphQLSchema?.getMutationType()?.getFields();
     Object.entries(queries || []).forEach(([queryName, queryFieldObject]) => {
@@ -347,6 +347,7 @@ class CustomObjectResponse extends ObjectResponse {
     const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     resolvedCustomObjectTypes?.push(type);
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
+    console.log("inputObjectType ", inputObjectType);
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
     this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
   }

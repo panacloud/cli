@@ -14,6 +14,7 @@ const YAML = require("yamljs");
 const exec = require("await-exec");
 const fse = require("fs-extra");
 const snakeCase = require("lodash/snakeCase");
+import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator/MockObject";
 
 async function defineYourOwnApi(config: Config, templateDir: string) {
   // const { api_token, entityId } = config;
@@ -149,7 +150,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     );
 
+    const dummyData: TestCollectionType = { fields: {} };
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
+
+    const mockObject = new RootMockObject(gqlSchema);
+    mockObject.write(dummyData);
+
+    console.log(JSON.stringify(dummyData , null, 2));
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
