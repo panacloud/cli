@@ -1,15 +1,27 @@
 import { CodeMaker } from "codemaker";
-import {ApiModel,APITYPE,ARCHITECTURE,DATABASE,PanacloudconfigFile} from "../../../../../utils/constants";
-import {Property,TypeScriptWriter} from "../../../../../utils/typescriptWriter";
+import {
+  ApiModel,
+  APITYPE,
+  ARCHITECTURE,
+  DATABASE,
+  PanacloudconfigFile,
+} from "../../../../../utils/constants";
+import {
+  Property,
+  TypeScriptWriter,
+} from "../../../../../utils/typescriptWriter";
 import { Lambda } from "../../../constructs/Lambda";
 
 export const lambdaProperiesHandlerForNestedResolver = (model: ApiModel) => {
-  const {  api: { database, apiName, nestedResolverFieldsAndLambdas } } = model;
-  let nestedResolverLambdas : string[] =[];
+  const {
+    api: { database, apiName, nestedResolverFieldsAndLambdas },
+  } = model;
+  let nestedResolverLambdas: string[] = [];
 
-  if (nestedResolverFieldsAndLambdas){
- nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
-}
+  if (nestedResolverFieldsAndLambdas) {
+    nestedResolverLambdas =
+      nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
+  }
   let properties: Property[] = [];
   if (database === DATABASE.dynamoDB) {
     nestedResolverLambdas.forEach((key: string, index: number) => {
@@ -74,7 +86,18 @@ export const lambdaHandlerForAuroradb = (
   panacloudConfig: PanacloudconfigFile,
   model: ApiModel
 ) => {
-  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,database}} = model;
+  const {
+    api: {
+      apiName,
+      apiType,
+      mutationFields,
+      generalFields,
+      microServiceFields,
+      architecture,
+      nestedResolver,
+      database,
+    },
+  } = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
@@ -92,7 +115,6 @@ export const lambdaHandlerForAuroradb = (
       undefined,
       `props!.serviceRole`
     );
-    code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
     code.line();
   } else {
     if (microServiceFields) {
@@ -121,16 +143,6 @@ export const lambdaHandlerForAuroradb = (
               microService
             );
             code.line();
-            if(database === DATABASE.dynamoDB){
-              code.line(
-                `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
-              );  
-            }else{
-              code.line(
-                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-              );
-            }
-            code.line();
           }
 
           lambda.initializeLambda(
@@ -149,21 +161,19 @@ export const lambdaHandlerForAuroradb = (
             microService
           );
           code.line();
-          code.line(
-            `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-          );
-          code.line();
         }
       }
     }
 
     if (generalFields) {
-      let mutationAndQueries = generalFields
+      let mutationAndQueries = generalFields;
       let nestedResolvers: string[] = [];
-      if(nestedResolver){
-        const {api:{nestedResolverFieldsAndLambdas}} = model
-        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
-        nestedResolvers = [...nestedResolverLambdas]
+      if (nestedResolver) {
+        const {
+          api: { nestedResolverFieldsAndLambdas },
+        } = model;
+        const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
+        nestedResolvers = [...nestedResolverLambdas];
       }
 
       for (let i = 0; i < nestedResolvers.length; i++) {
@@ -187,16 +197,6 @@ export const lambdaHandlerForAuroradb = (
             nestedResolver
           );
           code.line();
-          if(database == DATABASE.dynamoDB){
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
-            );
-          }else{
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-            );  
-          }
-          code.line();
         }
         lambda.initializeLambda(
           apiName,
@@ -213,10 +213,6 @@ export const lambdaHandlerForAuroradb = (
           `props!.serviceRole`,
           undefined,
           nestedResolver
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
         );
         code.line();
       }
@@ -240,16 +236,6 @@ export const lambdaHandlerForAuroradb = (
             `props!.serviceRole`
           );
           code.line();
-          if(database == DATABASE.dynamoDB){
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`
-            );
-          }else{
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-            );  
-          }
-          code.line();
         }
         lambda.initializeLambda(
           apiName,
@@ -266,10 +252,6 @@ export const lambdaHandlerForAuroradb = (
           `props!.serviceRole`
         );
         code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-        );
-        code.line();
       }
     }
   }
@@ -280,10 +262,22 @@ export const lambdaHandlerForNeptunedb = (
   panacloudConfig: PanacloudconfigFile,
   model: ApiModel
 ) => {
-  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
-  let nestedResolverLambdas:string[] =[]
-  if (nestedResolverFieldsAndLambdas){
-    nestedResolverLambdas= nestedResolverFieldsAndLambdas!.nestedResolverLambdas
+  const {
+    api: {
+      apiName,
+      apiType,
+      mutationFields,
+      generalFields,
+      microServiceFields,
+      architecture,
+      nestedResolver,
+      nestedResolverFieldsAndLambdas,
+    },
+  } = model;
+  let nestedResolverLambdas: string[] = [];
+  if (nestedResolverFieldsAndLambdas) {
+    nestedResolverLambdas =
+      nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
   }
 
   const lambda = new Lambda(code, panacloudConfig);
@@ -303,10 +297,6 @@ export const lambdaHandlerForNeptunedb = (
       ],
       `ec2.SubnetType.PRIVATE_ISOLATED`
     );
-    code.line();
-    code.line(`this.${apiName}_lambdaFnArn = ${apiName}_lambdaFn.functionArn`);
-    if (apiType === APITYPE.rest)
-      code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
     code.line();
   } else {
     if (microServiceFields) {
@@ -334,10 +324,6 @@ export const lambdaHandlerForNeptunedb = (
               microService
             );
             code.line();
-              code.line(
-                `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-              );  
-            code.line();
           }
           lambda.initializeLambda(
             apiName,
@@ -355,21 +341,19 @@ export const lambdaHandlerForNeptunedb = (
             microService
           );
           code.line();
-          code.line(
-            `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
-          );
-          code.line();
         }
       }
     }
 
     if (generalFields) {
-      let mutationAndQueries = generalFields
+      let mutationAndQueries = generalFields;
       let nestedResolvers: string[] = [];
-      if(nestedResolver){
-        const {api:{nestedResolverFieldsAndLambdas}} = model
-        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
-        nestedResolvers = [...nestedResolverLambdas]
+      if (nestedResolver) {
+        const {
+          api: { nestedResolverFieldsAndLambdas },
+        } = model;
+        const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
+        nestedResolvers = [...nestedResolverLambdas];
       }
 
       for (let i = 0; i < nestedResolvers.length; i++) {
@@ -392,12 +376,7 @@ export const lambdaHandlerForNeptunedb = (
             undefined,
             nestedResolver
           );
-          code.line();
-      
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-            );  
-          
+
           code.line();
         }
 
@@ -416,10 +395,6 @@ export const lambdaHandlerForNeptunedb = (
           undefined,
           undefined,
           nestedResolver
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
         );
         code.line();
       }
@@ -441,12 +416,7 @@ export const lambdaHandlerForNeptunedb = (
             ],
             `ec2.SubnetType.PRIVATE_ISOLATED`
           );
-          code.line();
-      
-            code.line(
-              `this.${apiName}_lambdaFn_${key}_consumerArn = ${apiName}_lambdaFn_${key}_consumer.functionArn`
-            );  
-          
+
           code.line();
         }
 
@@ -462,10 +432,6 @@ export const lambdaHandlerForNeptunedb = (
             },
           ],
           `ec2.SubnetType.PRIVATE_ISOLATED`
-        );
-        code.line();
-        code.line(
-          `this.${apiName}_lambdaFn_${key}Arn = ${apiName}_lambdaFn_${key}.functionArn`
         );
         code.line();
       }
@@ -554,17 +520,30 @@ export const lambdaHandlerForDynamodb = (
   panacloudConfig: PanacloudconfigFile,
   model: ApiModel
 ) => {
-  const {api: {apiName,apiType,mutationFields,generalFields,microServiceFields,architecture,nestedResolver,nestedResolverFieldsAndLambdas}} = model;
- let nestedResolverLambdas:string[] = []
-  if (nestedResolverFieldsAndLambdas){
-  nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas
-}
+  const {
+    api: {
+      apiName,
+      apiType,
+      mutationFields,
+      generalFields,
+      microServiceFields,
+      architecture,
+      nestedResolver,
+      nestedResolverFieldsAndLambdas,
+    },
+  } = model;
+  let nestedResolverLambdas: string[] = [];
+  if (nestedResolverFieldsAndLambdas) {
+    nestedResolverLambdas =
+      nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
+  }
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName);
   if (apiType === APITYPE.rest) {
-    lambda.initializeLambda(apiName, undefined, undefined, undefined, [{ name: "TableName", value: "props!.tableName" }]);
+    lambda.initializeLambda(apiName, undefined, undefined, undefined, [
+      { name: "TableName", value: "props!.tableName" },
+    ]);
     code.line();
-    code.line(`this.${apiName}_lambdaFn = ${apiName}_lambdaFn`);
   } else {
     if (microServiceFields) {
       const microServices = Object.keys(microServiceFields);
@@ -585,8 +564,7 @@ export const lambdaHandlerForDynamodb = (
               microService
             );
             code.line();
-              code.line(`this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);  
-            
+
             code.line();
           }
 
@@ -601,18 +579,20 @@ export const lambdaHandlerForDynamodb = (
             microService
           );
           code.line();
-          code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
-          code.line();
         }
       }
     }
 
     if (generalFields) {
-      let mutationAndQueries = generalFields
+      let mutationAndQueries = generalFields;
       let nestedResolvers: string[] = [];
-      if(nestedResolver){
-        const {api:{nestedResolverFieldsAndLambdas}} = model
-        nestedResolvers = [...nestedResolverFieldsAndLambdas!.nestedResolverLambdas]
+      if (nestedResolver) {
+        const {
+          api: { nestedResolverFieldsAndLambdas },
+        } = model;
+        nestedResolvers = [
+          ...nestedResolverFieldsAndLambdas!.nestedResolverLambdas,
+        ];
       }
 
       for (let i = 0; i < nestedResolvers.length; i++) {
@@ -630,20 +610,20 @@ export const lambdaHandlerForDynamodb = (
             undefined,
             nestedResolver
           );
-          code.line();
-            code.line( `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
-          
+
           code.line();
         }
-        lambda.initializeLambda(apiName, key, undefined, undefined, [
-          { name: "TableName", value: "props!.tableName" },
-        ],
-        undefined,
-        undefined,
-        undefined,
-        nestedResolver);
-        code.line();
-        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
+        lambda.initializeLambda(
+          apiName,
+          key,
+          undefined,
+          undefined,
+          [{ name: "TableName", value: "props!.tableName" }],
+          undefined,
+          undefined,
+          undefined,
+          nestedResolver
+        );
         code.line();
       }
 
@@ -658,16 +638,12 @@ export const lambdaHandlerForDynamodb = (
             undefined,
             [{ name: "TableName", value: "props!.tableName" }]
           );
-          code.line();
-            code.line( `this.${apiName}_lambdaFn_${key}_consumer = ${apiName}_lambdaFn_${key}_consumer`);
-          
+
           code.line();
         }
         lambda.initializeLambda(apiName, key, undefined, undefined, [
           { name: "TableName", value: "props!.tableName" },
         ]);
-        code.line();
-        code.line(`this.${apiName}_lambdaFn_${key} = ${apiName}_lambdaFn_${key}`);
         code.line();
       }
     }

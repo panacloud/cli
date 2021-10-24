@@ -20,6 +20,9 @@ import {
   LambdaAccessHandler,
   propsHandlerForApiGatewayConstruct,
 } from "./functions";
+import { LambdaConstructFile } from "../Lambda";
+import { Imports } from "../../constructs/ConstructsImports";
+// import { LambdaConstructFile } from "../Lambda";
 const upperFirst = require("lodash/upperFirst");
 const camelCase = require("lodash/camelCase");
 
@@ -56,10 +59,12 @@ export class CdkStack {
     const dynamodb = new DynamoDB(this.code);
     const neptune = new Neptune(this.code);
     const aurora = new AuroraServerless(this.code);
+    const imp = new Imports(this.code);
     const lambda = new Lambda(this.code, this.panacloudConfig);
     const appsync = new Appsync(this.code);
     const eventBridge = new EventBridge(this.code);
     importHandlerForStack(database, apiType, this.config.api.architecture, this.code);
+    imp.importLambda();
     this.code.line();
 
     cdk.initializeStack(
@@ -79,7 +84,7 @@ export class CdkStack {
           this.code.line();
         }
 
-        lambda.lambdaConstructInitializer(apiName, database);
+        LambdaConstructFile(this.config, this.panacloudConfig, this.code)
 
         database === DATABASE.dynamoDB &&
           LambdaAccessHandler(
