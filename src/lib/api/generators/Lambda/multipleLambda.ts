@@ -35,10 +35,10 @@ class MultipleLambda {
           this.outputFile = `index.ts`;
           code.openFile(this.outputFile);
 
-          ts.writeImports("../../../lambdaLayer/mockApi/testCollectionsTypes", [
+          ts.writeImports(`../../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
             "TestCollection",
           ]);
-          code.line(`var data = require("/opt/mockApi/testCollections") as {
+          code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
           testCollections: TestCollection;
         };`);
           code.line();

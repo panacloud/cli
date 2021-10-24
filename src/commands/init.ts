@@ -36,47 +36,47 @@ export default class Create extends Command {
     let templateDir;
 
     // Questions
-    // let usrInput = await userInput();
+    let usrInput = await userInput();
 
-    const config: Config = {
-      saasType: SAASTYPE.api,
-      entityId: 'a',
-      "api_token": "d",
-      api: {
-        // "cloudprovider": CLOUDPROVIDER.aws,
-        // "language": LANGUAGE.typescript,
-        "template": TEMPLATE.defineApi,
-        "architecture": ARCHITECTURE.eventDriven,
-        "schemaPath": "schema.gql",
-        "apiName": "myApi",
-        "nestedResolver": true,
-        // database:undefined,
-        "database": DATABASE.dynamoDB,
-        apiType: APITYPE.graphql,
-      }
-    }
+    // const config: Config = {
+    //   saasType: SAASTYPE.api,
+    //   entityId: 'a',
+    //   "api_token": "d",
+    //   api: {
+    //     // "cloudprovider": CLOUDPROVIDER.aws,
+    //     // "language": LANGUAGE.typescript,
+    //     "template": TEMPLATE.defineApi,
+    //     "architecture": ARCHITECTURE.eventDriven,
+    //     "schemaPath": "schema.gql",
+    //     "apiName": "myApi",
+    //     "nestedResolver": true,
+    //     // database:undefined,
+    //     "database": DATABASE.dynamoDB,
+    //     apiType: APITYPE.graphql,
+    //   }
+    // }
 
     // Config to generate code.
-    // const config: Config = {
-    //   // entityId: usrInput.entityId,
-    //   // api_token: usrInput.api_token,
-    //   saasType: SAASTYPE.api,
-    //   api: {
-    //     template: usrInput.template,
-    //     nestedResolver: usrInput.nestedResolver,
-    //     // language: usrInput.language,
-    //     // cloudprovider: usrInput.cloud_provider,
-    //     apiName: camelCase(usrInput.api_name),
-    //     schemaPath: usrInput.schema_path,
-    //     apiType:
-    //       usrInput.architecture === ARCHITECTURE.eventDriven
-    //         ? APITYPE.graphql
-    //         : usrInput.api_type,
-    //     database:
-    //       usrInput.database === DATABASE.none ? undefined : usrInput.database,
-    //     architecture: usrInput.architecture,
-    //   },
-    // };
+    const config: Config = {
+      // entityId: usrInput.entityId,
+      // api_token: usrInput.api_token,
+      saasType: SAASTYPE.api,
+      api: {
+        template: usrInput.template,
+        nestedResolver: usrInput.nestedResolver,
+        // language: usrInput.language,
+        // cloudprovider: usrInput.cloud_provider,
+        apiName: camelCase(usrInput.api_name),
+        schemaPath: usrInput.schema_path,
+        apiType:
+          usrInput.architecture === ARCHITECTURE.eventDriven
+            ? APITYPE.graphql
+            : usrInput.api_type,
+        database:
+          usrInput.database === DATABASE.none ? undefined : usrInput.database,
+        architecture: usrInput.architecture,
+      },
+    };
 
     // Error handling
     const validating = startSpinner("Validating Everything");

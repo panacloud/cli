@@ -23,8 +23,9 @@ import { EditableMockApiTestCollections } from "./MockApi/editableMockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
+import { TestCollectionType } from "../apiMockDataGenerator";
 
-export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile, type: string) => {
+export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile, type: string, dummyData: TestCollectionType) => {
   // bin file
   CdkAppClass({ config });
 
@@ -66,9 +67,9 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   }
   else if (config.api.apiType === APITYPE.graphql) {
     multipleLambda({ config });
-    await mockApiTestCollections({ config });
+    await mockApiTestCollections({ config, dummyData });
     if (type !== "update") {
-      await EditableMockApiTestCollections({ config })
+      await EditableMockApiTestCollections({ config, dummyData, type })
       customLambda({ config });
     }
   }

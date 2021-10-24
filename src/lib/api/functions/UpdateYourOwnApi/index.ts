@@ -6,6 +6,7 @@ import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
+import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
 
 const path = require("path");
 const fs = require("fs");
@@ -21,6 +22,9 @@ async function updateYourOwnApi(config: Config, spinner: any) {
     },
     workingDir: workingDir,
   };
+
+  const dummyData: TestCollectionType = { fields: {} };
+
 
   let directivesPath = path.resolve(
     __dirname,
@@ -54,6 +58,9 @@ async function updateYourOwnApi(config: Config, spinner: any) {
   });
 
   const gqlSchema = buildSchema(`${directives}\n${schema}`);
+
+  const mockObject = new RootMockObject(gqlSchema);
+  mockObject.write(dummyData);
 
   // Model Config
   const queriesFields: any = gqlSchema.getQueryType()?.getFields();
@@ -92,7 +99,7 @@ async function updateYourOwnApi(config: Config, spinner: any) {
   const updatedPanacloudConfig = await updatePanacloudConfig(model, spinner);
 
   // Codegenerator Function
-  await generator(model, updatedPanacloudConfig, 'update');
+  await generator(model, updatedPanacloudConfig, 'update', dummyData);
 }
 
 export default updateYourOwnApi;

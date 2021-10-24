@@ -2,18 +2,22 @@ import { CodeMaker } from "codemaker";
 import { ApiModel } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import fse = require("fs-extra");
+import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
 
 type StackBuilderProps = {
   config: ApiModel;
+  dummyData: TestCollectionType;
 };
 
 class MockApiTestCollectionsFile {
   outputFile: string = `testCollections.ts`;
   outputDir: string = `types`;
   config: ApiModel;
+  dummyData: TestCollectionType;
 
   constructor(props: StackBuilderProps) {
     this.config = props.config;
+    this.dummyData = props.dummyData;
   }
 
   async mockApiTestCollectionsFile() {
@@ -61,7 +65,7 @@ class MockApiTestCollectionsFile {
       code1.line();
       code1.indent(`export const testCollections: TestCollection = {
           fields: 
-          ${JSON.stringify({[key]: new_config.api.mockApiData?.collections.fields[key]})} 
+          ${JSON.stringify({[key]: this.dummyData.fields[key]})} 
       }
       `);
 

@@ -23,6 +23,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     api: { schemaPath, apiType, nestedResolver },
   } = config;
 
+  const dummyData: TestCollectionType = { fields: {} };
+
   const workingDir = snakeCase(path.basename(process.cwd()));
 
   const model: ApiModel = {
@@ -150,13 +152,11 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     );
 
-    const dummyData: TestCollectionType = { fields: {} };
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
 
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
-    console.log(JSON.stringify(dummyData , null, 2));
     // Model Config
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
@@ -216,7 +216,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   await CreateAspects({ config: model });
 
   // Codegenerator Function
-  await generator(model, PanacloudConfig, 'init');
+  await generator(model, PanacloudConfig, 'init', dummyData);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
