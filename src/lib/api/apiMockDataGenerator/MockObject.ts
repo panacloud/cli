@@ -50,7 +50,7 @@ class QueryMockObject extends MockObject {
   constructor(graphQLSchema: GraphQLSchema, queryName: string, queryFieldObject: GraphQLField<any, any, any>,) {
     super(graphQLSchema);
     this.queryName = queryName;
-    this.objectRequests.push(new RootObjectRequest(graphQLSchema, queryFieldObject.args, this.resolvedCustomeObjectType))
+    this.objectRequests.push(new RootObjectRequest(graphQLSchema, queryFieldObject.args, 0))
     this.objectResponses.push(new RootObjectResponse(graphQLSchema, [queryFieldObject]))
   }
 
@@ -75,7 +75,7 @@ class MutationMockObject extends MockObject {
   constructor(graphQLSchema: GraphQLSchema, mutationName: string, mutationFieldObject: GraphQLField<any, any, any>) {
     super(graphQLSchema);
     this.mutationName = mutationName;
-    this.objectRequests.push(new RootObjectRequest(graphQLSchema, mutationFieldObject.args))
+    this.objectRequests.push(new RootObjectRequest(graphQLSchema, mutationFieldObject.args, 0))
     this.objectResponses.push(new RootObjectResponse(graphQLSchema, [mutationFieldObject]))
   }
 
@@ -152,11 +152,14 @@ class RootObjectResponse extends ObjectResponse {
   }
 }
 class RootObjectRequest extends ObjectRequest {
-  private resolvedCustomObjectType: string[] = [];
+  private resolvedCustomObjectTypes: string[] = [];
   private objectRequests: Array<ObjectRequest> = [];
-  constructor(graphQLSchema: GraphQLSchema, fieldRequests: Array<GraphQLArgument>, resolvedCustomObjectType?: string[]) {
+  private childNumber: number
+  constructor(graphQLSchema: GraphQLSchema, fieldRequests: Array<GraphQLArgument>, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
-    this.resolvedCustomObjectType = resolvedCustomObjectType || [];
+    this.resolvedCustomObjectTypes = resolvedCustomObjectTypes || [];
+    this.childNumber = childNumber + 1;
+    console.log("childNumber", this.childNumber)
 
     fieldRequests.forEach((request: GraphQLArgument) => {
       let type = request.type.toString();
@@ -182,11 +185,11 @@ class RootObjectRequest extends ObjectRequest {
         this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
 
         // } else if (this.resolvedCustomObjectType.includes(type)) {
-      } else if (this.resolvedCustomObjectType.filter(item => item === type).length > 1) {
+      } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
         this.objectRequests.push(new RepeatCustomObjectRequest(graphQLSchema, request, _isArray));
 
       } else {
-        this.objectRequests.push(new CustomObjectRequest(graphQLSchema, request, _isArray, this.resolvedCustomObjectType));
+        this.objectRequests.push(new CustomObjectRequest(graphQLSchema, request, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
 
       }
     });
@@ -482,7 +485,7 @@ class CustomObjectRequest extends ObjectRequest {
   private resolvedCustomObjectType: string[] = [];
   private isArray?: boolean;
   private type: string;
-  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean, resolvedCustomObjectType?: string[]) {
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean, childNumber: number, resolvedCustomObjectType?: string[]) {
     super(graphQLSchema);
     this.isArray = isArray;
     this.resolvedCustomObjectType = resolvedCustomObjectType || [];
@@ -493,7 +496,7 @@ class CustomObjectRequest extends ObjectRequest {
     const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
     // console.log(this.resolvedCustomeObjectType);
 
-    this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), this.resolvedCustomObjectType))
+    this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, this.resolvedCustomObjectType))
   }
 
   write(object: ArgAndResponseType['arguments']) {
@@ -519,3 +522,5 @@ class CustomObjectRequest extends ObjectRequest {
     }
   }
 }
+
+
