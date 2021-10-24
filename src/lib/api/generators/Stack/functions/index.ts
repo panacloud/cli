@@ -26,7 +26,6 @@ export const importHandlerForStack = (
     imp.importForEventBrideConstruct();
   }
 
-  imp.importForLambdaConstruct();
   databaseImportHandler(database, code);
   // imp.importApiManager();
   imp.importAspectController();

@@ -32,8 +32,6 @@ export class Appsync {
     );
   }
 
-  
-
   public initializeAppsyncSchema(schema: string) {
     const ts = new TypeScriptWriter(this.code);
     const gqlSchema = "`" + schema + "`";
@@ -79,21 +77,30 @@ export class Appsync {
   }
 
   public appsyncDatabasePropsHandler(config: API, code: CodeMaker) {
-    const { apiName, queiresFields, mutationFields, database,nestedResolver,nestedResolverFieldsAndLambdas} = config;
-    
-    let nestedResolverFields:{
+    const {
+      apiName,
+      queiresFields,
+      mutationFields,
+      database,
+      nestedResolver,
+      nestedResolverFieldsAndLambdas,
+    } = config;
+
+    let nestedResolverFields: {
       [key: string]: {
-          fieldName: string;
-          lambda: string;
+        fieldName: string;
+        lambda: string;
       }[];
-  };
+    };
     let nestedResolverLambdas: string[] = [];
 
-    if (nestedResolverFieldsAndLambdas){
-    nestedResolverFields = nestedResolverFieldsAndLambdas.nestedResolverFields
-    nestedResolverLambdas = nestedResolverFieldsAndLambdas?.nestedResolverLambdas
-  }
-    
+    if (nestedResolverFieldsAndLambdas) {
+      nestedResolverFields =
+        nestedResolverFieldsAndLambdas.nestedResolverFields;
+      nestedResolverLambdas =
+        nestedResolverFieldsAndLambdas?.nestedResolverLambdas;
+    }
+
     const mutationsAndQueries: string[] = [
       ...queiresFields!,
       ...mutationFields!,
@@ -101,30 +108,19 @@ export class Appsync {
 
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
-    
-    if(nestedResolver){
-      const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
-      nestedResolverLambdas?.forEach((key)=>{
-        lambdafunc = `${apiName}_lambdaFn_${key}Arn`;
-        if(database === DATABASE.dynamoDB){
-          lambdafunc = `${apiName}_lambdaFn_${key}`;
-          code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
-        }else{
-          code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc},`);
-        }
-      })
-    }
-    if (database === DATABASE.dynamoDB) {
-      mutationsAndQueries.forEach((key: string) => {
+
+    if (nestedResolver) {
+      const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
+      nestedResolverLambdas?.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
-      });
-    } else {
-      mutationsAndQueries.forEach((key: string) => {
-        lambdafunc = `${apiName}_lambdaFn_${key}Arn`;
-        code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc},`);
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
       });
     }
+    mutationsAndQueries.forEach((key: string) => {
+      lambdafunc = `${apiName}_lambdaFn_${key}`;
+      code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
+    });
   }
 
   public appsyncLambdaDataSource(
@@ -133,7 +129,8 @@ export class Appsync {
     functionName: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-    const ds_initializerName = this.apiName + "dataSourceGraphql" + functionName;
+    const ds_initializerName =
+      this.apiName + "dataSourceGraphql" + functionName;
     const ds_variable = `ds_${dataSourceName}_${functionName}`;
     const ds_name = `${this.apiName}_dataSource_${functionName}`;
     const lambdaFunctionArn = `props!.${this.apiName}_lambdaFn_${functionName}Arn`;
@@ -161,11 +158,13 @@ export class Appsync {
     fieldName: string,
     typeName: string,
     dataSourceName: string,
-    nestedResolver?:boolean,
+    nestedResolver?: boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
-    let resolverVariable = nestedResolver ?  `${typeName}_${fieldName}_resolver` : `${fieldName}_resolver` 
-    let mappingTemplate = nestedResolver ? `requestMappingTemplate: "" ` : ''
+    let resolverVariable = nestedResolver
+      ? `${typeName}_${fieldName}_resolver`
+      : `${fieldName}_resolver`;
+    let mappingTemplate = nestedResolver ? `requestMappingTemplate: "" ` : "";
     ts.writeVariableDeclaration(
       {
         name: resolverVariable,
@@ -292,5 +291,5 @@ export class Appsync {
       DataSourceName: "${dataSourceName}",
     })
 `);
-}
+  }
 }
