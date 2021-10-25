@@ -29,57 +29,136 @@ class EditableMockApiTestCollectionsFile {
 
     let new_config = JSON.parse(JSON.stringify(this.config));
 
-    for (const key in this.config.api.mockApiData?.collections.fields) {
-      const code = new CodeMaker();
-      const ts = new TypeScriptWriter(code);
-
-
-      if(new_config.api.mockApiData){
-        new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0])}[]`;
+    if(this.type === "update"){
+      for (const key of this.config.api.createMockLambda!) {
+        const code = new CodeMaker();
+        const ts = new TypeScriptWriter(code);
+  
+  
+        if(new_config.api.mockApiData){
+          new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0])}[]`;
+        }
+  
+        code.openFile("testCollectionsTypes.ts");
+  
+        if (new_config.api.mockApiData?.imports) {
+          ts.writeImports("../types", [
+            ...new_config.api.mockApiData?.imports,
+          ]);
+        }
+        code.line();
+  
+        // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
+        
+        code.indent(`export type TestCollection =
+            ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}
+        `);
+  
+        code.closeFile("testCollectionsTypes.ts");
+        await code.save(`editable_src/lambdaLayer/mockApi/${key}`);
+  
+        ///TestCollections.ts
+  
+        const code1 = new CodeMaker();
+        const ts1 = new TypeScriptWriter(code1);
+  
+        code1.openFile("testCollections.ts");
+  
+        ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
+        if (new_config.api.mockApiData?.enumImports.length !== 0) {
+          ts1.writeImports("../types", [
+            ...new_config.api.mockApiData?.enumImports!,
+          ]);
+        }
+        code1.line();
+        
+        const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
+        let mockDataStr = `${JSON.stringify({ [key]: this.dummyData.fields[key] }, null, 2)}`;
+        const matchEnums = mockDataStr.match(enumPattern);
+        // console.log(matchEnums);
+  
+        matchEnums?.forEach(enumStr => {
+          mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+        })
+  
+        code1.indent(`export const testCollections: TestCollection = {
+            fields: ${mockDataStr}
+            
+        }
+        `);
+  
+        code1.closeFile("testCollections.ts");
+        this.outputDir = `editable_src/lambdaLayer/mockApi/${key}`;
+        await code1.save(this.outputDir);
+  
       }
+    }
+    else
+    {
 
-      code.openFile("testCollectionsTypes.ts");
-
-      if (new_config.api.mockApiData?.imports) {
-        ts.writeImports("../types", [
-          ...new_config.api.mockApiData?.imports,
-        ]);
+      for (const key in this.config.api.mockApiData?.collections.fields) {
+        const code = new CodeMaker();
+        const ts = new TypeScriptWriter(code);
+  
+  
+        if(new_config.api.mockApiData){
+          new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0])}[]`;
+        }
+  
+        code.openFile("testCollectionsTypes.ts");
+  
+        if (new_config.api.mockApiData?.imports) {
+          ts.writeImports("../types", [
+            ...new_config.api.mockApiData?.imports,
+          ]);
+        }
+        code.line();
+  
+        // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
+        
+        code.indent(`export type TestCollection =
+            ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}
+        `);
+  
+        code.closeFile("testCollectionsTypes.ts");
+        await code.save(`editable_src/lambdaLayer/mockApi/${key}`);
+  
+        ///TestCollections.ts
+  
+        const code1 = new CodeMaker();
+        const ts1 = new TypeScriptWriter(code1);
+  
+        code1.openFile("testCollections.ts");
+  
+        ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
+        if (new_config.api.mockApiData?.enumImports.length !== 0) {
+          ts1.writeImports("../types", [
+            ...new_config.api.mockApiData?.enumImports!,
+          ]);
+        }
+        code1.line();
+        
+        const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
+        let mockDataStr = `${JSON.stringify({ [key]: this.dummyData.fields[key] }, null, 2)}`;
+        const matchEnums = mockDataStr.match(enumPattern);
+        // console.log(matchEnums);
+  
+        matchEnums?.forEach(enumStr => {
+          mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+        })
+  
+        code1.indent(`export const testCollections: TestCollection = {
+            fields: ${mockDataStr}
+            
+        }
+        `);
+  
+        code1.closeFile("testCollections.ts");
+        this.outputDir = `editable_src/lambdaLayer/mockApi/${key}`;
+        await code1.save(this.outputDir);
+  
       }
-      code.line();
-
-      // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
-      
-      code.indent(`export type TestCollection =
-          ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}
-      `);
-
-      code.closeFile("testCollectionsTypes.ts");
-      await code.save(`editable_src/lambdaLayer/mockApi/${key}`);
-
-      ///TestCollections.ts
-
-      const code1 = new CodeMaker();
-      const ts1 = new TypeScriptWriter(code1);
-
-      code1.openFile("testCollections.ts");
-
-      ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
-      if (new_config.api.mockApiData?.enumImports.length !== 0) {
-        ts1.writeImports("../types", [
-          ...new_config.api.mockApiData?.enumImports!,
-        ]);
-      }
-      code1.line();
-      code1.indent(`export const testCollections: TestCollection = {
-          fields: 
-          ${JSON.stringify({[key]: this.dummyData.fields[key]})} 
-      }
-      `);
-
-      code1.closeFile("testCollections.ts");
-      this.outputDir = `editable_src/lambdaLayer/mockApi/${key}`;
-      await code1.save(this.outputDir);
-
+  
     }
 
   }

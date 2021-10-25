@@ -68,8 +68,8 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   else if (config.api.apiType === APITYPE.graphql) {
     multipleLambda({ config });
     await mockApiTestCollections({ config, dummyData });
+    await EditableMockApiTestCollections({ config, dummyData, type })
     if (type !== "update") {
-      await EditableMockApiTestCollections({ config, dummyData, type })
       customLambda({ config });
     }
   }

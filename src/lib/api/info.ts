@@ -70,7 +70,7 @@ model:ApiModel, spinner:any
 ) => {
 
   const {
-    api: { microServiceFields, architecture,mutationFields,generalFields, nestedResolver,nestedResolverFieldsAndLambdas },
+    api: { microServiceFields, architecture,mutationFields,generalFields, queiresFields, nestedResolver,nestedResolverFieldsAndLambdas },
   } = model;
 
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
@@ -84,11 +84,39 @@ model:ApiModel, spinner:any
 
   const newMicroServices = Object.keys(microServiceFields!);
 
+  let oldLambdas: string[] = [];
+  for (const ele of prevItems) {
+    const microService = newMicroServices.includes(ele);
+    if(microService){
+      oldLambdas = [...Object.keys(configPanacloud.lambdas[ele])]
+    }
+    else{
+      if(!ele.includes("_consumer")){
+        oldLambdas = [...oldLambdas, ele]
+      }
+    }
+  }
 
+  const allQueries = [...mutationFields!, ...queiresFields!]
+
+  let differenceLambdas = allQueries
+  .filter(val => !oldLambdas.includes(val))
+  .concat(oldLambdas.filter(val => !allQueries.includes(val)));
+
+
+  let lambdaCreate = [];
+  for (const element of differenceLambdas) {
+    if(!oldLambdas.includes(element)){
+      lambdaCreate.push(element)
+    }
+  }
+
+  model.api.createMockLambda = lambdaCreate
 
   let differenceMicroServices = newMicroServices
     .filter(val => !prevMicroServices.includes(val))
     .concat(prevMicroServices.filter(val => !newMicroServices.includes(val)));
+
   
   for (let diff of differenceMicroServices) {
 
@@ -194,6 +222,7 @@ model:ApiModel, spinner:any
   let difference = generalFields!
     .filter(val => !prevGeneralMutLambdas.includes(val))
     .concat(prevGeneralMutLambdas.filter(val => !generalFields?.includes(val)));
+
 
   for (let diff of difference) {
 

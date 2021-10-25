@@ -74,6 +74,7 @@ export interface API {
   schemaPath: string;
   schema?: IntrospectionQuery;
   nestedResolverFieldsAndLambdas?:nestedResolverFieldsAndLambda
+  createMockLambda?: string[];
   // nestedResolverLambdas?:string[]
   // nestedResolverFields?:{[key: string]: {fieldName:string,lambda:string}[]}
   queiresFields?: string[];
