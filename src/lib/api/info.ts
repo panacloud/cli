@@ -151,19 +151,19 @@ model:ApiModel, spinner:any
     //   }
     // }
     if (architecture === ARCHITECTURE.eventDriven){
-    // for (let serv of newMicroServicesLambdas) {
-    //   const isMutation = mutationFields?.includes(serv);
-    //   if (isMutation ) {
-    //     //newMicroServicesLambdas.push(`${serv}_consumer`)
-    //     newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
-    //   }
-    // }
+      // for (let serv of newMicroServicesLambdas) {
+      //   const isMutation = mutationFields?.includes(serv);
+      //   if (isMutation ) {
+      //     //newMicroServicesLambdas.push(`${serv}_consumer`)
+      //     newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
+      //   }
+      // }
 
-    
-    prevMicroServicesMutLambdas = prevMicroServicesLambdas.filter ((val:string)=> val.split('_').pop() !== "consumer")
+      
+      prevMicroServicesMutLambdas = prevMicroServicesLambdas.filter ((val:string)=> val.split('_').pop() !== "consumer")
 
 
-  }
+    }
 
 
 

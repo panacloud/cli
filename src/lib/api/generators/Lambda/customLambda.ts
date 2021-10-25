@@ -24,6 +24,7 @@ class CustomLambda {
         mutationFields,
         architecture,
         apiName,
+        nestedResolver
       },
     } = this.config;
 
@@ -104,6 +105,24 @@ class CustomLambda {
           await code.save(this.outputDir);
         }
       }
+
+      if(nestedResolver){        
+        const {api:{nestedResolverFieldsAndLambdas}} = this.config
+        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+        for (let index = 0; index < nestedResolverLambdas.length; index++) {
+          const key = nestedResolverLambdas[index];
+          const code = new CodeMaker();
+          const lambda = new LambdaFunction(code);
+          this.outputFile = "index.ts";
+          code.openFile(this.outputFile);
+          code.line();
+          lambda.helloWorldFunction(apiName);
+          code.closeFile(this.outputFile);
+          this.outputDir = `mock_lambda/nestedResolvers/${key}`;
+          await code.save(this.outputDir);
+        }
+      }
+
     }
   }
 }
