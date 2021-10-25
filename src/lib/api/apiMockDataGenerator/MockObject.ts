@@ -1,6 +1,7 @@
 import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType } from "graphql";
 import { isArray } from "./helper";
-// import * as crypto from 'crypto';
+import { camelCase } from 'lodash';
+// const camelCase = require('lodash/camel');
 
 type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp"
 export type ArgAndResponseType = { arguments?: any; response: any }
@@ -365,7 +366,7 @@ class EnumObjectResponse extends ObjectResponse {
   }
   getRandomEnum() {
     const enumValue = this.enumList[Math.floor(Math.random() * this.enumList.length)];
-    return `${this.enumType}.${enumValue}`;
+    return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`; // ==> ApiSaasType.Music
   }
 }
 class RepeatCustomObjectResponse extends ObjectResponse {
@@ -378,9 +379,9 @@ class RepeatCustomObjectResponse extends ObjectResponse {
   }
   write(object: ArgAndResponseType['response']) {
     if (this.isArray) {
-      object[this.responseField.name] = [{}, {}, {}];
+      object[this.responseField.name] = [];
     } else {
-      object[this.responseField.name] = {};
+      object[this.responseField.name] = undefined;
     }
   }
 }
@@ -563,7 +564,7 @@ class EnumObjectRequest extends ObjectRequest {
 
   getRandomEnum() {
     const enumValue = this.enumList[Math.floor(Math.random() * this.enumList.length)];
-    return `${this.enumType}.${enumValue}`;
+    return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
   }
 
 }
@@ -577,9 +578,9 @@ class RepeatCustomObjectRequest extends ObjectRequest {
   }
   write(object: ArgAndResponseType['arguments']) {
     if (this.isArray) {
-      object[this.requestField.name] = [{}, {}, {}];
+      object[this.requestField.name] = [];
     } else {
-      object[this.requestField.name] = {};
+      object[this.requestField.name] = undefined;
     }
   }
 }
