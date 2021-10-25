@@ -1,6 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { API, ApiModel, APITYPE, ARCHITECTURE, DATABASE, PanacloudconfigFile} from "../../../../../utils/constants";
-import {Property,TypeScriptWriter} from "../../../../../utils/typescriptWriter";
+import {Property} from "../../../../../utils/typescriptWriter";
 import { Lambda } from "../../../constructs/Lambda";
 interface Environment {
   name: string;
@@ -23,7 +23,7 @@ export const lambdaInitializerForNestedResolvers = (
   let serviceRole : string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.tableName` }];
+    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
   } else if (database === DATABASE.neptuneDB) {
     lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
@@ -64,7 +64,7 @@ export const lambdaInitializerForMicroServices = (
   let serviceRole : string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.tableName` }];
+    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
   } else if (database === DATABASE.neptuneDB) {
     lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
@@ -121,7 +121,7 @@ export const lambdaInitializerForGeneralFields = (
   let serviceRole : string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.tableName` }];
+    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
   } else if (database === DATABASE.neptuneDB) {
     lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
@@ -161,16 +161,16 @@ export const lambdaInitializerForEventDriven = (
   let serviceRole : string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `props!.tableName` }];
+    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
   } else if (database === DATABASE.neptuneDB) {
-    lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `props!.neptuneReaderEndpoint`}];
+    lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
-    vpcRef = `props!.VPCRef`
-    securityGroupsRef = `props!.SGRef`
+    vpcRef = `${apiName}_neptunedb.VPCRef`
+    securityGroupsRef = `${apiName}_neptunedb.SGRef`
   } else if (database === DATABASE.auroraDB) {
-    vpcRef = `props!.vpcRef`;
-    serviceRole = `props!.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `props!.secretRef`}] 
+    vpcRef = `${apiName}_auroradb.vpcRef`;
+    serviceRole = `${apiName}_auroradb.serviceRole`;
+    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
   }
 
   lambda.initializeLambda(apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");

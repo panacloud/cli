@@ -7,7 +7,6 @@ import {
   DATABASE,
   PanacloudconfigFile
 } from "../../../../utils/constants";
-import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
 import { AuroraServerless } from "../../constructs/AuroraServerless";
 import { Cdk } from "../../constructs/Cdk";
@@ -87,13 +86,7 @@ export class CdkStack {
 
         LambdaConstructFile(this.config, this.panacloudConfig, this.code)
 
-        database === DATABASE.dynamoDB &&
-          LambdaAccessHandler(
-            this.code,
-            apiName,
-            apiType,
-            mutationsAndQueries
-          );
+        database === DATABASE.dynamoDB && LambdaAccessHandler(this.code,this.config.api);
 
         if (apiType === APITYPE.graphql) {
           appsync.appsyncConstructInitializer(

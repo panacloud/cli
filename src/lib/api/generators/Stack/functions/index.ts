@@ -1,5 +1,7 @@
+import { Config } from "@oclif/config";
 import { CodeMaker } from "codemaker";
 import {
+  API,
   APITYPE,
   ARCHITECTURE,
   DATABASE
@@ -46,10 +48,9 @@ export const databaseImportHandler = (database: string, code: CodeMaker) => {
 
 export const LambdaAccessHandler = (
   code: CodeMaker,
-  apiName: string,
-  apiType: string,
-  mutationsAndQueries: any
+  config:API
 ) => {
+  const {apiType,apiName} = config
   const dynamodb = new DynamoDB(code);
   if (apiType === APITYPE.rest) {
     dynamodb.dbConstructLambdaAccess(
@@ -60,11 +61,17 @@ export const LambdaAccessHandler = (
     );
     code.line();
   } else {
+    const {apiName,queiresFields,mutationFields,nestedResolver} = config
+    let mutationsAndQueries = [...queiresFields!,...mutationFields!]
+    if(nestedResolver){
+      const {nestedResolverFieldsAndLambdas} = config
+      const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+      mutationsAndQueries = [...mutationsAndQueries,...nestedResolverLambdas]
+    }
     mutationsAndQueries.forEach((key: string) => {
       dynamodb.dbConstructLambdaAccess(
         apiName,
         `${apiName}_table`,
-        `${apiName}Lambda`,
         apiType,
         key
       );

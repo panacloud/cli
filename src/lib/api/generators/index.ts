@@ -27,31 +27,31 @@ import { TestCollectionType } from "../apiMockDataGenerator";
 
 export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile, type: string, dummyData: TestCollectionType) => {
   // bin file
-  CdkAppClass({ config });
+  await CdkAppClass({ config });
 
   // stack
-  CdkStackClass({ config, panacloudConfig });
+  await CdkStackClass({ config, panacloudConfig });
 
   // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
-    AppsyncApiConstruct({ config });
+    await AppsyncApiConstruct({ config });
     // AppsyncConstructTest({ config });
 
   } else if (config.api.apiType === APITYPE.rest) {
-    ApiGatewayConstruct({ config });
+    await ApiGatewayConstruct({ config });
   }
 
   // Databases
   if (config.api.database === DATABASE.auroraDB) {
-    auroraDBConstruct({ config });
+    await auroraDBConstruct({ config });
     // auroraDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.neptuneDB) {
-    neptuneDBConstruct({ config });
+    await neptuneDBConstruct({ config });
     // neptuneDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.dynamoDB) {
-    dynamoDBConstruct({ config });
+    await dynamoDBConstruct({ config });
     // dynamodbConstructTest({ config });
   }
 
@@ -63,19 +63,17 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
 
   // Single or Multi
   if (config.api.apiType === APITYPE.rest) {
-      singleLambda({ config });
+    await singleLambda({ config });
   }
   else if (config.api.apiType === APITYPE.graphql) {
-    multipleLambda({ config });
+    await multipleLambda({ config });
     await mockApiTestCollections({ config, dummyData });
     await EditableMockApiTestCollections({ config, dummyData, type })
-    if (type !== "update") {
-      customLambda({ config });
-    }
+    await customLambda({ config });
   }
 
   if (config.api.architecture === ARCHITECTURE.eventDriven) {
-    eventBridgeConstruct({ config })
+    await eventBridgeConstruct({ config })
   }
 
 };
