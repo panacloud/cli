@@ -29,14 +29,15 @@ class CustomLambda {
     } = this.config;
 
     if (apiType === APITYPE.graphql) {
-      const code = new CodeMaker();
-      const lambda = new LambdaFunction(code);
-      const imp = new Imports(code);
 
       const microServices = Object.keys(microServiceFields!);
 
       for (let i = 0; i < microServices.length; i++) {
         for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
+          const code = new CodeMaker();
+          const lambda = new LambdaFunction(code);
+          const imp = new Imports(code);
+
           const key = microServiceFields![microServices[i]][j];
           const isMutation = mutationFields?.includes(key);
           code.openFile(this.outputFile);
@@ -106,7 +107,7 @@ class CustomLambda {
         }
       }
 
-      if(nestedResolver){        
+      if(nestedResolver){
         const {api:{nestedResolverFieldsAndLambdas}} = this.config
         const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
         for (let index = 0; index < nestedResolverLambdas.length; index++) {
@@ -118,7 +119,7 @@ class CustomLambda {
           code.line();
           lambda.helloWorldFunction(apiName);
           code.closeFile(this.outputFile);
-          this.outputDir = `mock_lambda/nestedResolvers/${key}`;
+          this.outputDir = `editable_src/lambda/nestedResolvers/${key}`;
           await code.save(this.outputDir);
         }
       }
