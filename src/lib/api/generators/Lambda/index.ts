@@ -46,7 +46,7 @@ export const LambdaConstructFile = async (
   const lambda = new Lambda(code, panacloudConfig);
 
   if (!database) {
-    lambda.lambdaLayer(apiName);
+    lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
     const microServices = Object.keys(microService_Fields);
     for (let i = 0; i < microServices.length; i++) {
       for (let j = 0; j < microService_Fields[microServices[i]].length; j++) {
