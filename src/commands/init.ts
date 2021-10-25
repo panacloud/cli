@@ -51,7 +51,7 @@ export default class Create extends Command {
     //     "apiName": "myApi",
     //     "nestedResolver": true,
     //     // database:undefined,
-    //     "database": DATABASE.dynamoDB,
+    //     "database": DATABASE.neptuneDB,
     //     apiType: APITYPE.graphql,
     //   }
     // }

@@ -19,7 +19,7 @@ export const generatePanacloudConfig = async (
  model:ApiModel
 ) => {
   const {api: { microServiceFields, architecture,mutationFields,generalFields,nestedResolver,nestedResolverFieldsAndLambdas }} = model;
-  let configJson: PanacloudconfigFile = { lambdas: {}};
+  let configJson: PanacloudconfigFile = { lambdas: {}, mockData: {}};
   const microServices = Object.keys(microServiceFields!);
 
   for (let i = 0; i < microServices.length; i++) {
@@ -59,6 +59,8 @@ export const generatePanacloudConfig = async (
       nestedLambda['asset_path'] = `mock_lambda/nestedResolvers/${key}/index.ts`;      
     }
   }
+
+  configJson.mockData['asset_path'] = `lambdaLayer`; 
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
 
@@ -280,6 +282,11 @@ model:ApiModel, spinner:any
   }else{
     panacloudConfigNew.nestedLambdas && delete panacloudConfigNew.nestedLambdas
   }
+
+  if(configPanacloud.mockData['asset_path']) 
+    panacloudConfigNew.mockData['asset_path'] = configPanacloud.mockData['asset_path'];
+  else
+    panacloudConfigNew.mockData['asset_path'] = "lambdaLayer";
 
 
   fse.removeSync('editable_src/panacloudconfig.json')

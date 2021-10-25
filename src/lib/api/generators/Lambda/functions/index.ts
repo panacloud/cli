@@ -264,8 +264,7 @@ export const lambdaHandlerForAuroradb = (
     },
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
-  lambda.lambdaLayer(apiName);
-  lambda.editableLambdaLayer();
+  lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       apiName,
@@ -321,8 +320,7 @@ export const lambdaHandlerForNeptunedb = (
 
   const lambda = new Lambda(code, panacloudConfig);
   const ts = new TypeScriptWriter(code);
-  lambda.lambdaLayer(apiName);
-  lambda.editableLambdaLayer();
+  lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       apiName,
@@ -451,8 +449,7 @@ export const lambdaHandlerForDynamodb = (
       nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
   }
   const lambda = new Lambda(code, panacloudConfig);
-  lambda.lambdaLayer(apiName);
-  lambda.editableLambdaLayer();
+  lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(apiName, undefined, undefined, undefined, [
       { name: "TableName", value: "props!.tableName" },

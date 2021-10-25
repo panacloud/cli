@@ -97,6 +97,7 @@ export enum ARCHITECTURE {
 export type PanacloudconfigFile = {
   lambdas: any;
   nestedLambdas?:any
+  mockData?: any
 };
 
 export type PanacloudConfiglambdaParams = {
