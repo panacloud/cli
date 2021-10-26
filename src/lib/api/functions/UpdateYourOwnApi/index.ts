@@ -7,7 +7,7 @@ import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
-import { AsyncDirective, asyncDirectiveFieldSplitter } from "../../asyncDirective";
+import { AsyncDirective, asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
 
 const path = require("path");
 const fs = require("fs");
@@ -83,8 +83,19 @@ async function updateYourOwnApi(config: Config, spinner: any) {
 
  const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
 
- const gg =new AsyncDirective()
- gg.schemaAsyncResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
+ const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
+ 
+
+ fs.writeFileSync(
+  `./editable_src/graphql/schema/schema.graphql`,
+  `${newSchema}`,
+  (err: string) => {
+    if (err) {
+      stopSpinner(spinner, `Error: ${err}`, true);
+      process.exit(1);
+    }
+  }
+);
 
  model.api.asyncFields = asyncFieldSplitterOutput
 

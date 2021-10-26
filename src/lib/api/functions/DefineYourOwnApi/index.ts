@@ -9,6 +9,7 @@ import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
+import { asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -141,16 +142,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     });
 
-    fs.writeFileSync(
-      `./editable_src/graphql/schema/schema.graphql`,
-      `${scalars}\n${schema}`,
-      (err: string) => {
-        if (err) {
-          stopSpinner(generatingCode, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      }
-    );
+
 
     const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
 
@@ -161,6 +153,8 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     const queriesFields: any = gqlSchema.getQueryType()?.getFields();
     const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
     const introspection = introspectionFromSchema(gqlSchema);
+    const subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+
     model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
     model.api.mutationFields = [...Object.keys(mutationsFields)];
@@ -172,6 +166,26 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
     model.api.generalFields = fieldSplitterOutput.generalFields;
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+
+
+    const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
+
+    const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
+    
+    model.api.asyncFields = asyncFieldSplitterOutput
+
+
+    fs.writeFileSync(
+      `./editable_src/graphql/schema/schema.graphql`,
+      `${scalars}\n${newSchema}`,
+      (err: string) => {
+        if (err) {
+          stopSpinner(generatingCode, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      }
+    );
+   
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
     model.api.mockApiData = mockApiCollection;

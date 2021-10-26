@@ -183,5 +183,12 @@ export const asyncDirectiveFieldSplitter = (
 
 }
 
+export const asyncDirectiveResponseCreator= (
+    mutationFields: any, subscriptionFields: any, schema: any, asyncFields: string[]): string => {
+    const initClass = new AsyncDirective();
+    return initClass.schemaAsyncResponseCreator(mutationFields,subscriptionFields, schema, asyncFields)
+
+}
+
 
 
