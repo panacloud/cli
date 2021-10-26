@@ -86,7 +86,8 @@ export interface API {
   microServiceFields?:{
     [k: string]: any[];
 };
-  generalFields?: string[]
+  generalFields?: string[],
+  asyncFields?:string[]
 }
 
 export enum ARCHITECTURE {
