@@ -54,7 +54,7 @@ export class LambdaFunction {
                 {
                   EventBusName: "default",
                   Source: "${apiName}",
-                  Detail: JSON.stringify({ mutation: "${fieldName}" }),
+                  Detail: JSON.stringify({ mutation: "${fieldName}", response: response }),
                 },
               ],
             })
@@ -122,24 +122,23 @@ export class LambdaFunction {
     this.code.line(`}`);
   }
 
-  public appsyncApiInvokeFunction(functionName: string, url: string, apiName: string, input: string, output: string) {
+  public appsyncMutationInvokeFunction() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("axios", "axios")
     ts.writeAllImports("aws-sdk", "* as AWS")
-    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
+    ts.writeImports("aws-lambda", ["EventBridgeEvent"])
+
     this.code.line(`
-    export const ${functionName} = async(events:AppSyncResolverEvent<any>) => {
+    export const handler = async(events: EventBridgeEvent<string, any>) => {
       
-    const query = ${`
+    const query = \`
       mutation MyMutation {
-        ${apiName} ${input ? `(${input})` : ""} {
-          ${output}
-        }
+        async_response (input: \${JSON.stringify( events.detail || {} )} )
       }
-    `};
+    \`;
 
     await axios.post(
-      "${url}",
+      process.env.APPSYNC_API_END_POINT,
       JSON.stringify({ query }),
       { headers: { "content-type": "application/json", "x-api-key": process.env.APPSYNC_API_KEY, } }
     );
