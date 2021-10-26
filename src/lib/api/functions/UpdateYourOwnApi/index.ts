@@ -7,6 +7,7 @@ import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
+import { asyncDirectiveFieldSplitter } from "../../asyncDirective";
 
 const path = require("path");
 const fs = require("fs");
@@ -70,13 +71,16 @@ async function updateYourOwnApi(config: Config, spinner: any) {
   model.api.queiresFields = [...Object.keys(queriesFields)];
   model.api.mutationFields = [...Object.keys(mutationsFields)];
 
-  const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
+  const microServicesfieldSplitterOutput = microServicesDirectiveFieldSplitter(
     queriesFields,
     mutationsFields
   );
 
-  model.api.generalFields = fieldSplitterOutput.generalFields;
-  model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+  model.api.generalFields = microServicesfieldSplitterOutput.generalFields;
+  model.api.microServiceFields = microServicesfieldSplitterOutput.microServiceFields;
+
+
+ const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
 
   const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
   model.api.mockApiData = mockApiCollection;
