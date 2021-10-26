@@ -121,4 +121,30 @@ export class LambdaFunction {
     this.code.line();
     this.code.line(`}`);
   }
+
+  public appsyncApiInvokeFunction(functionName: string, url: string, apiName: string, input: string, output: string) {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeAllImports("axios", "axios")
+    ts.writeAllImports("aws-sdk", "* as AWS")
+    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
+    this.code.line(`
+    export const ${functionName} = async(events:AppSyncResolverEvent<any>) => {
+      
+    const query = ${`
+      mutation MyMutation {
+        ${apiName} ${input ? `(${input})` : ""} {
+          ${output}
+        }
+      }
+    `};
+
+    await axios.post(
+      "${url}",
+      JSON.stringify({ query }),
+      { headers: { "content-type": "application/json", "x-api-key": process.env.APPSYNC_API_KEY, } }
+    );
+
+    }
+    `);
+  }
 }
