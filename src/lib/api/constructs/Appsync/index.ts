@@ -210,16 +210,15 @@ export class Appsync {
     nestedResolver?: boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
-    let resolverVariable = nestedResolver
-      ? `${typeName}_${fieldName}_resolver`
-      : `${fieldName}_resolver`;
+    let resolverVariable = nestedResolver ? `${typeName}_${fieldName}_resolver`: `${fieldName}_resolver`;
+    let resolverName = nestedResolver ? `${typeName}_${fieldName}_resolver` : `${fieldName}_resolver`;
     let mappingTemplate = nestedResolver ? `requestMappingTemplate: "" ` : "";
     ts.writeVariableDeclaration(
       {
         name: resolverVariable,
         typeName: "appsync.CfnResolver",
         initializer: () => {
-          this.code.line(`new appsync.CfnResolver(this,'${fieldName}_resolver',{
+          this.code.line(`new appsync.CfnResolver(this,'${resolverName}',{
             apiId: ${this.apiName}_appsync.attrApiId,
             typeName: "${typeName}",
             fieldName: "${fieldName}",
