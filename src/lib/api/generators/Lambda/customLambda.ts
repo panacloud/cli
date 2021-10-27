@@ -22,9 +22,9 @@ class CustomLambda {
         generalFields,
         microServiceFields,
         mutationFields,
-        architecture,
         apiName,
-        nestedResolver
+        nestedResolver,
+        asyncFields
       },
     } = this.config;
 
@@ -39,7 +39,6 @@ class CustomLambda {
           const imp = new Imports(code);
 
           const key = microServiceFields![microServices[i]][j];
-          const isMutation = mutationFields?.includes(key);
           code.openFile(this.outputFile);
 
           imp.importAxios();
@@ -51,7 +50,7 @@ class CustomLambda {
           this.outputDir = `editable_src/lambda/${microServices[i]}/${key}`;
           await code.save(this.outputDir);
 
-          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          if (asyncFields && asyncFields.includes(key)) {
             const code = new CodeMaker();
             const lambda = new LambdaFunction(code);
             const imp = new Imports(code);
@@ -77,7 +76,6 @@ class CustomLambda {
 
         const key = generalFields![i];
         this.outputFile = "index.ts";
-        const isMutation = mutationFields?.includes(key);
 
         code.openFile(this.outputFile);
 
@@ -90,7 +88,7 @@ class CustomLambda {
         this.outputDir = `editable_src/lambda/${key}`;
         await code.save(this.outputDir);
 
-        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+        if (asyncFields && asyncFields.includes(key)) {
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
 
