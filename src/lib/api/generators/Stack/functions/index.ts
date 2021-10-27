@@ -3,6 +3,7 @@ import { CodeMaker } from "codemaker";
 import {
   API,
   APITYPE,
+  async_response_mutName,
   DATABASE
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
@@ -69,14 +70,20 @@ export const LambdaAccessHandler = (
       mutationsAndQueries = [...mutationsAndQueries,...nestedResolverLambdas]
     }
     mutationsAndQueries.forEach((key: string) => {
+
+     if (key !== async_response_mutName){
       dynamodb.dbConstructLambdaAccess(
         apiName,
         `${apiName}_table`,
         apiType,
         key
       );
+
+    }
     });
+
     code.line();
+    
   }
 };
 

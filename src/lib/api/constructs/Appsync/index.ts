@@ -52,9 +52,24 @@ export class Appsync {
   }
 
   public initializeApiKeyForAppsync(apiName: string) {
-    this.code.line(`new appsync.CfnApiKey(this,"apiKey",{
-        apiId:${apiName}_appsync.attrApiId
-    })`);
+    const ts = new TypeScriptWriter(this.code);
+
+
+    ts.writeVariableDeclaration(
+      {
+        name: `${this.apiName}_apiKey`,
+        typeName: "appsync.CfnApiKey",
+        initializer: () => {
+          this.code
+            .line(`new appsync.CfnApiKey(this,"apiKey",{
+              apiId:${apiName}_appsync.attrApiId
+          })`);
+        },
+      },
+      "const"
+    );
+
+
   }
 
   public appsyncConstructInitializer(config: API) {

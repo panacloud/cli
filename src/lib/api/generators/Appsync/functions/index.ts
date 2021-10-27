@@ -1,5 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { ApiModel, async_response_mutName } from "../../../../../utils/constants";
+import { Property } from "../../../../../utils/typescriptWriter";
 import { Appsync } from "../../../constructs/Appsync";
 import { Cdk } from "../../../constructs/Cdk";
 
@@ -104,3 +105,32 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
   }
 
 }
+
+
+
+
+export const appsyncPropertiesHandler = (): Property[] => {
+  return [
+    {
+      name: "api_url",
+      typeName: "string",
+      accessModifier: "public",
+      isReadonly: false,
+    },
+    {
+      name: "api_key",
+      typeName: "string",
+      accessModifier: "public",
+      isReadonly: false,
+    },
+  ];
+};
+
+
+export const appsyncPropertiesInitializer = (
+  apiName: string,
+  code: CodeMaker
+) => {
+  code.line(`this.api_url = ${apiName}_appsync.attrGraphQlUrl;`);
+  code.line(`this.api_key = ${apiName}_apiKey.attrApiKey;`);
+};

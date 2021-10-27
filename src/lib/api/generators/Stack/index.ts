@@ -50,7 +50,7 @@ export class CdkStack {
       this.config.api;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
-      const { queiresFields, mutationFields } = this.config.api;
+      const { queiresFields, mutationFields,asyncFields } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
     const cdk = new Cdk(this.code);
@@ -101,7 +101,17 @@ export class CdkStack {
           this.code.line("})");
         }
 
+
+     
+
         if (this.config.api.asyncFields &&  this.config.api.asyncFields.length >0) {
+
+          for (let asyncField of this.config.api.asyncFields){
+            lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_END_POINT"',value:`${apiName}.api_url`},apiName)
+            lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_KEY"',value:`${apiName}.api_key`},apiName)
+
+          }
+
           eventBridge.eventBridgeConstructInitializer(this.config.api);
         }
 
