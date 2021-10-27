@@ -18,7 +18,7 @@ export const contextInfo = (apiToken: string, entityId: string) => {
 export const generatePanacloudConfig = async (
  model:ApiModel
 ) => {
-  const {api: { microServiceFields, architecture,mutationFields,generalFields,nestedResolver,nestedResolverFieldsAndLambdas }} = model;
+  const {api: { microServiceFields,mutationFields,generalFields,nestedResolver,nestedResolverFieldsAndLambdas,asyncFields }} = model;
   let configJson: PanacloudconfigFile = { lambdas: {}, mockData: {}};
   const microServices = Object.keys(microServiceFields!);
 
@@ -26,13 +26,12 @@ export const generatePanacloudConfig = async (
     for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
       const key = microServiceFields![microServices[i]][j];
       const microService = microServices[i];
-      const isMutation = mutationFields?.includes(key);
       if (!configJson.lambdas[microService]) {
         configJson.lambdas[microService] = {}
       }
       const lambdas = configJson.lambdas[microService][key] = {} as PanacloudConfiglambdaParams
       lambdas.asset_path = `mock_lambda/${microService}/${key}/index.ts`;
-      if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+      if (asyncFields && asyncFields.includes(key)) {
         const consumerLambdas = configJson.lambdas[microService][`${key}_consumer`] = {} as PanacloudConfiglambdaParams
         consumerLambdas.asset_path = `mock_lambda/${microService}/${key}_consumer/index.ts`;
       }
@@ -41,10 +40,9 @@ export const generatePanacloudConfig = async (
 
   for (let i = 0; i < generalFields!.length; i++) {
     const key = generalFields![i];
-    const isMutation = mutationFields?.includes(key);
     const lambdas = configJson.lambdas[key] = {} as PanacloudConfiglambdaParams
     lambdas.asset_path = `mock_lambda/${key}/index.ts`;
-    if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+    if (asyncFields && asyncFields.includes(key)) {
       const consumerLambdas = configJson.lambdas[`${key}_consumer`] = {} as PanacloudConfiglambdaParams
       consumerLambdas.asset_path = `mock_lambda/${key}_consumer/index.ts`;
     }
@@ -72,7 +70,7 @@ model:ApiModel, spinner:any
 ) => {
 
   const {
-    api: { microServiceFields, architecture,mutationFields,generalFields, queiresFields, nestedResolver,nestedResolverFieldsAndLambdas },
+    api: { microServiceFields, asyncFields,mutationFields,generalFields, queiresFields, nestedResolver,nestedResolverFieldsAndLambdas },
   } = model;
 
   const configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
@@ -150,7 +148,7 @@ model:ApiModel, spinner:any
     //     newMicroServicesLambdas = [...newMicroServicesLambdas,`${serv}_consumer` ]
     //   }
     // }
-    if (architecture === ARCHITECTURE.eventDriven){
+    if (asyncFields){
       // for (let serv of newMicroServicesLambdas) {
       //   const isMutation = mutationFields?.includes(serv);
       //   if (isMutation ) {
@@ -205,7 +203,7 @@ model:ApiModel, spinner:any
 
  let prevGeneralMutLambdas :string[] = []
 
-  if (architecture === ARCHITECTURE.eventDriven){
+  if (asyncFields){
     // for (let serv of newMicroServicesLambdas) {
     //   const isMutation = mutationFields?.includes(serv);
     //   if (isMutation ) {
@@ -228,14 +226,12 @@ model:ApiModel, spinner:any
 
   for (let diff of difference) {
 
-    const isMutation = mutationFields?.includes(diff);
-
 
     if (generalFields!.includes(diff)) {
       panacloudConfigNew.lambdas[diff] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[diff].asset_path = `mock_lambda/${diff}/index.ts`
 
-      if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+      if (asyncFields && asyncFields.includes(diff)) {
 
         panacloudConfigNew.lambdas[`${diff}_consumer`] = {} as PanacloudConfiglambdaParams
         panacloudConfigNew.lambdas[`${diff}_consumer`].asset_path = `mock_lambda/${diff}_consumer/index.ts`
