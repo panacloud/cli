@@ -1,5 +1,7 @@
 import { IntrospectionQuery } from "graphql";
 
+export const async_response_mutName = 'async_response'
+
 export enum APITYPE {
   graphql = "GraphQL",
   rest = "REST OpenAPI",

@@ -1,5 +1,5 @@
 import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
+import { CONSTRUCTS, ApiModel, async_response_mutName } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -27,7 +27,7 @@ class AppsyncConstruct {
   }
 
   async AppsyncConstructFile() {
-    const { api: { apiName, schemaPath, queiresFields, mutationFields,nestedResolver,nestedResolverFieldsAndLambdas}} = this.config;
+    const { api: { apiName, schemaPath, queiresFields, mutationFields,nestedResolver,nestedResolverFieldsAndLambdas,asyncFields}} = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
     const cdk = new Cdk(this.code);
@@ -45,10 +45,17 @@ class AppsyncConstruct {
     let ConstructProps: ConstructPropsType[] = [];
     
     mutationsAndQueries.forEach((key: string) => {
+
+    if (key !== async_response_mutName){
+
       ConstructProps.push({
         name: `${apiName}_lambdaFn_${key}Arn`,
         type: "string",
+
+
       })
+
+    }
     });
 
     if(nestedResolver){

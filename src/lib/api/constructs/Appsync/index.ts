@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { API, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
+import { API, async_response_mutName, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -118,8 +118,12 @@ export class Appsync {
       });
     }
     mutationsAndQueries.forEach((key: string) => {
+
+      if (key !== async_response_mutName){
       lambdafunc = `${apiName}_lambdaFn_${key}`;
       code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
+
+    }
     });
   }
 
@@ -154,6 +158,36 @@ export class Appsync {
     );
   }
 
+
+
+  public appsyncNoneDataSource(
+    mutationName: string
+  ) {
+    const ts = new TypeScriptWriter(this.code);
+    const ds_initializerName = this.apiName + "dataSourceGraphql" + mutationName;
+    const ds_variable = `ds_${this.apiName}_${mutationName}`;
+    const ds_name = `${this.apiName}_dataSource_${mutationName}`;
+
+    ts.writeVariableDeclaration(
+      {
+        name: ds_variable,
+        typeName: "appsync.CfnDataSource",
+        initializer: () => {
+          this.code
+            .line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
+          name: "${ds_name}",
+          apiId: ${this.apiName}_appsync.attrApiId,
+          type:"NONE",
+          serviceRoleArn:${this.apiName}_serviceRole.roleArn
+         })`);
+        },
+      },
+      "const"
+    );
+  }
+
+
+
   public appsyncLambdaResolver(
     fieldName: string,
     typeName: string,
@@ -182,6 +216,46 @@ export class Appsync {
       "const"
     );
   }
+
+
+
+  public appsyncNoneDataSourceResolver(
+    fieldName: string,
+    typeName: string,
+    dataSourceName: string,
+  ) {
+    const ts = new TypeScriptWriter(this.code);
+    let resolverVariable =  `${fieldName}_resolver` 
+    const requestMappingTemplate = `\`{
+      "version" : "2017-02-28",
+      "payload": $context.arguments.input
+      }\``
+
+    const responseMappingTemplate =  `"$context.result"`
+
+    ts.writeVariableDeclaration(
+      {
+        name: resolverVariable,
+        typeName: "appsync.CfnResolver",
+        initializer: () => {
+          this.code.line(`new appsync.CfnResolver(this,'${fieldName}_resolver',{
+            apiId: ${this.apiName}_appsync.attrApiId,
+            typeName: "${typeName}",
+            fieldName: "${fieldName}",
+            dataSourceName: ${dataSourceName}.name,
+           requestMappingTemplate: ${requestMappingTemplate} ,
+           responseMappingTemplate: ${responseMappingTemplate}
+       
+        })`);
+        },
+      },
+      "const"
+    );
+  }
+
+
+
+
 
   public appsyncTestConstructInitializer(
     apiName: string,
