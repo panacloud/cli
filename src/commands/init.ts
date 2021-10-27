@@ -11,7 +11,6 @@ import {
   SAASTYPE,
   Config,
   DATABASE,
-  ARCHITECTURE,
   APITYPE,
 } from "../utils/constants";
 const path = require("path");
@@ -68,13 +67,9 @@ export default class Create extends Command {
         // cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
-        apiType:
-          usrInput.architecture === ARCHITECTURE.eventDriven
-            ? APITYPE.graphql
-            : usrInput.api_type,
+        apiType: usrInput.api_type,
         database:
           usrInput.database === DATABASE.none ? undefined : usrInput.database,
-        architecture: usrInput.architecture,
       },
     };
 

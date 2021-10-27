@@ -288,4 +288,27 @@ export class Lambda {
     },
   });`);
   }
+
+
+  
+  public addLambdaVar(
+    lambdaName:string, env:Environment, apiName:string
+    ) {
+      
+   //   functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn
+   
+   const functionName = lambdaName? `${apiName}_lambdaFn_${lambdaName}` : `${apiName}_lambdaFn`
+
+   this.code.line(`${functionName}.addEnvironment(${env.name},${env.value})`)
+
+      
+    }
+  
+
+
+
+
+
 }
+
+

@@ -7,6 +7,7 @@ import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
+import { AsyncDirective, asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
 
 const path = require("path");
 const fs = require("fs");
@@ -65,18 +66,38 @@ async function updateYourOwnApi(config: Config, spinner: any) {
   // Model Config
   const queriesFields: any = gqlSchema.getQueryType()?.getFields();
   const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+  const subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
   const introspection = introspectionFromSchema(gqlSchema);
   model.api.schema = introspection;
   model.api.queiresFields = [...Object.keys(queriesFields)];
   model.api.mutationFields = [...Object.keys(mutationsFields)];
 
-  const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
+  const microServicesfieldSplitterOutput = microServicesDirectiveFieldSplitter(
     queriesFields,
     mutationsFields
   );
 
-  model.api.generalFields = fieldSplitterOutput.generalFields;
-  model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+  model.api.generalFields = microServicesfieldSplitterOutput.generalFields;
+  model.api.microServiceFields = microServicesfieldSplitterOutput.microServiceFields;
+
+
+ const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
+
+ const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
+ 
+
+ fs.writeFileSync(
+  `./editable_src/graphql/schema/schema.graphql`,
+  `${newSchema}`,
+  (err: string) => {
+    if (err) {
+      stopSpinner(spinner, `Error: ${err}`, true);
+      process.exit(1);
+    }
+  }
+);
+
+ model.api.asyncFields = asyncFieldSplitterOutput
 
   const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
   model.api.mockApiData = mockApiCollection;

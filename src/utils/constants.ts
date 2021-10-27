@@ -1,5 +1,7 @@
 import { IntrospectionQuery } from "graphql";
 
+export const async_response_mutName = 'async_response'
+
 export enum APITYPE {
   graphql = "GraphQL",
   rest = "REST OpenAPI",
@@ -69,7 +71,6 @@ export interface API {
   template: TEMPLATE;
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
-  architecture: ARCHITECTURE;
   apiName: string;
   schemaPath: string;
   schema?: IntrospectionQuery;
@@ -87,7 +88,8 @@ export interface API {
   microServiceFields?:{
     [k: string]: any[];
 };
-  generalFields?: string[]
+  generalFields?: string[],
+  asyncFields?:string[]
 }
 
 export enum ARCHITECTURE {

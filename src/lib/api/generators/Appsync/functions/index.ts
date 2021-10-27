@@ -1,5 +1,6 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel } from "../../../../../utils/constants";
+import { ApiModel, async_response_mutName } from "../../../../../utils/constants";
+import { Property } from "../../../../../utils/typescriptWriter";
 import { Appsync } from "../../../constructs/Appsync";
 import { Cdk } from "../../../constructs/Cdk";
 
@@ -12,8 +13,18 @@ export const appsyncDatasourceHandler = (config: ApiModel, code: CodeMaker) => {
     ...queiresFields!,
   ];
     mutationsAndQueries.forEach((key: string) => {
+
+      if (key !== async_response_mutName){
+      
       appsync.appsyncLambdaDataSource(apiName, apiName, key);
       code.line();
+
+    }
+
+    else {
+      appsync.appsyncNoneDataSource(key);
+      code.line();
+    }
     });
 
     if(nestedResolver && nestedResolverFieldsAndLambdas){
@@ -43,11 +54,19 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
 
   mutationFields!.forEach((key: string) => {
     const dataSourceName = `ds_${apiName}_${key}`;
+
+    if (key !== async_response_mutName){
+
     appsync.appsyncLambdaResolver(key, "Mutation", dataSourceName);
     code.line();
     cdk.nodeAddDependency(`${key}_resolver`, `${apiName}_schema`);
     cdk.nodeAddDependency(`${key}_resolver`, dataSourceName);
     code.line();
+    }
+    else {
+
+      appsync.appsyncNoneDataSourceResolver(key, "Mutation", dataSourceName);
+    }
   });
 
   if(nestedResolver && nestedResolverFieldsAndLambdas){
@@ -86,3 +105,32 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
   }
 
 }
+
+
+
+
+export const appsyncPropertiesHandler = (): Property[] => {
+  return [
+    {
+      name: "api_url",
+      typeName: "string",
+      accessModifier: "public",
+      isReadonly: false,
+    },
+    {
+      name: "api_key",
+      typeName: "string",
+      accessModifier: "public",
+      isReadonly: false,
+    },
+  ];
+};
+
+
+export const appsyncPropertiesInitializer = (
+  apiName: string,
+  code: CodeMaker
+) => {
+  code.line(`this.api_url = ${apiName}_appsync.attrGraphQlUrl;`);
+  code.line(`this.api_key = ${apiName}_apiKey.attrApiKey;`);
+};
