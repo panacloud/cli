@@ -72,7 +72,7 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
     await customLambda({ config });
   }
 
-  if (config.api.architecture === ARCHITECTURE.eventDriven) {
+  if (config.api.asyncFields &&  config.api.asyncFields.length >0) {
     await eventBridgeConstruct({ config })
   }
 

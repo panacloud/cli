@@ -50,7 +50,7 @@ export class CdkStack {
       this.config.api;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
-      const { queiresFields, mutationFields, architecture } = this.config.api;
+      const { queiresFields, mutationFields } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
     const cdk = new Cdk(this.code);
@@ -62,7 +62,7 @@ export class CdkStack {
     const lambda = new Lambda(this.code, this.panacloudConfig);
     const appsync = new Appsync(this.code);
     const eventBridge = new EventBridge(this.code);
-    importHandlerForStack(database, apiType, this.config.api.architecture, this.code);
+    importHandlerForStack(database, apiType, this.code, this.config.api.asyncFields);
     imp.importLambda();
     database !== DATABASE.dynamoDB && imp.importEc2()
     this.code.line();
@@ -101,7 +101,7 @@ export class CdkStack {
           this.code.line("})");
         }
 
-        if (this.config.api.architecture === ARCHITECTURE.eventDriven) {
+        if (this.config.api.asyncFields &&  this.config.api.asyncFields.length >0) {
           eventBridge.eventBridgeConstructInitializer(this.config.api);
         }
 

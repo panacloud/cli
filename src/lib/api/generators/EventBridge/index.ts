@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, CONSTRUCTS, ARCHITECTURE } from "../../../../utils/constants";
+import { ApiModel, CONSTRUCTS } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
 import { EventBridge } from "../../constructs/EventBridge";
@@ -28,7 +28,7 @@ class EventBridgeConstruct {
 
     async EventBridgeConstructFile() {
         const {
-            api: { apiName, mutationFields },
+            api: { apiName,asyncFields },
         } = this.config;
         this.code.openFile(this.outputFile);
         const cdk = new Cdk(this.code);
@@ -41,7 +41,7 @@ class EventBridgeConstruct {
         imp.importLambda();
 
         let ConstructProps: ConstructPropsType[] = [];
-        mutationFields?.forEach((key: string, index: number) => {
+        asyncFields?.forEach((key: string, index: number) => {
             ConstructProps.push({
                 name: `${apiName}_lambdaFn_${key}Arn`,
                 type: "string"
@@ -53,7 +53,7 @@ class EventBridgeConstruct {
         })
 
         cdk.initializeConstruct(`${CONSTRUCTS.eventBridge}`, "EventBridgeConstructProps", () => {
-            mutationFields?.forEach((key: string) => {
+            asyncFields?.forEach((key: string) => {
                 eventBridge.grantPutEvents(apiName, key);
                 eventBridge.createEventBridgeRule(apiName, key);
             })

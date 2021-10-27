@@ -71,7 +71,6 @@ export interface API {
   template: TEMPLATE;
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
-  architecture: ARCHITECTURE;
   apiName: string;
   schemaPath: string;
   schema?: IntrospectionQuery;
