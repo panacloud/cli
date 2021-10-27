@@ -50,13 +50,14 @@ export class AsyncDirective {
             const oldMut = newSchema.match(mutRegex)
 
 
-            let updateMut = oldMut[0].split('}');
+            let updateMut = oldMut? oldMut[0].split('}'):null;
 
-            updateMut = updateMut[0].trim() + `\n${async_response_mutName}(input:String!):String!\n}`
+            updateMut = updateMut && updateMut[0].trim() + `\n${async_response_mutName}(input:String!):String!\n}`
 
 
+            if (updateMut){
             newSchema = newSchema.replace(oldMut[0], updateMut)
-
+        }
 
 
         }
@@ -78,12 +79,14 @@ export class AsyncDirective {
             const oldSub = newSchema.match(subRegex)
 
 
-            let updateSub = oldSub[0].split('}');
+            let updateSub = oldSub ? oldSub[0].split('}') : null
 
-            updateSub = updateSub[0].trim() + `\n${async_response_mutName}: String!\n@aws_subscribe(mutations: [${async_response_mutName}])\n}`
+            updateSub = updateSub && updateSub[0].trim() + `\n${async_response_mutName}: String!\n@aws_subscribe(mutations: [${async_response_mutName}])\n}`
 
 
+            if (updateSub){
             newSchema = newSchema.replace(oldSub[0], updateSub)
+        }
           //  console.log(newSchema)
 
 
@@ -111,14 +114,15 @@ export class AsyncDirective {
            // const oldMut = schema.match(mutRegex)
 
 
-           const asyncRespRegex = new RegExp(`/${async_response_mutName}[\s\(]+[input\s:String!]+[\)\s\:]+[String !]+/g`)
-        //    const asyncRespRegex = /async_response[\s\(]+[input\s:String!]+[\)\s\:]+[String !]+/g
+          // const asyncRespRegex = new RegExp(`/${async_response_mutName}[\s\(]+[input\s:String!]+[\)\s\:]+[String !]+/g`)
+            const asyncRespRegex = /async_response[\s\(]+[input\s:String!]+[\)\s\:]+[String !]+/g
 
             const asyncRespMut = newSchema.match(asyncRespRegex)
 
-
+            if (asyncRespMut){
          newSchema = newSchema.replace(asyncRespMut[0],'')
 
+        }
 
             // let updateMut = oldMut[0].split('}');
 
@@ -141,7 +145,9 @@ export class AsyncDirective {
 
             const oldSub = newSchema.match(subRegex)
 
+            if (oldSub){
             newSchema = newSchema.replace(oldSub[0], "")
+        }
 
            // console.log(newSchema)
 
@@ -152,14 +158,16 @@ export class AsyncDirective {
         if (subNames.length > 1 && subscriptionFields[async_response_mutName]){
 
 
-            const subRegex = new RegExp (`/${async_response_mutName}[\s\:]+[String\ !\s]+[@aws_subscribe\s\(mutations\s:\s\[\s${async_response_mutName}\s]+[\] \)]+/g`)
+           // const subRegex = new RegExp (`/${async_response_mutName}[\s\:]+[String\ !\s]+[@aws_subscribe\s\(mutations\s:\s\[\s${async_response_mutName}\s]+[\] \)]+/g`)
 
-            //const subRegex = /async_response[\s\:]+[String\ !\s]+[@aws_subscribe\s\(mutations\s:\s\[\sasync_response\s]+[\] \)]+/g
+            const subRegex = /async_response[\s\:]+[String\ !\s]+[@aws_subscribe\s\(mutations\s:\s\[\sasync_response\s]+[\] \)]+/g
             
             const asyncRespSub = newSchema.match(subRegex)
 
 
+            if (asyncRespSub){
          newSchema = newSchema.replace(asyncRespSub[0],'')
+        }
 
         }
 
