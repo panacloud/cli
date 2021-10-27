@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel } from "../../../../utils/constants";
+import { ApiModel, async_response_mutName } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import fse = require("fs-extra");
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
@@ -26,6 +26,8 @@ class MockApiTestCollectionsFile {
 
 
     for (const key in new_config.api.mockApiData?.collections.fields) {
+
+      if (key !== async_response_mutName){
       const code = new CodeMaker();
       const ts = new TypeScriptWriter(code);
 
@@ -37,7 +39,7 @@ class MockApiTestCollectionsFile {
 
       if (new_config.api.mockApiData?.imports) {
         ts.writeImports("../types", [
-          ...new_config.api.mockApiData?.imports,
+          ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`),
         ]);
       }
       code.line();
@@ -57,6 +59,7 @@ class MockApiTestCollectionsFile {
       code1.openFile("testCollections.ts");
 
       ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
+
       if (new_config.api.mockApiData?.enumImports.length !== 0) {
         ts1.writeImports("../types", [
           ...new_config.api.mockApiData?.enumImports!,
@@ -85,6 +88,7 @@ class MockApiTestCollectionsFile {
 
     }
 
+  }
   }
 }
 
