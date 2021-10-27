@@ -80,12 +80,15 @@ model:ApiModel, spinner:any
 
   let prevItems = Object.keys(configPanacloud.lambdas)
 
+  let prevNestedResolvers = Object.keys(configPanacloud.nestedLambdas)
+
   const prevMicroServices = prevItems.filter((val: any) => configPanacloud.lambdas[val].asset_path ? false : true)
 
   const prevGeneralLambdas = prevItems.filter((val: any) => configPanacloud.lambdas[val].asset_path ? true : false)
 
   const newMicroServices = Object.keys(microServiceFields!);
 
+  ///Editable_src Lambda Layer
   let oldLambdas: string[] = [];
   for (const ele of prevItems) {
     const microService = newMicroServices.includes(ele);
@@ -114,6 +117,7 @@ model:ApiModel, spinner:any
   }
 
   model.api.createMockLambda = lambdaCreate
+  ///Editable_src Lambda Layer
 
   let differenceMicroServices = newMicroServices
     .filter(val => !prevMicroServices.includes(val))
@@ -272,6 +276,7 @@ model:ApiModel, spinner:any
 
 
   if(nestedResolver){
+
     panacloudConfigNew.nestedLambdas = {}
     const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
     for (let index = 0; index < nestedResolverLambdas.length; index++) {
