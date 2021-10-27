@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE, ARCHITECTURE, CONSTRUCTS } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE, async_response_mutName, CONSTRUCTS } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
@@ -18,20 +18,23 @@ class MultipleLambda {
 
   async MultipleLambdaFile() {
     const {
-      api: {  apiType,  generalFields,  microServiceFields,  mutationFields,  architecture,  apiName,  nestedResolver}} = this.config;
+      api: {  apiType,  generalFields,  microServiceFields,  mutationFields,  apiName,  nestedResolver,asyncFields}} = this.config;
 
     if (apiType === APITYPE.graphql) {
       const microServices = Object.keys(microServiceFields!);
 
       for (let i = 0; i < microServices.length; i++) {
         for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
+          
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
           const imp = new Imports(code);
           const ts = new TypeScriptWriter(code);
 
           const key = microServiceFields![microServices[i]][j];
-          const isMutation = mutationFields?.includes(key);
+
+          if (key !== async_response_mutName){
+
           this.outputFile = `index.ts`;
           code.openFile(this.outputFile);
 
@@ -48,14 +51,15 @@ class MultipleLambda {
             apiName,
             undefined,
             key,
-            isMutation ? architecture : undefined
+            undefined,
+            asyncFields?.includes(key)
           );
 
           code.closeFile(this.outputFile);
           this.outputDir = `mock_lambda/${microServices[i]}/${key}`;
           await code.save(this.outputDir);
 
-          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          if (asyncFields && asyncFields.includes(key)) {
             const code = new CodeMaker();
             const lambda = new LambdaFunction(code);
             const imp = new Imports(code);
@@ -65,12 +69,13 @@ class MultipleLambda {
 
             code.line();
 
-            lambda.helloWorldFunction(apiType);
+            lambda.appsyncMutationInvokeFunction();
 
             code.closeFile(this.outputFile);
             this.outputDir = `mock_lambda/${microServices[i]}/${key}_consumer`;
             await code.save(this.outputDir);
           }
+        }
         }
       }
 
@@ -80,8 +85,10 @@ class MultipleLambda {
         const imp = new Imports(code);
         const ts = new TypeScriptWriter(code);
         const key = generalFields![i];
+
+        if (key !== async_response_mutName){
+
         this.outputFile = "index.ts";
-        const isMutation = mutationFields?.includes(key);
         code.openFile(this.outputFile);
 
         ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
@@ -97,24 +104,28 @@ class MultipleLambda {
           apiName,
           undefined,
           key,
-          isMutation ? architecture : undefined
+          undefined,
+          asyncFields?.includes(key)
+          
         );
 
         code.closeFile(this.outputFile);
         this.outputDir = `mock_lambda/${key}`;
         await code.save(this.outputDir);
 
-        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+        if (asyncFields && asyncFields.includes(key)) {
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
           code.line();
-          lambda.helloWorldFunction(apiName);
+          lambda.appsyncMutationInvokeFunction();
           code.closeFile(this.outputFile);
           this.outputDir = `mock_lambda/${key}_consumer`;
           await code.save(this.outputDir);
         }
+
+      }
       }
 
       if(nestedResolver){        

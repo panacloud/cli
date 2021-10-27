@@ -12,15 +12,15 @@ export class LambdaFunction {
     apiName: string,
     content?: any,
     fieldName?: string,
-    architecture?: ARCHITECTURE,
-    nestedResolver?: boolean
+    nestedResolver?: boolean,
+    asyncField?:Boolean
   ) {
     if (apiType === APITYPE.graphql) {
       const ts = new TypeScriptWriter(this.code);
       ts.writeAllImports("aws-sdk", "* as AWS")
       ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
       // this.code.line(`var AWS = require('aws-sdk');`);
-      if (architecture === ARCHITECTURE.eventDriven) {
+      if (asyncField) {
         this.code.line(`var eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
       }
       this.code.line(`var isEqual = require('lodash.isequal');`);
@@ -46,7 +46,7 @@ export class LambdaFunction {
         `);
       }
 
-      if (architecture === ARCHITECTURE.eventDriven) {
+      if (asyncField) {
         this.code.line(`
           await eventBridge
             .putEvents({
@@ -138,7 +138,7 @@ export class LambdaFunction {
     \`;
 
     await axios.post(
-      process.env.APPSYNC_API_END_POINT,
+      process.env.APPSYNC_API_END_POINT!,
       JSON.stringify({ query }),
       { headers: { "content-type": "application/json", "x-api-key": process.env.APPSYNC_API_KEY, } }
     );

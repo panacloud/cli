@@ -3,7 +3,7 @@ import { CodeMaker } from "codemaker";
 import {
   API,
   APITYPE,
-  ARCHITECTURE,
+  async_response_mutName,
   DATABASE
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
@@ -13,8 +13,9 @@ import { DynamoDB } from "../../../constructs/Dynamodb";
 export const importHandlerForStack = (
   database: string,
   apiType: string,
-  architecture: ARCHITECTURE,
-  code: CodeMaker
+  code: CodeMaker,
+  asyncFields?: string[],
+
 ) => {
   const imp = new Imports(code);
   imp.importsForStack();
@@ -24,7 +25,7 @@ export const importHandlerForStack = (
   } else {
     imp.importForApiGatewayConstruct();
   }
-  if (architecture === ARCHITECTURE.eventDriven) {
+  if (asyncFields && asyncFields.length > 0) {
     imp.importForEventBrideConstruct();
   }
 
@@ -69,14 +70,20 @@ export const LambdaAccessHandler = (
       mutationsAndQueries = [...mutationsAndQueries,...nestedResolverLambdas]
     }
     mutationsAndQueries.forEach((key: string) => {
+
+     if (key !== async_response_mutName){
       dynamodb.dbConstructLambdaAccess(
         apiName,
         `${apiName}_table`,
         apiType,
         key
       );
+
+    }
     });
+
     code.line();
+    
   }
 };
 

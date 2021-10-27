@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { API, ApiModel, APITYPE, ARCHITECTURE, DATABASE, PanacloudconfigFile} from "../../../../../utils/constants";
+import { API, ApiModel, APITYPE, ARCHITECTURE, async_response_mutName, DATABASE, PanacloudconfigFile} from "../../../../../utils/constants";
 import {Property} from "../../../../../utils/typescriptWriter";
 import { Lambda } from "../../../constructs/Lambda";
 interface Environment {
@@ -12,7 +12,7 @@ export const lambdaInitializerForNestedResolvers = (
   panacloudConfig: PanacloudconfigFile,
   code: CodeMaker
 ) => {
-  const { nestedResolverFieldsAndLambdas, architecture, apiName,database } = model;
+  const { nestedResolverFieldsAndLambdas, apiName,database,asyncFields } = model;
   const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
   const lambda = new Lambda(code, panacloudConfig);
 
@@ -37,8 +37,7 @@ export const lambdaInitializerForNestedResolvers = (
 
   for (let i = 0; i < nestedResolverLambdas.length; i++) {
     const key = nestedResolverLambdas[i];
-    const isMutation = model.mutationFields?.includes(key);
-    if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+    if (asyncFields && asyncFields.includes(key)) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
     }
     lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,undefined,true);
@@ -54,7 +53,7 @@ export const lambdaInitializerForMicroServices = (
 ) => {
   let microService_Fields: { [k: string]: any[] } = {};
   const lambda = new Lambda(code, panacloudConfig);
-  const { apiName, database, architecture, microServiceFields } = model;
+  const { apiName, database, microServiceFields,asyncFields } = model;
   microService_Fields = microServiceFields!;
   const microServices = Object.keys(microService_Fields);
   let lambdaEnv: Environment[] | undefined;
@@ -80,8 +79,9 @@ export const lambdaInitializerForMicroServices = (
     for (let j = 0; j < microService_Fields[microServices[i]].length; j++) {
       const key = microService_Fields[microServices[i]][j];
       const microService = microServices[i];
-      const isMutation = model.mutationFields?.includes(key);
-      if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+      if (key !== async_response_mutName){
+      if (asyncFields && asyncFields.includes(key)) {
         lambdaInitializerForEventDriven(
           model,
           panacloudConfig,
@@ -101,6 +101,8 @@ export const lambdaInitializerForMicroServices = (
         microService
       );
       code.line();
+
+    }
     }
   }
 };
@@ -111,7 +113,7 @@ export const lambdaInitializerForGeneralFields = (
   code: CodeMaker,
   general_Fields: string[]
 ) => {
-  const { architecture,database, apiName } = model;
+  const { database, apiName,asyncFields } = model;
   const lambda = new Lambda(code, panacloudConfig);
   
   let lambdaEnv: Environment[] | undefined;
@@ -135,13 +137,17 @@ export const lambdaInitializerForGeneralFields = (
 
   for (let i = 0; i < general_Fields.length; i++) {
     const key = general_Fields[i];
-    const isMutation = model.mutationFields?.includes(key);
-    if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+
+    if (key !== async_response_mutName){
+
+    if (asyncFields && asyncFields.includes(key)) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
     }
     lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole);
     code.line();
     code.line();
+
+  }
   }
 };
 
