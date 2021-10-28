@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE, ARCHITECTURE, Config } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE, Config, async_response_mutName } from "../../../../utils/constants";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 import { Imports } from "../../constructs/ConstructsImports";
 const fs = require("fs");
@@ -41,13 +41,49 @@ class CustomLambda {
 
       const microServices = Object.keys(microServiceFields!);
 
-      for (let i = 0; i < microServices.length; i++) {
-        for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
+      let microservice_files: any = {};
+      fs.readdirSync(`${process.cwd()}/editable_src/lambda`).forEach((file: string) => {
+        if(microServices.includes(file)){
+          const micro_sub_files: string[] = [];
+          fs.readdirSync(`${process.cwd()}/editable_src/lambda/${file}`).forEach((inner: string) => {
+            micro_sub_files.push(inner)
+          })
+          microservice_files = {...microservice_files, [file]: micro_sub_files.filter ((val:string)=> val.split('_').pop() !== "consumer")};
+        }
+      });
+
+      const newMicroServices = Object.keys(microservice_files);
+
+      let differenceMicroserviceLambdas = newMicroServices
+          .filter(val => !microServices.includes(val))
+          .concat(microServices.filter(val => !newMicroServices.includes(val)));
+
+      for (const ele of differenceMicroserviceLambdas) {
+        if (!fs.existsSync(`${process.cwd()}/editable_src/lambda/${ele}`)){
+          await mkdirRecursiveAsync(`editable_src/lambda/${ele}`);
+        }
+      }
+
+      for (const service of microServices) {
+        let newMicroServicesLambdas: string[] = microServiceFields![service];
+        let prevMicroLambda: string[] = microservice_files[service] === undefined  ? [] : microservice_files[service];
+
+        let differenceMicroServicesLambdas = newMicroServicesLambdas
+          .filter(val => !prevMicroLambda.includes(val))
+          .concat(prevMicroLambda.filter((val: any) => !newMicroServicesLambdas.includes(val)));
+
+        const newServices: string[] = []
+        for (const ele of newMicroServicesLambdas) {
+          if(differenceMicroServicesLambdas.includes(ele)){
+            newServices.push(ele);
+          }
+        }
+
+        for (let diff of newServices) {
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
           const imp = new Imports(code);
 
-          const key = microServiceFields![microServices[i]][j];
           code.openFile(this.outputFile);
 
           imp.importAxios();
@@ -56,48 +92,57 @@ class CustomLambda {
           lambda.emptyLambdaFunction();
 
           code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/${microServices[i]}/${key}`;
+          this.outputDir = `editable_src/lambda/${service}/${diff}`;
           await code.save(this.outputDir);
 
-          if (asyncFields && asyncFields.includes(key)) {
-            const code = new CodeMaker();
-            const lambda = new LambdaFunction(code);
-            const imp = new Imports(code);
+          if (asyncFields && asyncFields.includes(diff)) {
 
-            this.outputFile = "index.ts";
-            code.openFile(this.outputFile);
-
-            code.line();
-
-            lambda.emptyLambdaFunction();
-
-            code.closeFile(this.outputFile);
-            this.outputDir = `editable_src/lambda/${microServices[i]}/${key}_consumer`;
-            await code.save(this.outputDir);
+            fs.readdirSync(`${process.cwd()}/editable_src/lambda/${service}`).forEach(async (file: string) => {
+              if(file !== `${diff}_consumer`){
+                const code = new CodeMaker();
+                const lambda = new LambdaFunction(code);
+                const imp = new Imports(code);
+    
+                this.outputFile = "index.ts";
+                code.openFile(this.outputFile);
+    
+                code.line();
+    
+                lambda.appsyncMutationInvokeFunction();
+    
+                code.closeFile(this.outputFile);
+                this.outputDir = `editable_src/lambda/${service}/${diff}_consumer`;
+                await code.save(this.outputDir);
+              }
+            })
           }
+
         }
+
       }
 
-
-      if(this.type === "update"){
-        const files: string[] = []
-        fs.readdirSync(`${process.cwd()}/editable_src/lambda`).forEach((file: string) => {
-          if(file !== "nestedResolvers"){ 
-            if(!microServices.includes(file)){
-              console.log("file ", file);
-            }
+      const general_files: string[] = []
+      fs.readdirSync(`${process.cwd()}/editable_src/lambda`).forEach((file: string) => {
+        if(file !== "nestedResolvers"){ 
+          if(!microServices.includes(file)){
+            general_files.push(file);
           }
-          files.push(file);
-        });
+        }
+      });
 
-        const generalFieldsEvent = [...generalFields!, ]
-        let differenceLambdas = generalFields!
-          .filter(val => !files.includes(val))
-          .concat(files.filter(val => generalFields!.includes(val)));
+      const new_asyncField: string[] = [];
+      asyncFields?.forEach(field => {
+        if(generalFields?.includes(field)){
+          new_asyncField?.push(`${field}_consumer`)
+        }
+      })
 
-        console.log("differenceLambdas ", differenceLambdas)
+      const generalFieldsEvent = [...generalFields!, ...new_asyncField!];
 
-        for (const ele of differenceLambdas) {
+      let differenceLambdas = generalFieldsEvent!.filter(val => !general_files.includes(val));
+
+      for (const ele of differenceLambdas) {
+        if (ele !== async_response_mutName){
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
           const imp = new Imports(code);
@@ -116,61 +161,7 @@ class CustomLambda {
           code.closeFile(this.outputFile);
           this.outputDir = `editable_src/lambda/${key}`;
           await code.save(this.outputDir);
-  
-          if (asyncFields && asyncFields.includes(key)) {
-            const code = new CodeMaker();
-            const lambda = new LambdaFunction(code);
-  
-            this.outputFile = "index.ts";
-            code.openFile(this.outputFile);
-  
-            code.line();
-  
-            lambda.emptyLambdaFunction();
-  
-            code.closeFile(this.outputFile);
-            this.outputDir = `editable_src/lambda/${key}_consumer`;
-            await code.save(this.outputDir);
-          }
-        }
-        
-      }
-      else{
-        for (const ele of generalFields!) {
-          const code = new CodeMaker();
-          const lambda = new LambdaFunction(code);
-          const imp = new Imports(code);
-  
-          const key = ele;
-          this.outputFile = "index.ts";
-          const isMutation = mutationFields?.includes(key);
-  
-          code.openFile(this.outputFile);
-  
-          imp.importAxios();
-          code.line();
-  
-          lambda.emptyLambdaFunction();
-  
-          code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/${key}`;
-          await code.save(this.outputDir);
-  
-          if (asyncFields && asyncFields.includes(key)) {
-            const code = new CodeMaker();
-            const lambda = new LambdaFunction(code);
-  
-            this.outputFile = "index.ts";
-            code.openFile(this.outputFile);
-  
-            code.line();
-  
-            lambda.emptyLambdaFunction();
-  
-            code.closeFile(this.outputFile);
-            this.outputDir = `editable_src/lambda/${key}_consumer`;
-            await code.save(this.outputDir);
-          }
+
         }
       }
       

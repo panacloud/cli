@@ -78,8 +78,6 @@ model:ApiModel, spinner:any
 
   let prevItems = Object.keys(configPanacloud.lambdas)
 
-  let prevNestedResolvers = Object.keys(configPanacloud.nestedLambdas)
-
   const prevMicroServices = prevItems.filter((val: any) => configPanacloud.lambdas[val].asset_path ? false : true)
 
   const prevGeneralLambdas = prevItems.filter((val: any) => configPanacloud.lambdas[val].asset_path ? true : false)

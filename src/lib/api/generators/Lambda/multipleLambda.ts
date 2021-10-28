@@ -35,10 +35,63 @@ class MultipleLambda {
 
           if (key !== async_response_mutName){
 
-          this.outputFile = `index.ts`;
+            this.outputFile = `index.ts`;
+            code.openFile(this.outputFile);
+
+            ts.writeImports(`../../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
+              "TestCollection",
+            ]);
+            code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
+            testCollections: TestCollection;
+          };`);
+            code.line();
+
+            lambda.initializeLambdaFunction(
+              apiType,
+              apiName,
+              undefined,
+              key,
+              undefined,
+              asyncFields?.includes(key)
+            );
+
+            code.closeFile(this.outputFile);
+            this.outputDir = `mock_lambda/${microServices[i]}/${key}`;
+            await code.save(this.outputDir);
+
+            if (asyncFields && asyncFields.includes(key)) {
+              const code = new CodeMaker();
+              const lambda = new LambdaFunction(code);
+              const imp = new Imports(code);
+
+              this.outputFile = "index.ts";
+              code.openFile(this.outputFile);
+
+              code.line();
+
+              lambda.appsyncMutationInvokeFunction();
+
+              code.closeFile(this.outputFile);
+              this.outputDir = `mock_lambda/${microServices[i]}/${key}_consumer`;
+              await code.save(this.outputDir);
+            }
+          }
+        }
+      }
+
+      for (let i = 0; i < generalFields!.length; i++) {
+        const code = new CodeMaker();
+        const lambda = new LambdaFunction(code);
+        const imp = new Imports(code);
+        const ts = new TypeScriptWriter(code);
+        const key = generalFields![i];
+
+        if (key !== async_response_mutName){
+
+          this.outputFile = "index.ts";
           code.openFile(this.outputFile);
 
-          ts.writeImports(`../../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
+          ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
             "TestCollection",
           ]);
           code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
@@ -53,79 +106,26 @@ class MultipleLambda {
             key,
             undefined,
             asyncFields?.includes(key)
+            
           );
 
           code.closeFile(this.outputFile);
-          this.outputDir = `mock_lambda/${microServices[i]}/${key}`;
+          this.outputDir = `mock_lambda/${key}`;
           await code.save(this.outputDir);
 
           if (asyncFields && asyncFields.includes(key)) {
             const code = new CodeMaker();
             const lambda = new LambdaFunction(code);
-            const imp = new Imports(code);
-
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
-
             code.line();
-
             lambda.appsyncMutationInvokeFunction();
-
             code.closeFile(this.outputFile);
-            this.outputDir = `mock_lambda/${microServices[i]}/${key}_consumer`;
+            this.outputDir = `mock_lambda/${key}_consumer`;
             await code.save(this.outputDir);
           }
+
         }
-        }
-      }
-
-      for (let i = 0; i < generalFields!.length; i++) {
-        const code = new CodeMaker();
-        const lambda = new LambdaFunction(code);
-        const imp = new Imports(code);
-        const ts = new TypeScriptWriter(code);
-        const key = generalFields![i];
-
-        if (key !== async_response_mutName){
-
-        this.outputFile = "index.ts";
-        code.openFile(this.outputFile);
-
-        ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
-          "TestCollection",
-        ]);
-        code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
-        testCollections: TestCollection;
-      };`);
-        code.line();
-
-        lambda.initializeLambdaFunction(
-          apiType,
-          apiName,
-          undefined,
-          key,
-          undefined,
-          asyncFields?.includes(key)
-          
-        );
-
-        code.closeFile(this.outputFile);
-        this.outputDir = `mock_lambda/${key}`;
-        await code.save(this.outputDir);
-
-        if (asyncFields && asyncFields.includes(key)) {
-          const code = new CodeMaker();
-          const lambda = new LambdaFunction(code);
-          this.outputFile = "index.ts";
-          code.openFile(this.outputFile);
-          code.line();
-          lambda.appsyncMutationInvokeFunction();
-          code.closeFile(this.outputFile);
-          this.outputDir = `mock_lambda/${key}_consumer`;
-          await code.save(this.outputDir);
-        }
-
-      }
       }
 
       if(nestedResolver){        
