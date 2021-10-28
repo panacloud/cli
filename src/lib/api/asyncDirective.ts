@@ -65,7 +65,7 @@ export class AsyncDirective {
         if (!subscriptionFields) {
 
 
-            newSchema = newSchema + `\ntype Subscription {\n${async_response_mutName}: String!\n@aws_subscribe(mutations: [${async_response_mutName}])\n}`
+            newSchema = newSchema + `\ntype Subscription {\n${async_response_mutName}: String!\n@aws_subscribe(mutations: ["${async_response_mutName}"])\n}`
 
 
         }
@@ -81,7 +81,7 @@ export class AsyncDirective {
 
             let updateSub = oldSub ? oldSub[0].split('}') : null
 
-            updateSub = updateSub && updateSub[0].trim() + `\n${async_response_mutName}: String!\n@aws_subscribe(mutations: [${async_response_mutName}])\n}`
+            updateSub = updateSub && updateSub[0].trim() + `\n${async_response_mutName}: String!\n@aws_subscribe(mutations: ["${async_response_mutName}"])\n}`
 
 
             if (updateSub){
@@ -160,7 +160,7 @@ export class AsyncDirective {
 
            // const subRegex = new RegExp (`/${async_response_mutName}[\s\:]+[String\ !\s]+[@aws_subscribe\s\(mutations\s:\s\[\s${async_response_mutName}\s]+[\] \)]+/g`)
 
-            const subRegex = /async_response[\s\:]+[String\ !\s]+[@aws_subscribe\s\(mutations\s:\s\[\sasync_response\s]+[\] \)]+/g
+            const subRegex = /async_response[\s\:]+[String\ !\s]+[@aws_subscribe\s\(mutations\s:\s\[\s]+"async_response"[\s+\]]+[\s+\)]+/g
             
             const asyncRespSub = newSchema.match(subRegex)
 
