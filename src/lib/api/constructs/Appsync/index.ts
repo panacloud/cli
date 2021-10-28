@@ -212,7 +212,6 @@ export class Appsync {
     const ts = new TypeScriptWriter(this.code);
     let resolverVariable = nestedResolver ? `${typeName}_${fieldName}_resolver`: `${fieldName}_resolver`;
     let resolverName = nestedResolver ? `${typeName}_${fieldName}_resolver` : `${fieldName}_resolver`;
-    let mappingTemplate = nestedResolver ? `requestMappingTemplate: "" ` : "";
     ts.writeVariableDeclaration(
       {
         name: resolverVariable,
@@ -223,7 +222,6 @@ export class Appsync {
             typeName: "${typeName}",
             fieldName: "${fieldName}",
             dataSourceName: ${dataSourceName}.name,
-            ${mappingTemplate}
         })`);
         },
       },
