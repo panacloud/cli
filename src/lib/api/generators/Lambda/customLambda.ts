@@ -1,18 +1,26 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE, ARCHITECTURE } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE, Config, async_response_mutName } from "../../../../utils/constants";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 import { Imports } from "../../constructs/ConstructsImports";
+const fs = require("fs");
+const fse = require("fs-extra");
+const path = require("path");
+import { mkdirRecursiveAsync } from "../../../fs";
 
 type StackBuilderProps = {
   config: ApiModel;
+  type: string
 };
 
 class CustomLambda {
   outputFile: string = `index.ts`;
   config: ApiModel;
   outputDir: string = `lambda`;
+  type: string
+
   constructor(props: StackBuilderProps) {
     this.config = props.config;
+    this.type = props.type;
   }
 
   async LambdaFile() {
@@ -22,9 +30,10 @@ class CustomLambda {
         generalFields,
         microServiceFields,
         mutationFields,
-        architecture,
         apiName,
-        nestedResolver
+        nestedResolver,
+        nestedResolverFieldsAndLambdas,
+        asyncFields
       },
     } = this.config;
 
@@ -32,14 +41,49 @@ class CustomLambda {
 
       const microServices = Object.keys(microServiceFields!);
 
-      for (let i = 0; i < microServices.length; i++) {
-        for (let j = 0; j < microServiceFields![microServices[i]].length; j++) {
+      let microservice_files: any = {};
+      fs.readdirSync(`${process.cwd()}/editable_src/lambda`).forEach((file: string) => {
+        if(microServices.includes(file)){
+          const micro_sub_files: string[] = [];
+          fs.readdirSync(`${process.cwd()}/editable_src/lambda/${file}`).forEach((inner: string) => {
+            micro_sub_files.push(inner)
+          })
+          microservice_files = {...microservice_files, [file]: micro_sub_files.filter ((val:string)=> val.split('_').pop() !== "consumer")};
+        }
+      });
+
+      const newMicroServices = Object.keys(microservice_files);
+
+      let differenceMicroserviceLambdas = newMicroServices
+          .filter(val => !microServices.includes(val))
+          .concat(microServices.filter(val => !newMicroServices.includes(val)));
+
+      for (const ele of differenceMicroserviceLambdas) {
+        if (!fs.existsSync(`${process.cwd()}/editable_src/lambda/${ele}`)){
+          await mkdirRecursiveAsync(`editable_src/lambda/${ele}`);
+        }
+      }
+
+      for (const service of microServices) {
+        let newMicroServicesLambdas: string[] = microServiceFields![service];
+        let prevMicroLambda: string[] = microservice_files[service] === undefined  ? [] : microservice_files[service];
+
+        let differenceMicroServicesLambdas = newMicroServicesLambdas
+          .filter(val => !prevMicroLambda.includes(val))
+          .concat(prevMicroLambda.filter((val: any) => !newMicroServicesLambdas.includes(val)));
+
+        const newServices: string[] = []
+        for (const ele of newMicroServicesLambdas) {
+          if(differenceMicroServicesLambdas.includes(ele)){
+            newServices.push(ele);
+          }
+        }
+
+        for (let diff of newServices) {
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
           const imp = new Imports(code);
 
-          const key = microServiceFields![microServices[i]][j];
-          const isMutation = mutationFields?.includes(key);
           code.openFile(this.outputFile);
 
           imp.importAxios();
@@ -48,79 +92,123 @@ class CustomLambda {
           lambda.emptyLambdaFunction();
 
           code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/${microServices[i]}/${key}`;
+          this.outputDir = `editable_src/lambda/${service}/${diff}`;
           await code.save(this.outputDir);
 
-          if (architecture === ARCHITECTURE.eventDriven && isMutation) {
+          if (asyncFields && asyncFields.includes(diff)) {
+
+            fs.readdirSync(`${process.cwd()}/editable_src/lambda/${service}`).forEach(async (file: string) => {
+              if(file !== `${diff}_consumer`){
+                const code = new CodeMaker();
+                const lambda = new LambdaFunction(code);
+                const imp = new Imports(code);
+    
+                this.outputFile = "index.ts";
+                code.openFile(this.outputFile);
+    
+                code.line();
+    
+                lambda.appsyncMutationInvokeFunction();
+    
+                code.closeFile(this.outputFile);
+                this.outputDir = `editable_src/lambda/${service}/${diff}_consumer`;
+                await code.save(this.outputDir);
+              }
+            })
+          }
+
+        }
+
+      }
+
+      const general_files: string[] = []
+      fs.readdirSync(`${process.cwd()}/editable_src/lambda`).forEach((file: string) => {
+        if(file !== "nestedResolvers"){ 
+          if(!microServices.includes(file)){
+            general_files.push(file);
+          }
+        }
+      });
+
+      const new_asyncField: string[] = [];
+      asyncFields?.forEach(field => {
+        if(generalFields?.includes(field)){
+          new_asyncField?.push(`${field}_consumer`)
+        }
+      })
+
+      const generalFieldsEvent = [...generalFields!, ...new_asyncField!];
+
+      let differenceLambdas = generalFieldsEvent!.filter(val => !general_files.includes(val));
+
+      for (const ele of differenceLambdas) {
+        if (ele !== async_response_mutName){
+          const code = new CodeMaker();
+          const lambda = new LambdaFunction(code);
+          const imp = new Imports(code);
+  
+          const key = ele
+          this.outputFile = "index.ts";
+          const isMutation = mutationFields?.includes(key);
+  
+          code.openFile(this.outputFile);
+  
+          imp.importAxios();
+          code.line();
+  
+          lambda.emptyLambdaFunction();
+  
+          code.closeFile(this.outputFile);
+          this.outputDir = `editable_src/lambda/${key}`;
+          await code.save(this.outputDir);
+
+        }
+      }
+      
+
+      if(nestedResolver){
+        if(this.type === "update"){
+
+          if (!fs.existsSync(`${process.cwd()}/editable_src/lambda/nestedResolvers`)){
+            await mkdirRecursiveAsync(`editable_src/lambda/nestedResolvers`);
+          }
+
+          const files: string[] = []
+          fs.readdirSync(`${process.cwd()}/editable_src/lambda/nestedResolvers`).forEach((file: string) => {
+            files.push(file);
+          });
+          
+          let differenceNestedLambdas = nestedResolverFieldsAndLambdas?.nestedResolverLambdas
+            .filter(val => !files.includes(val))
+            .concat(files.filter(val => !nestedResolverFieldsAndLambdas?.nestedResolverLambdas.includes(val)));
+
+          for (const ele of differenceNestedLambdas!) {
             const code = new CodeMaker();
             const lambda = new LambdaFunction(code);
-            const imp = new Imports(code);
-
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
-
             code.line();
-
-            lambda.emptyLambdaFunction();
-
+            lambda.helloWorldFunction(apiName);
             code.closeFile(this.outputFile);
-            this.outputDir = `editable_src/lambda/${microServices[i]}/${key}_consumer`;
+            this.outputDir = `editable_src/lambda/nestedResolvers/${ele}`;
             await code.save(this.outputDir);
           }
         }
-      }
-
-      for (let i = 0; i < generalFields!.length; i++) {
-        const code = new CodeMaker();
-        const lambda = new LambdaFunction(code);
-        const imp = new Imports(code);
-
-        const key = generalFields![i];
-        this.outputFile = "index.ts";
-        const isMutation = mutationFields?.includes(key);
-
-        code.openFile(this.outputFile);
-
-        imp.importAxios();
-        code.line();
-
-        lambda.emptyLambdaFunction();
-
-        code.closeFile(this.outputFile);
-        this.outputDir = `editable_src/lambda/${key}`;
-        await code.save(this.outputDir);
-
-        if (architecture === ARCHITECTURE.eventDriven && isMutation) {
-          const code = new CodeMaker();
-          const lambda = new LambdaFunction(code);
-
-          this.outputFile = "index.ts";
-          code.openFile(this.outputFile);
-
-          code.line();
-
-          lambda.emptyLambdaFunction();
-
-          code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/${key}_consumer`;
-          await code.save(this.outputDir);
-        }
-      }
-
-      if(nestedResolver){
-        const {api:{nestedResolverFieldsAndLambdas}} = this.config
-        const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
-        for (let index = 0; index < nestedResolverLambdas.length; index++) {
-          const key = nestedResolverLambdas[index];
-          const code = new CodeMaker();
-          const lambda = new LambdaFunction(code);
-          this.outputFile = "index.ts";
-          code.openFile(this.outputFile);
-          code.line();
-          lambda.helloWorldFunction(apiName);
-          code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/nestedResolvers/${key}`;
-          await code.save(this.outputDir);
+        else{
+          const {api:{nestedResolverFieldsAndLambdas}} = this.config
+          const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+          for (let index = 0; index < nestedResolverLambdas.length; index++) {
+            const key = nestedResolverLambdas[index];
+            const code = new CodeMaker();
+            const lambda = new LambdaFunction(code);
+            this.outputFile = "index.ts";
+            code.openFile(this.outputFile);
+            code.line();
+            lambda.helloWorldFunction(apiName);
+            code.closeFile(this.outputFile);
+            this.outputDir = `editable_src/lambda/nestedResolvers/${key}`;
+            await code.save(this.outputDir);
+          }
         }
       }
 

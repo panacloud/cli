@@ -9,7 +9,7 @@ export class EventBridge {
   }
 
   public eventBridgeConstructInitializer(config: API) {
-    const { apiName, mutationFields } = config;
+    const { apiName, asyncFields } = config;
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -19,7 +19,7 @@ export class EventBridge {
           this.code.line(
             `new ${CONSTRUCTS.eventBridge}(this,"${apiName}${CONSTRUCTS.eventBridge}",{`
           );
-          mutationFields?.forEach((field) => {
+          asyncFields?.forEach((field) => {
             this.code.line(
               `${apiName}_lambdaFn_${field}Arn: ${apiName}_lambdaFn_${field}.functionArn,`
             );

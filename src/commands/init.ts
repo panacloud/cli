@@ -11,10 +11,10 @@ import {
   SAASTYPE,
   Config,
   DATABASE,
-  ARCHITECTURE,
   APITYPE,
   CLOUDPROVIDER,
   LANGUAGE,
+  ARCHITECTURE,
 } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
@@ -48,7 +48,6 @@ export default class Create extends Command {
         "cloudprovider": CLOUDPROVIDER.aws,
         "language": LANGUAGE.typescript,
         "template": TEMPLATE.defineApi,
-        "architecture": ARCHITECTURE.eventDriven,
         "schemaPath": "schema.graphql",
         "apiName": "myApi",
         "nestedResolver": true,

@@ -69,10 +69,10 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
     await multipleLambda({ config });
     await mockApiTestCollections({ config, dummyData });
     await EditableMockApiTestCollections({ config, dummyData, type })
-    await customLambda({ config });
+    await customLambda({ config, type });
   }
 
-  if (config.api.architecture === ARCHITECTURE.eventDriven) {
+  if (config.api.asyncFields &&  config.api.asyncFields.length >0) {
     await eventBridgeConstruct({ config })
   }
 

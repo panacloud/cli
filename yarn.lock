@@ -472,6 +472,11 @@
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz#d3357479a0fdfdd5907fe67e17e0a85c906e1301"
   integrity sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==
 
+"@types/random-name@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@types/random-name/-/random-name-0.1.0.tgz#cd2a329c15850a067841f38f7939691eeec01bf4"
+  integrity sha512-QA0nl1t7RN1k5YeBH0jxyRD34MDJ9pW+fahEnPhWFNgFhiV5TJ8nm5+pR6NEev7z9SiWhZswnDPb9w0DP7N7bw==
+
 "@types/sinon@*":
   version "10.0.4"
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-10.0.4.tgz#9332527665692b9f6826afe017f342a3ac6120f4"
@@ -1121,10 +1126,10 @@ clone@^1.0.2:
   resolved "https://registry.yarnpkg.com/clone/-/clone-1.0.4.tgz#da309cc263df15994c688ca902179ca3c7cd7c7e"
   integrity sha1-2jCcwmPfFZlMaIypAheco8fNfH4=
 
-codemaker@^1.34.0:
-  version "1.39.0"
-  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.39.0.tgz#d8103f4b587210b1d6aa073d62ffb510ac20bc42"
-  integrity sha512-1PPD7ZCC05nrkN47elPcno3zm4Md7XSkG52CvIbNsEcXddc0Ma2xgoMZnWPu+Ab6801FunSqov9X4O+OZle95A==
+codemaker@^1.40.0:
+  version "1.40.0"
+  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.40.0.tgz#80ed75a433fb08976c602b9080dc7fffbb13dbb9"
+  integrity sha512-X0dMlXILO5r9/YhNAbiLl9kNIfhATfGS8nAT7xC09zREipANnCEbjZuF8jtFGzrD942/k5QNROmqRtqRaZJ1QQ==
   dependencies:
     camelcase "^6.2.0"
     decamelize "^5.0.1"
@@ -3865,6 +3870,11 @@ ramda@^0.27.1:
   version "0.27.1"
   resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.27.1.tgz#66fc2df3ef873874ffc2da6aa8984658abacf5c9"
   integrity sha512-PgIdVpn5y5Yns8vqb8FzBUEYn98V3xcPgawAkkgj0YJ0qDsnHCiNmZYfOGMgOvoB0eWFLpYbhxUR3mxfDIMvpw==
+
+random-name@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/random-name/-/random-name-0.1.2.tgz#20a1ad0efce9976764c5dd3c418c7018b57e816d"
+  integrity sha1-IKGtDvzpl2dkxd08QYxwGLV+gW0=
 
 range-parser@~1.2.1:
   version "1.2.1"
