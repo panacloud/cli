@@ -23,7 +23,7 @@ import { mockApiTestCollections } from "./MockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
-
+import {apiTests} from "../generateApiTests"
 export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile) => {
   // bin file
   CdkAppClass({ config });
@@ -74,5 +74,7 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   if (config.api.architecture === ARCHITECTURE.eventDriven) {
     eventBridgeConstruct({ config })
   }
+  apiTests({config})
 
 };
+

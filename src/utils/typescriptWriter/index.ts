@@ -42,6 +42,30 @@ export class TypeScriptWriter {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
+  public writeApiTest(){
+    
+  }
+  public writeApiTests(key:string){
+    this.code.line(`describe ("run ${key}", ()=>{`)
+    this.code.line()
+    this.code.line(`it("${key} works correctly", (done) => {`)
+    this.code.line(`
+    request
+    .post("/graphql")
+    .set("x-api-key", "da2-cz5sxjhfmjd6zd4tqidzbskjvq")
+    .send({ query: ${key} ,variables:args})
+    .end((err: any, res: any) => {
+      expect(err).not.to.be.null;
+     expect(res.status).to.equal(200);
+     expect(res.body.data[${key}]).to.equal(response);
+      done();
+    });
+    `)
+    this.code.line('});')
+
+    this.code.line('});')
+
+  }
 
   public writeImports(lib: string, components: string[], ) {
     this.code.line(`import { ${components.join(", ")} } from "${lib}";`);
