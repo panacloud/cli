@@ -1,5 +1,5 @@
-import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType } from "graphql";
-import { isArray } from "./helper";
+import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType, GraphQLInterfaceType, isInterfaceType } from "graphql";
+import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
 
@@ -147,9 +147,14 @@ class RootObjectResponse extends ObjectResponse {
       } else if (this.isEnum(type)) {
         this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
 
-        // } else if (this.resolvedCustomObjectType.includes(type)) {
-      } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
-        this.objectResponses.push(new RepeatCustomObjectResponse(graphQLSchema, response, _isArray));
+        /* if the field type is nested and come to resolve again */
+      } else if (this.resolvedCustomObjectTypes.includes(type)) {
+        // } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
+        this.objectResponses.push(new NestedCustomObjectResponse(graphQLSchema, response, _isArray));
+
+        /* if the field type is interface*/
+      } else if (isInterfaceType(this.graphQLSchema.getType(type))) {
+        this.objectResponses.push(new CustomInterfaceObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
 
       } else {
         this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
@@ -208,9 +213,9 @@ class RootObjectRequest extends ObjectRequest {
       } else if (this.isEnum(type)) {
         this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
 
-        // } else if (this.resolvedCustomObjectType.includes(type)) {
+        /* if the field type is nested and come to resolve again */
       } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
-        this.objectRequests.push(new RepeatCustomObjectRequest(graphQLSchema, request, _isArray));
+        this.objectRequests.push(new NestedCustomObjectRequest(graphQLSchema, request, _isArray));
 
       } else {
         this.objectRequests.push(new CustomObjectRequest(graphQLSchema, request, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
@@ -389,11 +394,11 @@ class EnumObjectResponse extends ObjectResponse {
     }
   }
   getRandomEnum() {
-    const enumValue = this.enumList[Math.floor(Math.random() * this.enumList.length)];
+    const enumValue = getRandomItem(this.enumList);
     return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`; // ==> ApiSaasType.Music
   }
 }
-class RepeatCustomObjectResponse extends ObjectResponse {
+class NestedCustomObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>;
   private isArray?: boolean;
   constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
@@ -409,6 +414,57 @@ class RepeatCustomObjectResponse extends ObjectResponse {
     }
   }
 }
+class CustomInterfaceObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<any, any> }[] = [];
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+    const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+    resolvedCustomObjectTypes?.push(type);
+    const interfaceTypeObject = this.graphQLSchema.getType(type) as GraphQLInterfaceType;
+    const implementedObjectTypes = [...this.graphQLSchema.getImplementations(interfaceTypeObject).objects];
+
+    if (isArray) {
+      Array(3).fill(null).forEach(() => {
+        const objectType = getRandomItem(implementedObjectTypes);
+        const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+        this.objectResponses.push({
+          objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+          objectType: objectType
+        })
+      })
+    } else {
+      const objectType = getRandomItem(implementedObjectTypes);
+      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      this.objectResponses.push({
+        objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+        objectType: objectType
+      })
+    }
+
+  }
+
+  write(object: ArgAndResponseType['response']) {
+    if (this.isArray) {
+      object[this.responseField.name] = [];
+      this.objectResponses.forEach(({ objectResponse, objectType }, idx) => {
+        object[this.responseField.name].push({ __typename: objectType.name })
+        objectResponse.write(object[this.responseField.name][idx])
+      })
+
+    } else {
+      this.objectResponses.forEach(({ objectResponse, objectType }) => {
+        object[this.responseField.name] = { __typename: objectType.name };
+        objectResponse.write(object[this.responseField.name])
+      })
+    }
+
+  }
+
+}
 class CustomObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>;
   private objectResponses: ObjectResponse[] = []
@@ -419,12 +475,12 @@ class CustomObjectResponse extends ObjectResponse {
     this.isArray = isArray;
     const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     resolvedCustomObjectTypes?.push(type);
-    const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
-    const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
-    this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
+    const objectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
+    const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+    this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
   }
 
-  write(object: ArgAndResponseType['response']): void {
+  write(object: ArgAndResponseType['response']) {
     if (this.isArray) {
       object[this.responseField.name] = [{}, {}, {}];
       this.objectResponses.forEach((objectResponse) => {
@@ -604,12 +660,12 @@ class EnumObjectRequest extends ObjectRequest {
   }
 
   getRandomEnum() {
-    const enumValue = this.enumList[Math.floor(Math.random() * this.enumList.length)];
+    const enumValue = getRandomItem(this.enumList);
     return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
   }
 
 }
-class RepeatCustomObjectRequest extends ObjectRequest {
+class NestedCustomObjectRequest extends ObjectRequest {
   private requestField: GraphQLArgument;
   private isArray?: boolean;
   constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
