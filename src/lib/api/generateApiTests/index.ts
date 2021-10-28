@@ -25,7 +25,6 @@ class APITests {
         generalFields,
         microServiceFields,
         mutationFields,
-        architecture,
         queiresFields,
         apiName,
       },
