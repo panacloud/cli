@@ -138,6 +138,9 @@ class RootObjectResponse extends ObjectResponse {
       } else if (type === "AWSTimestamp") {
         this.objectResponses.push(new AWSTimeStampObjectResponse(graphQLSchema, response, _isArray));
 
+      } else if (type === "AWSEmail") {
+        this.objectResponses.push(new AWSEmailObjectResponse(graphQLSchema, response, _isArray));
+
       } else if (type === "AWSURL") {
         this.objectResponses.push(new AWSURLObjectResponse(graphQLSchema, response, _isArray));
 
@@ -195,6 +198,9 @@ class RootObjectRequest extends ObjectRequest {
 
       } else if (type === "AWSTimestamp") {
         this.objectRequests.push(new AWSTimeStampObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSEmail") {
+        this.objectRequests.push(new AWSEmailStampObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (type === "AWSURL") {
         this.objectRequests.push(new AWSURLObjectRequest(graphQLSchema, request, _isArray));
@@ -321,7 +327,7 @@ class AWSURLObjectResponse extends ObjectResponse {
 
   write(object: ArgAndResponseType['response']): void {
     if (this.isArray) {
-      object[this.responseField.name] = ["https://google.com", "https://google.com", "https://google.com"];
+      object[this.responseField.name] = ["https://google.com", "https://facebook.com", "https://linkedin.com"];
     } else {
       object[this.responseField.name] = "https://google.com";
     }
@@ -341,6 +347,23 @@ class AWSTimeStampObjectResponse extends ObjectResponse {
       object[this.responseField.name] = [1635081727478, 1635081727478, 1635081727478];
     } else {
       object[this.responseField.name] = 1635081727478;
+    }
+  }
+}
+class AWSEmailObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [`${randomName.first()}@hotmail.com`, `${randomName.first()}@gmail.com`, `${randomName.first()}@yahoo.com`];
+    } else {
+      object[this.responseField.name] = `${randomName.first()}@gmail.com`;
     }
   }
 }
@@ -518,7 +541,7 @@ class AWSURLObjectRequest extends ObjectRequest {
 
   write(object: ArgAndResponseType['arguments']): void {
     if (this.isArray) {
-      object[this.requestField.name] = ["https://google.com", "https://google.com", "https://google.com"];
+      object[this.requestField.name] = ["https://google.com", "https://facebook.com", "https://linkedin.com"];
     } else {
       object[this.requestField.name] = "https://google.com";
     }
@@ -538,6 +561,23 @@ class AWSTimeStampObjectRequest extends ObjectRequest {
       object[this.requestField.name] = [1635081727478, 1635081727478, 1635081727478];
     } else {
       object[this.requestField.name] = 1635081727478;
+    }
+  }
+}
+class AWSEmailStampObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [`${randomName.first()}@hotmail.com`, `${randomName.first()}@gmail.com`, `${randomName.first()}@yahoo.com`];
+    } else {
+      object[this.requestField.name] = `${randomName.first()}@gmail.com`;
     }
   }
 }
