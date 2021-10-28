@@ -54,9 +54,7 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
 
   mutationFields!.forEach((key: string) => {
     const dataSourceName = `ds_${apiName}_${key}`;
-
     if (key !== async_response_mutName){
-
     appsync.appsyncLambdaResolver(key, "Mutation", dataSourceName);
     code.line();
     cdk.nodeAddDependency(`${key}_resolver`, `${apiName}_schema`);
@@ -64,7 +62,6 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
     code.line();
     }
     else {
-
       appsync.appsyncNoneDataSourceResolver(key, "Mutation", dataSourceName);
     }
   });
@@ -82,26 +79,7 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
         code.line()
       })
     }
-    
-    // for (const [key, value] of Object.entries(nestedResolverTypes!)) {
-    //   let dataSourceName = `ds_${apiName}_${value[0]}`;
-    //   if(value.length > 1){
-    //     value.forEach((val)=>{
-    //       dataSourceName = `ds_${apiName}_${val}`;
-    //       appsync.appsyncLambdaResolver(val, key, dataSourceName, nestedResolver);
-    //       code.line();
-    //       cdk.nodeAddDependency(`${key}_${val}_resolver`, `${apiName}_schema`);
-    //       cdk.nodeAddDependency(`${key}_${val}_resolver`, dataSourceName);
-    //       code.line();      
-    //     })
-    //   }else{
-    //     appsync.appsyncLambdaResolver( value[0] , key, dataSourceName, nestedResolver);
-    //     code.line();
-    //     cdk.nodeAddDependency(`${key}_${value[0]}_resolver`, `${apiName}_schema`);
-    //     cdk.nodeAddDependency(`${key}_${value[0]}_resolver`, dataSourceName);
-    //     code.line();      
-    //   }
-    // }    
+     
   }
 
 }

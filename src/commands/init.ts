@@ -12,6 +12,9 @@ import {
   Config,
   DATABASE,
   APITYPE,
+  CLOUDPROVIDER,
+  LANGUAGE,
+  ARCHITECTURE,
 } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
@@ -42,15 +45,14 @@ export default class Create extends Command {
     //   entityId: 'a',
     //   "api_token": "d",
     //   api: {
-    //     // "cloudprovider": CLOUDPROVIDER.aws,
-    //     // "language": LANGUAGE.typescript,
+    //     "cloudprovider": CLOUDPROVIDER.aws,
+    //     "language": LANGUAGE.typescript,
     //     "template": TEMPLATE.defineApi,
-    //     "architecture": ARCHITECTURE.eventDriven,
-    //     "schemaPath": "schema.gql",
+    //     "schemaPath": "schema.graphql",
     //     "apiName": "myApi",
     //     "nestedResolver": true,
     //     // database:undefined,
-    //     "database": DATABASE.neptuneDB,
+    //     "database": DATABASE.none,
     //     apiType: APITYPE.graphql,
     //   }
     // }
@@ -67,7 +69,10 @@ export default class Create extends Command {
         // cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
-        apiType: usrInput.api_type,
+        apiType:
+          usrInput.architecture === ARCHITECTURE.eventDriven
+            ? APITYPE.graphql
+            : usrInput.api_type,
         database:
           usrInput.database === DATABASE.none ? undefined : usrInput.database,
       },
