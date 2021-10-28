@@ -14,7 +14,7 @@ describe("hello", () => {
   });
 
   describe("Api", () => {
-    it("Returns user with id = 10", (done) => {
+    it("Api Tests works fine", (done) => {
         let isError = false;
         try {
             execSync(`cd hello && yarn test`)
