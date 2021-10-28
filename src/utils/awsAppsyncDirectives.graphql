@@ -10,3 +10,4 @@ directive @aws_lambda on FIELD_DEFINITION | OBJECT
 directive @aws_oidc on FIELD_DEFINITION | OBJECT
 directive @aws_cognito_user_pools(cognito_groups: [String!]) on FIELD_DEFINITION | OBJECT
 directive @microService(name: String!) on FIELD_DEFINITION
+directive @async on FIELD_DEFINITION

@@ -11,14 +11,15 @@ import {
   SAASTYPE,
   Config,
   DATABASE,
-  LANGUAGE,
-  CLOUDPROVIDER,
   APITYPE,
+  CLOUDPROVIDER,
+  LANGUAGE,
+  ARCHITECTURE,
 } from "../utils/constants";
-import { writeFileAsync } from "../lib/fs";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
+const fse = require("fs-extra");
 const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
@@ -34,51 +35,88 @@ export default class Create extends Command {
 
   async run() {
     const { flags } = this.parse(Create);
-    let config: Config;
-    if (flags.test && flags.test === "mateen7861") {
-      config = {
-        entityId: "assdsad",
-        api_token: "asd",
-        saasType: "API" as any,
-        api: {
-          template: "Define Your Own API" as any,
-          language: "TypeScript" as any,
-          cloudprovider: "AWS" as any,
-          architecture: "Request-Driven Architecture" as any,
-          apiName: "myApi",
-          schemaPath: "../test/test-schemas/todo.graphql",
-          apiType: "GraphQL" as any,
-          lambdaStyle: "Multiple" as any,
-          mockApi: true,
-          database: DATABASE.dynamoDB,
-        } as any,
-      };
-    } else {
-      let usrInput = await userInput();
-      config = {
-        entityId: usrInput.entityId,
-        api_token: usrInput.api_token,
-        saasType: usrInput.saas_type,
-        api: {
-          template: usrInput.template,
-          nestedResolver: usrInput.nestedResolver,
-          language: usrInput.language,
-          cloudprovider: usrInput.cloud_provider,
-          apiName: camelCase(usrInput.api_name),
-          schemaPath: usrInput.schema_path,
-          apiType: usrInput.api_type,
-          database:
-            usrInput.database === DATABASE.none ? undefined : usrInput.database,
-          architecture: usrInput.architecture,
-        },
-      };
-    }
+    // let config: Config;
+    // if (flags.test && flags.test === "mateen7861") {
+    //   config = {
+    //     entityId: "assdsad",
+    //     api_token: "asd",
+    //     saasType: "API" as any,
+    //     api: {
+    //       template: "Define Your Own API" as any,
+    //       language: "TypeScript" as any,
+    //       cloudprovider: "AWS" as any,
+    //       architecture: "Request-Driven Architecture" as any,
+    //       apiName: "myApi",
+    //       schemaPath: "../test/test-schemas/todo.graphql",
+    //       apiType: "GraphQL" as any,
+    //       lambdaStyle: "Multiple" as any,
+    //       mockApi: true,
+    //       database: DATABASE.dynamoDB,
+    //     } as any,
+    //   };
+    // } else {
+    //   let usrInput = await userInput();
+    //   config = {
+    //     entityId: usrInput.entityId,
+    //     api_token: usrInput.api_token,
+    //     saasType: usrInput.saas_type,
+    //     api: {
+    //       template: usrInput.template,
+    //       nestedResolver: usrInput.nestedResolver,
+    //       language: usrInput.language,
+    //       cloudprovider: usrInput.cloud_provider,
+    //       apiName: camelCase(usrInput.api_name),
+    //       schemaPath: usrInput.schema_path,
+    //       apiType: usrInput.api_type,
+    //       database:
+    //         usrInput.database === DATABASE.none ? undefined : usrInput.database,
+    //       architecture: usrInput.architecture,
+    //     },
+    //   };
+    // }
 
     let templateDir;
-
+    let usrInput = await userInput();
     // Questions
 
+    // const config: Config = {
+    //   saasType: SAASTYPE.api,
+    //   entityId: 'a',
+    //   "api_token": "d",
+    //   api: {
+    //     "cloudprovider": CLOUDPROVIDER.aws,
+    //     "language": LANGUAGE.typescript,
+    //     "template": TEMPLATE.defineApi,
+    //     "schemaPath": "schema.graphql",
+    //     "apiName": "myApi",
+    //     "nestedResolver": true,
+    //     // database:undefined,
+    //     "database": DATABASE.none,
+    //     apiType: APITYPE.graphql,
+    //   }
+    // }
+
     // Config to generate code.
+    const config: Config = {
+      // entityId: usrInput.entityId,
+      // api_token: usrInput.api_token,
+      saasType: SAASTYPE.api,
+      api: {
+        template: usrInput.template,
+        nestedResolver: usrInput.nestedResolver,
+        // language: usrInput.language,
+        // cloudprovider: usrInput.cloud_provider,
+        apiName: camelCase(usrInput.api_name),
+        schemaPath: usrInput.schema_path,
+        apiType:
+          usrInput.architecture === ARCHITECTURE.eventDriven
+            ? APITYPE.graphql
+            : usrInput.api_type,
+        database:
+          usrInput.database === DATABASE.none ? undefined : usrInput.database,
+      },
+    };
+
     // Error handling
     const validating = startSpinner("Validating Everything");
 
@@ -94,15 +132,15 @@ export default class Create extends Command {
       }
     }
 
-    writeFileAsync(
+    fse.writeJson(
       `./codegenconfig.json`,
-      JSON.stringify({
+      {
         ...config,
         api: {
           ...config.api,
           schemaPath: "./editable_src/graphql/schema/schema.graphql",
         },
-      }),
+      },
       (err: string) => {
         if (err) {
           stopSpinner(validating, `Error: ${err}`, true);

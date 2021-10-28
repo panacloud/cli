@@ -59,17 +59,16 @@ export class DynamoDB {
   public dbConstructLambdaAccess(
     apiName: string,
     dbConstructName: string,
-    lambdaConstructName: string,
     apiType: string,
     functionName?: string
   ) {
     if (apiType === APITYPE.rest) {
       this.code.line(
-        `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn);`
+        `${dbConstructName}.table.grantFullAccess(${apiName}_lambdaFn);`
       );
     } else {
       this.code.line(
-        `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn_${functionName});`
+        `${dbConstructName}.table.grantFullAccess(${apiName}_lambdaFn_${functionName});`
       );
     }
   }

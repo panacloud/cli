@@ -32,8 +32,8 @@ export class Lambda {
     environments?: Environment[],
     vpcSubnets?: string,
     roleName?: string,
-    microServiceName?:string
-
+    microServiceName?:string,
+    nestedResolver?:boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
     let handlerName: string
@@ -51,11 +51,21 @@ export class Lambda {
         handlerAsset = functionName? splitPath.join("/") : "lambda";
       }
       else{
-        const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
-        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-        const splitPath = lambdas[functionName].asset_path.split("/");
-        splitPath.pop();
-        handlerAsset = functionName? splitPath.join("/") : "lambda";
+        if(nestedResolver){
+          const {nestedLambdas} = this.panacloudConfig;
+          const handlerfile = nestedLambdas[functionName].asset_path.split("/")[nestedLambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = nestedLambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
+        else{
+          const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = lambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
       }
     }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
@@ -94,7 +104,7 @@ export class Lambda {
     );
   }
 
-  public lambdaLayer(apiName: string) {
+  public lambdaLayer(apiName: string, path: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -103,7 +113,7 @@ export class Lambda {
         initializer: () => {
           this.code
             .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
-          code: lambda.Code.fromAsset('lambdaLayer'),
+          code: lambda.Code.fromAsset("${path}"),
         })`);
         },
       },
@@ -278,4 +288,27 @@ export class Lambda {
     },
   });`);
   }
+
+
+  
+  public addLambdaVar(
+    lambdaName:string, env:Environment, apiName:string
+    ) {
+      
+   //   functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn
+   
+   const functionName = lambdaName? `${apiName}_lambdaFn_${lambdaName}` : `${apiName}_lambdaFn`
+
+   this.code.line(`${functionName}.addEnvironment(${env.name},${env.value})`)
+
+      
+    }
+  
+
+
+
+
+
 }
+
+

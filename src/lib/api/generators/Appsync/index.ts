@@ -1,5 +1,5 @@
-import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
+import { appsyncDatasourceHandler, appsyncPropertiesHandler, appsyncPropertiesInitializer, appsyncResolverhandler } from "./functions";
+import { CONSTRUCTS, ApiModel, async_response_mutName } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -7,6 +7,7 @@ import { Imports } from "../../constructs/ConstructsImports";
 import { CodeMaker } from "codemaker";
 import { readFileSync } from "fs";
 import * as path from "path";
+import { Property } from "../../../../utils/typescriptWriter";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -27,7 +28,7 @@ class AppsyncConstruct {
   }
 
   async AppsyncConstructFile() {
-    const { api: { apiName, schemaPath, queiresFields, mutationFields,nestedResolver,nestedResolverFieldsAndLambdas}} = this.config;
+    const { api: { apiName, schemaPath, queiresFields, mutationFields,nestedResolver,nestedResolverFieldsAndLambdas,asyncFields}} = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
     const cdk = new Cdk(this.code);
@@ -42,13 +43,23 @@ class AppsyncConstruct {
     imp.importAppsync();
     imp.importIam();
 
+    const appsyncProperties: Property[] = appsyncPropertiesHandler();
+
+
     let ConstructProps: ConstructPropsType[] = [];
     
     mutationsAndQueries.forEach((key: string) => {
+
+    if (key !== async_response_mutName){
+
       ConstructProps.push({
         name: `${apiName}_lambdaFn_${key}Arn`,
         type: "string",
+
+
       })
+
+    }
     });
 
     if(nestedResolver){
@@ -78,8 +89,11 @@ class AppsyncConstruct {
         appsyncDatasourceHandler(this.config, this.code);
         this.code.line();
         appsyncResolverhandler(this.config, this.code);
+        this.code.line();
+        appsyncPropertiesInitializer(apiName,this.code)
       },
-      ConstructProps
+      ConstructProps,
+      appsyncProperties
     );
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);

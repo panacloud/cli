@@ -61,6 +61,8 @@ export const EliminateScalarTypes = (type: any): boolean | any => {
       return false;
     case "ID":
       return false;
+    case "Boolean":
+      return false;
     case "__Directive":
       return false;
     default:
@@ -93,26 +95,24 @@ export const FieldsAndLambdaForNestedResolver = (
               )
             )
           ) {
+            const typeNode = gqlSchema.getType(allTypes.name)?.astNode  
             const node = gqlSchema.getType(
               fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
             )?.astNode;
             const name = node?.name.value as string;
-            if (
-              node?.kind !==
-              ("EnumTypeDefinition" ||
-                "UnionTypeDefinition" ||
-                "InputObjectTypeDefinition")
-            ) {
+            if (node?.kind === "ObjectTypeDefinition" && typeNode?.kind === "ObjectTypeDefinition") {
               if (name && FieldsAndLambdas.nestedResolverLambdas.indexOf(name) === -1) {
                 FieldsAndLambdas.nestedResolverLambdas.push(name);
               }
-              fieldsArray.push({
-                fieldName: type,
-                lambda: name,
-              });
-              FieldsAndLambdas.nestedResolverFields[allTypes.name] = [
-                ...fieldsArray,
-              ];
+              if(name){
+                fieldsArray.push({
+                  fieldName: type,
+                  lambda: name,
+                });
+                FieldsAndLambdas.nestedResolverFields[allTypes.name] = [
+                  ...fieldsArray,
+                ];  
+              }
             }
           }
         }

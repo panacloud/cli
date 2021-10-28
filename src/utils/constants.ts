@@ -1,5 +1,7 @@
 import { IntrospectionQuery } from "graphql";
 
+export const async_response_mutName = 'async_response'
+
 export enum APITYPE {
   graphql = "GraphQL",
   rest = "REST OpenAPI",
@@ -48,8 +50,8 @@ export interface ApiModel {
 }
 
 export interface Config {
-  entityId: string;
-  api_token: string;
+  entityId?: string;
+  api_token?: string;
   saasType: SAASTYPE;
   api: API;
 }
@@ -67,13 +69,14 @@ export type nestedResolverFieldsAndLambda = {
 }
 export interface API {
   template: TEMPLATE;
-  language: LANGUAGE;
-  cloudprovider: CLOUDPROVIDER;
-  architecture: ARCHITECTURE;
+  language?: LANGUAGE;
+  cloudprovider?: CLOUDPROVIDER;
   apiName: string;
   schemaPath: string;
   schema?: IntrospectionQuery;
   nestedResolverFieldsAndLambdas?:nestedResolverFieldsAndLambda
+  createMockLambda?: string[];
+  createNestedResolverLambdaOnUpdate?: string[];
   // nestedResolverLambdas?:string[]
   // nestedResolverFields?:{[key: string]: {fieldName:string,lambda:string}[]}
   queiresFields?: string[];
@@ -85,7 +88,8 @@ export interface API {
   microServiceFields?:{
     [k: string]: any[];
 };
-  generalFields?: string[]
+  generalFields?: string[],
+  asyncFields?:string[]
 }
 
 export enum ARCHITECTURE {
@@ -96,6 +100,7 @@ export enum ARCHITECTURE {
 export type PanacloudconfigFile = {
   lambdas: any;
   nestedLambdas?:any
+  mockData?: any
 };
 
 export type PanacloudConfiglambdaParams = {
