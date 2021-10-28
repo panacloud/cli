@@ -45,7 +45,7 @@ class EditableMockApiTestCollectionsFile {
   
         if (new_config.api.mockApiData?.imports) {
           ts.writeImports("../types", [
-            ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`)
+            ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`),
           ]);
         }
         code.line();
@@ -114,7 +114,7 @@ class EditableMockApiTestCollectionsFile {
   
         if (new_config.api.mockApiData?.imports) {
           ts.writeImports("../types", [
-            ...new_config.api.mockApiData?.imports,
+            ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`),
           ]);
         }
         code.line();

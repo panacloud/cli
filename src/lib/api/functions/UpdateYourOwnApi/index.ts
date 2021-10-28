@@ -58,16 +58,16 @@ async function updateYourOwnApi(config: Config, spinner: any) {
     }
   });
 
-  const gqlSchema = buildSchema(`${directives}\n${schema}`);
+  let gqlSchema = buildSchema(`${directives}\n${schema}`);
 
-  const mockObject = new RootMockObject(gqlSchema);
+  let mockObject = new RootMockObject(gqlSchema);
   mockObject.write(dummyData);
 
   // Model Config
-  const queriesFields: any = gqlSchema.getQueryType()?.getFields();
-  const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-  const subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
-  const introspection = introspectionFromSchema(gqlSchema);
+  let queriesFields: any = gqlSchema.getQueryType()?.getFields();
+  let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+  let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+  let introspection = introspectionFromSchema(gqlSchema);
   model.api.schema = introspection;
   model.api.queiresFields = [...Object.keys(queriesFields)];
   model.api.mutationFields = [...Object.keys(mutationsFields)];
@@ -85,6 +85,24 @@ async function updateYourOwnApi(config: Config, spinner: any) {
 
  const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
  
+
+ 
+ if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length>0){
+
+
+  gqlSchema = buildSchema(`${directives}\n${newSchema}`);
+
+
+   queriesFields = gqlSchema.getQueryType()?.getFields();
+   mutationsFields = gqlSchema.getMutationType()?.getFields();
+   introspection = introspectionFromSchema(gqlSchema);
+
+   model.api.schema = introspection;
+   model.api.queiresFields = [...Object.keys(queriesFields)];
+   model.api.mutationFields = [...Object.keys(mutationsFields)];
+
+ }
+
 
  fs.writeFileSync(
   `./editable_src/graphql/schema/schema.graphql`,
