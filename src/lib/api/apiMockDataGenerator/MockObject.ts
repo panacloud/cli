@@ -1,9 +1,9 @@
 import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType } from "graphql";
 import { isArray } from "./helper";
 import { camelCase } from 'lodash';
-// const camelCase = require('lodash/camel');
+import * as randomName from 'random-name';
 
-type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp"
+type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail"
 export type ArgAndResponseType = { arguments?: any; response: any }
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
@@ -235,11 +235,12 @@ class StringObjectResponse extends ObjectResponse {
 
   write(object: ArgAndResponseType['response']): void {
     if (this.isArray) {
-      object[this.responseField.name] = ["Hello1", "Hello2", "Hello3"];
+      object[this.responseField.name] = [randomName.first(), randomName.last(), randomName.first()];
     } else {
-      object[this.responseField.name] = "Hello";
+      object[this.responseField.name] = randomName.first();
     }
   }
+
 }
 class IntObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>;
@@ -432,9 +433,9 @@ class StringObjectRequest extends ObjectRequest {
 
   write(object: ArgAndResponseType['arguments']): void {
     if (this.isArray) {
-      object[this.requestField.name] = ["Hello1", "Hello2", "Hello3"];
+      object[this.requestField.name] = [randomName.first(), randomName.last(), randomName.first()];
     } else {
-      object[this.requestField.name] = "Hello";
+      object[this.requestField.name] = randomName.first();
     }
   }
 }
