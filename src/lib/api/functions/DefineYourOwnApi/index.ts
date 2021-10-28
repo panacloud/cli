@@ -93,6 +93,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     await mkdirRecursiveAsync(`editable_src/graphql`);
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
     await mkdirRecursiveAsync(`editable_src/aspects`);
+    await mkdirRecursiveAsync(`editable_src/lambda`);
 
     fs.readdirSync(templateDir).forEach(async (file: any) => {
       if (file === "lambdaLayer") {
