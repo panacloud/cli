@@ -13,6 +13,7 @@ export const checkEmptyDirectoy = (spinner: any) => {
         path.extname(file) !== ".json" &&
         path.extname(file) !== ".yml" &&
         path.extname(file) !== ".yaml" &&
+        file !== "node_modules" &&
         file !== ".git"
       ) {
         stopSpinner(spinner, "Error: directory not empty", true);
