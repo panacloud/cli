@@ -1,6 +1,6 @@
 const fse = require("fs-extra");
 
-import { ApiModel } from "../../utils/constants";
+import { ApiModel, async_response_mutName } from "../../utils/constants";
 import { ARCHITECTURE, PanacloudconfigFile, PanacloudConfiglambdaParams } from "../../utils/constants";
 import { stopSpinner } from "../spinner";
 
@@ -168,6 +168,7 @@ model:ApiModel, spinner:any
 
 
 
+
     let differenceMicroServicesLambdas = newMicroServicesLambdas
       .filter(val => !prevMicroServicesMutLambdas.includes(val))
       .concat(prevMicroServicesMutLambdas.filter(val => !newMicroServicesLambdas.includes(val)));
@@ -215,15 +216,20 @@ model:ApiModel, spinner:any
     // }
 
     
-    prevGeneralMutLambdas = prevGeneralLambdas.filter ((val:string)=> val.split('_').pop() !== "consumer")
+    prevGeneralMutLambdas = prevGeneralLambdas.filter ((val:string)=> (val.split('_').pop() !== "consumer"))
+    prevGeneralMutLambdas = prevGeneralMutLambdas.filter ((val:string)=> (val !== async_response_mutName))
 
 
   }
+
+  //console.log(prevGeneralMutLambdas)
 
 
   let difference = generalFields!
     .filter(val => !prevGeneralMutLambdas.includes(val))
     .concat(prevGeneralMutLambdas.filter(val => !generalFields?.includes(val)));
+
+    difference = difference.filter ((val:string)=> (val !== async_response_mutName))
 
 
   for (let diff of difference) {
