@@ -63,6 +63,8 @@ export const appsyncResolverhandler = (config: ApiModel, code: CodeMaker) => {
     }
     else {
       appsync.appsyncNoneDataSourceResolver(key, "Mutation", dataSourceName);
+      cdk.nodeAddDependency(`${key}_resolver`, `${apiName}_schema`);
+      cdk.nodeAddDependency(`${key}_resolver`, dataSourceName);
     }
   });
 
