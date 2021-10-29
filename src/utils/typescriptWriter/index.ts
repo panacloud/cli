@@ -52,7 +52,7 @@ export class TypeScriptWriter {
     this.code.line(`
     request
     .post("/graphql")
-    .set("x-api-key", "da2-cz5sxjhfmjd6zd4tqidzbskjvq")
+    .set("x-api-key", process.env.API_KEY)
     .send({ query: ${key} ,variables:args})
     .end((err: any, res: any) => {
       expect(err).not.to.be.null;

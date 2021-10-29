@@ -51,16 +51,11 @@ class APITests {
         ts.writeImports('chai',["expect"])
         ts.writeAllImports('supertest','supertest')
         ts.writeImports('../../lambdaLayer/mockApi/testCollections',["testCollections"])
-        ts.writeVariableDeclaration({
-          name:"url",
-          typeName:"",
-          initializer:`"https://zs6b556wcbdifl4sjy2bslw2xy.appsync-api.us-east-2.amazonaws.com/"`,
-          export:false
-        },'const')
+    
         ts.writeVariableDeclaration({
           name:"request",
           typeName:"",
-          initializer:"supertest(url);",
+          initializer:"supertest(process.env.API_URL);",
           export:false
         },'const')
         ts.writeVariableDeclaration({

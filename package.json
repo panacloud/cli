@@ -9,7 +9,6 @@
   "bugs": {
     "url": "https://github.com/panacloud/cli/issues"
   },
-  
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.3",
     "@graphql-tools/schema": "^8.2.0",
