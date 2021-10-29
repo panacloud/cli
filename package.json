@@ -9,6 +9,7 @@
   "bugs": {
     "url": "https://github.com/panacloud/cli/issues"
   },
+  
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.3",
     "@graphql-tools/schema": "^8.2.0",
@@ -113,7 +114,7 @@
     "postpack": "rimraf oclif.manifest.json",
     "copy-files": "copyfiles -a -u 1 \"./src/lib/api/template/**/*\" \"./src/utils/*.graphql\" lib",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && yarn copy-files",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "test": "ts-node test/test-scripts/script.ts",
     "version": "oclif-dev readme && git add README.md"
   },
   "types": "lib/index.d.ts",
