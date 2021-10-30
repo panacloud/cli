@@ -32,6 +32,8 @@
     "mocha": "^9.1.3"
   },
   "dependencies": {
+    "@types/valid-url": "^1.0.3",
+    "valid-url": "^1.0.9",
     "aws-cdk-lib": "^2.0.0-rc.19",
     "constructs": "10.0.0",
     "panacloud-manager": "^0.3.1",

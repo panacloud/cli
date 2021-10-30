@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE, ARCHITECTURE } from "../../../utils/constants";
+import { ApiModel, APITYPE } from "../../../utils/constants";
 import { TypeScriptWriter } from "../../../utils/typescriptWriter";
 import { Imports } from "../constructs/ConstructsImports";
 
@@ -16,9 +16,67 @@ class APITests {
   constructor(props: StackBuilderProps) {
     this.config = props.config;
   }
+  async AppSyncFile() {
+        const code = new CodeMaker();
+        const ts = new TypeScriptWriter(code);
+        
+        this.outputFile = `AppSyncAPI.ts`;
 
-  async LambdaFile() {
-    console.log(this.config);
+        code.openFile(this.outputFile);
+        ts.writeAllImports('./appsyncCredentials.json','appsyncCredentials')
+    
+        ts.writeVariableDeclaration({
+          name:"values",
+          typeName:"string[]",
+          initializer:"Object.values(Object.entries(appsyncCredentials)[0][1]);",
+          export:false
+        },'const')
+        code.openBlock(`export class  AppsyncAPI`)
+          code.line()
+          code.line(`private static instance: AppsyncAPI;`)
+          code.line(`public API_KEY:string = '';`)
+          code.line(`public API_URL:string = '';`)
+          code.line()
+          code.line(`private static instance: AppsyncAPI;`)
+          code.openBlock(`private constructor()`)
+          code.line(`values.forEach((val:string)=>{`)
+          code.line(`if(this.isValidURL(val)){`)
+          code.line(`this.API_URL=val`)
+          code.line(`}else{`)
+          code.line(`this.API_KEY = val`)
+          code.line(`}`)
+          code.line(`})`)
+          code.closeBlock()
+          code.line()
+          code.openBlock(`public static getInstance(): AppsyncAPI `)
+          code.line(`if (!AppsyncAPI.instance) {`)
+          code.line(`AppsyncAPI.instance = new AppsyncAPI();`)
+          code.line(`}`)
+          code.line()
+          code.line(`return AppsyncAPI.instance;`)
+          code.closeBlock()
+          code.openBlock(`private isValidURL(str:string)`)
+          ts.writeVariableDeclaration({
+            name:"res",
+            initializer:"str.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);",
+            export:false,
+            typeName:""
+          },'const')
+          code.line(`return (res !== null)`)
+          code.closeBlock()
+        code.closeBlock()
+       
+         
+        code.line();
+
+        code.closeFile(this.outputFile);
+        this.outputDir = `tests/apiTests/`;
+        await code.save(this.outputDir);
+      
+    }
+  
+
+  async TestFile() {
     const {
       api: {
         apiType,
@@ -37,13 +95,7 @@ class APITests {
         const ts = new TypeScriptWriter(code);
 
         const key = generalFields![i];
-        for(let k=0;k<5;k++){
-          console.log('::::::::::::::::::::::::::::::::')
-        }
-        console.log(key)
-        for(let k=0;k<5;k++){
-          console.log('::::::::::::::::::::::::::::::::')
-        }
+        
         this.outputFile = `${key}.test.ts`;
         const isMutation = mutationFields?.includes(key);
 
@@ -91,5 +143,6 @@ class APITests {
 
 export const apiTests = async (props: StackBuilderProps): Promise<void> => {
   const builder = new APITests(props);
-  await builder.LambdaFile();
+  await builder.TestFile();
+  await builder.AppSyncFile()
 };

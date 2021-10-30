@@ -42,9 +42,7 @@ export class TypeScriptWriter {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-  public writeApiTest(){
-    
-  }
+ 
   public writeApiTests(key:string){
     this.code.line(`describe ("run ${key}", ()=>{`)
     this.code.line()
