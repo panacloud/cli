@@ -110,14 +110,13 @@ export class LambdaFunction {
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS")
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
-
     // this.code.line(`var AWS = require('aws-sdk');`);
     this.code.line();
     this.code.line(`exports.handler = async (event: AppSyncResolverEvent<any>) => {`);
-
     // this.code.line(
     //   `const data = await axios.post('http://sandbox:8080', event)`
     // );
+    this.code.line(`console.log(JSON.stringify(event,null,2))`)
     this.code.line();
     this.code.line(`}`);
   }
