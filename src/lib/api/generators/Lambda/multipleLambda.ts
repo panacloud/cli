@@ -138,7 +138,7 @@ class MultipleLambda {
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
           code.line();
-          lambda.helloWorldFunction(apiName);
+          lambda.emptyLambdaFunction();
           code.closeFile(this.outputFile);
           this.outputDir = `mock_lambda/nestedResolvers/${key}`;
           await code.save(this.outputDir);
