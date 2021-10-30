@@ -267,7 +267,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   }
 
   try {
-    await exec(`cd editable_src/lambdaLayer/nodejs && npm install`);
+    await exec(`cd lambdaLayer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`);
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);
