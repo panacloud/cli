@@ -12,6 +12,9 @@ import {
   Config,
   DATABASE,
   APITYPE,
+  CLOUDPROVIDER,
+  LANGUAGE,
+  ARCHITECTURE,
 } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
@@ -27,6 +30,7 @@ export default class Create extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
+    test: flags.boolean({ char: "t" }),
   };
 
   async run() {
@@ -42,15 +46,14 @@ export default class Create extends Command {
     //   entityId: 'a',
     //   "api_token": "d",
     //   api: {
-    //     // "cloudprovider": CLOUDPROVIDER.aws,
-    //     // "language": LANGUAGE.typescript,
+    //     "cloudprovider": CLOUDPROVIDER.aws,
+    //     "language": LANGUAGE.typescript,
     //     "template": TEMPLATE.defineApi,
-    //     "architecture": ARCHITECTURE.eventDriven,
-    //     "schemaPath": "schema.gql",
+    //     "schemaPath": "schema.graphql",
     //     "apiName": "myApi",
     //     "nestedResolver": true,
     //     // database:undefined,
-    //     "database": DATABASE.neptuneDB,
+    //     "database": DATABASE.none,
     //     apiType: APITYPE.graphql,
     //   }
     // }
@@ -67,7 +70,7 @@ export default class Create extends Command {
         // cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
-        apiType: usrInput.api_type,
+        apiType:usrInput.api_type,
         database:
           usrInput.database === DATABASE.none ? undefined : usrInput.database,
       },
@@ -76,14 +79,14 @@ export default class Create extends Command {
     // Error handling
     const validating = startSpinner("Validating Everything");
 
-    if (config.saasType === SAASTYPE.api) {
+    if (config!.saasType === SAASTYPE.api) {
       templateDir = path.resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      if (config.api?.template === TEMPLATE.defineApi) {
+      if (config!.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
-          config.api?.schemaPath,
+          config!.api?.schemaPath,
           validating,
-          config.api?.apiType
+          config!.api?.apiType
         );
       }
     }

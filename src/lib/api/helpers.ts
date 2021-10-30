@@ -95,11 +95,12 @@ export const FieldsAndLambdaForNestedResolver = (
               )
             )
           ) {
+            const typeNode = gqlSchema.getType(allTypes.name)?.astNode  
             const node = gqlSchema.getType(
               fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
             )?.astNode;
             const name = node?.name.value as string;
-            if (node?.kind === "ObjectTypeDefinition" || node?.kind === "InterfaceTypeDefinition") {
+            if (node?.kind === "ObjectTypeDefinition" && typeNode?.kind === "ObjectTypeDefinition") {
               if (name && FieldsAndLambdas.nestedResolverLambdas.indexOf(name) === -1) {
                 FieldsAndLambdas.nestedResolverLambdas.push(name);
               }
