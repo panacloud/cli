@@ -23,12 +23,13 @@ class APITests {
         this.outputFile = `AppSyncAPI.ts`;
 
         code.openFile(this.outputFile);
+        ts.writeAllImports('valid-url','validUrl')
         ts.writeAllImports('./appsyncCredentials.json','appsyncCredentials')
     
         ts.writeVariableDeclaration({
           name:"values",
           typeName:"string[]",
-          initializer:"Object.values(Object.entries(appsyncCredentials)[0][1]);",
+          initializer:"Object.values(Object.entries(appsyncCredentials)[0][1])",
           export:false
         },'const')
         code.openBlock(`export class  AppsyncAPI`)
@@ -37,10 +38,9 @@ class APITests {
           code.line(`public API_KEY:string = '';`)
           code.line(`public API_URL:string = '';`)
           code.line()
-          code.line(`private static instance: AppsyncAPI;`)
           code.openBlock(`private constructor()`)
           code.line(`values.forEach((val:string)=>{`)
-          code.line(`if(this.isValidURL(val)){`)
+          code.line(`if(validUrl.isUri(val)){`)
           code.line(`this.API_URL=val`)
           code.line(`}else{`)
           code.line(`this.API_KEY = val`)
@@ -54,15 +54,6 @@ class APITests {
           code.line(`}`)
           code.line()
           code.line(`return AppsyncAPI.instance;`)
-          code.closeBlock()
-          code.openBlock(`private isValidURL(str:string)`)
-          ts.writeVariableDeclaration({
-            name:"res",
-            initializer:"str.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);",
-            export:false,
-            typeName:""
-          },'const')
-          code.line(`return (res !== null)`)
           code.closeBlock()
         code.closeBlock()
        
