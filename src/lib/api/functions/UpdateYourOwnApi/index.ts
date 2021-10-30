@@ -6,6 +6,8 @@ import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
+import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
+import { AsyncDirective, asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
 
 const path = require("path");
 const fs = require("fs");
@@ -21,6 +23,9 @@ async function updateYourOwnApi(config: Config, spinner: any) {
     },
     workingDir: workingDir,
   };
+
+  const dummyData: TestCollectionType = { fields: {} };
+
 
   let directivesPath = path.resolve(
     __dirname,
@@ -53,23 +58,64 @@ async function updateYourOwnApi(config: Config, spinner: any) {
     }
   });
 
-  const gqlSchema = buildSchema(`${directives}\n${schema}`);
+  let gqlSchema = buildSchema(`${directives}\n${schema}`);
+
+  let mockObject = new RootMockObject(gqlSchema);
+  mockObject.write(dummyData);
 
   // Model Config
-  const queriesFields: any = gqlSchema.getQueryType()?.getFields();
-  const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-  const introspection = introspectionFromSchema(gqlSchema);
+  let queriesFields: any = gqlSchema.getQueryType()?.getFields();
+  let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+  let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+  let introspection = introspectionFromSchema(gqlSchema);
   model.api.schema = introspection;
   model.api.queiresFields = [...Object.keys(queriesFields)];
   model.api.mutationFields = [...Object.keys(mutationsFields)];
 
-  const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
+  const microServicesfieldSplitterOutput = microServicesDirectiveFieldSplitter(
     queriesFields,
     mutationsFields
   );
 
-  model.api.generalFields = fieldSplitterOutput.generalFields;
-  model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
+  model.api.generalFields = microServicesfieldSplitterOutput.generalFields;
+  model.api.microServiceFields = microServicesfieldSplitterOutput.microServiceFields;
+
+
+ const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
+
+ const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
+ 
+
+ 
+ if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length>0){
+
+
+  gqlSchema = buildSchema(`${directives}\n${newSchema}`);
+
+
+   queriesFields = gqlSchema.getQueryType()?.getFields();
+   mutationsFields = gqlSchema.getMutationType()?.getFields();
+   introspection = introspectionFromSchema(gqlSchema);
+
+   model.api.schema = introspection;
+   model.api.queiresFields = [...Object.keys(queriesFields)];
+   model.api.mutationFields = [...Object.keys(mutationsFields)];
+
+ }
+
+
+ fs.writeFileSync(
+  `./editable_src/graphql/schema/schema.graphql`,
+  `${newSchema}`,
+  (err: string) => {
+    if (err) {
+      stopSpinner(spinner, `Error: ${err}`, true);
+      process.exit(1);
+    }
+  }
+);
+
+ model.api.asyncFields = asyncFieldSplitterOutput
 
   const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
   model.api.mockApiData = mockApiCollection;
@@ -88,10 +134,11 @@ async function updateYourOwnApi(config: Config, spinner: any) {
     }
   }
 
+    // Codegenerator Function
   const updatedPanacloudConfig = await updatePanacloudConfig(model, spinner);
 
   // Codegenerator Function
-  await generator(model, updatedPanacloudConfig);
+  await generator(model, updatedPanacloudConfig, 'update', dummyData);
 }
 
 export default updateYourOwnApi;

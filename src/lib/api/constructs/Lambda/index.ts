@@ -104,7 +104,7 @@ export class Lambda {
     );
   }
 
-  public lambdaLayer(apiName: string) {
+  public lambdaLayer(apiName: string, path: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -113,7 +113,7 @@ export class Lambda {
         initializer: () => {
           this.code
             .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
-          code: lambda.Code.fromAsset('lambdaLayer'),
+          code: lambda.Code.fromAsset("${path}"),
         })`);
         },
       },
@@ -288,4 +288,27 @@ export class Lambda {
     },
   });`);
   }
+
+
+  
+  public addLambdaVar(
+    lambdaName:string, env:Environment, apiName:string
+    ) {
+      
+   //   functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn
+   
+   const functionName = lambdaName? `${apiName}_lambdaFn_${lambdaName}` : `${apiName}_lambdaFn`
+
+   this.code.line(`${functionName}.addEnvironment(${env.name},${env.value})`)
+
+      
+    }
+  
+
+
+
+
+
 }
+
+

@@ -11,8 +11,10 @@ import {
   SAASTYPE,
   Config,
   DATABASE,
-  ARCHITECTURE,
   APITYPE,
+  CLOUDPROVIDER,
+  LANGUAGE,
+  ARCHITECTURE,
 } from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
@@ -36,51 +38,43 @@ export default class Create extends Command {
 
     let templateDir;
 
-    let config: Config;
+    // Questions
+    let usrInput = await userInput();
 
-    if (
-      flags.test &&
-      !process.argv.includes("Panacloud") &&
-      !process.argv.includes("cli")
-    ) {
-      config = {
-        saasType: SAASTYPE.api,
-        api: {
-          template: TEMPLATE.defineApi,
-          nestedResolver: true,
-          // language: usrInput.language,
-          // cloudprovider: usrInput.cloud_provider,
-          apiName: camelCase("ApiName"),
-          schemaPath: "../../schema.graphql",
-          apiType: APITYPE.graphql,
-          database: DATABASE.neptuneDB,
-          architecture: ARCHITECTURE.eventDriven,
-        },
-      };
-    } else {
-      let usrInput = await userInput();
-      // Config to generate code.
-      config = {
-        // entityId: usrInput.entityId,
-        // api_token: usrInput.api_token,
-        saasType: SAASTYPE.api,
-        api: {
-          template: usrInput.template,
-          nestedResolver: usrInput.nestedResolver,
-          // language: usrInput.language,
-          // cloudprovider: usrInput.cloud_provider,
-          apiName: camelCase(usrInput.api_name),
-          schemaPath: usrInput.schema_path,
-          apiType:
-            usrInput.architecture === ARCHITECTURE.eventDriven
-              ? APITYPE.graphql
-              : usrInput.api_type,
-          database:
-            usrInput.database === DATABASE.none ? undefined : usrInput.database,
-          architecture: usrInput.architecture,
-        },
-      };
-    }
+    // const config: Config = {
+    //   saasType: SAASTYPE.api,
+    //   entityId: 'a',
+    //   "api_token": "d",
+    //   api: {
+    //     "cloudprovider": CLOUDPROVIDER.aws,
+    //     "language": LANGUAGE.typescript,
+    //     "template": TEMPLATE.defineApi,
+    //     "schemaPath": "schema.graphql",
+    //     "apiName": "myApi",
+    //     "nestedResolver": true,
+    //     // database:undefined,
+    //     "database": DATABASE.none,
+    //     apiType: APITYPE.graphql,
+    //   }
+    // }
+
+    // Config to generate code.
+    const config: Config = {
+      // entityId: usrInput.entityId,
+      // api_token: usrInput.api_token,
+      saasType: SAASTYPE.api,
+      api: {
+        template: usrInput.template,
+        nestedResolver: usrInput.nestedResolver,
+        // language: usrInput.language,
+        // cloudprovider: usrInput.cloud_provider,
+        apiName: camelCase(usrInput.api_name),
+        schemaPath: usrInput.schema_path,
+        apiType:usrInput.api_type,
+        database:
+          usrInput.database === DATABASE.none ? undefined : usrInput.database,
+      },
+    };
 
     // Error handling
     const validating = startSpinner("Validating Everything");

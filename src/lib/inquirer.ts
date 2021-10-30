@@ -5,37 +5,36 @@ import {
   CLOUDPROVIDER,
   LANGUAGE,
   SAASTYPE,
-  ARCHITECTURE,
 } from "../utils/constants";
 import { fileExistsAsync } from "./fs";
 const inquirer = require("inquirer");
 
 export const userInput = async () => {
   return await inquirer.prompt([
-    // {
-    //   type: "list",
-    //   name: "cloud_provider",
-    //   message: "Your Cloud Provider?",
-    //   choices: [CLOUDPROVIDER.aws],
-    //   default: CLOUDPROVIDER.aws,
-    //   validate: Boolean,
-    // },
-    // {
-    //   type: "list",
-    //   name: "language",
-    //   message: "Your Language?",
-    //   choices: [LANGUAGE.typescript],
-    //   default: LANGUAGE.typescript,
-    //   validate: Boolean,
-    // },
-    // {
-    //   type: "list",
-    //   name: "saas_type",
-    //   message: "Select SaaS Type?",
-    //   choices: [SAASTYPE.api],
-    //   default: SAASTYPE.api,
-    //   validate: Boolean,
-    // },
+    {
+      type: "list",
+      name: "cloud_provider",
+      message: "Your Cloud Provider?",
+      choices: [CLOUDPROVIDER.aws],
+      default: CLOUDPROVIDER.aws,
+      validate: Boolean,
+    },
+    {
+      type: "list",
+      name: "language",
+      message: "Your Language?",
+      choices: [LANGUAGE.typescript],
+      default: LANGUAGE.typescript,
+      validate: Boolean,
+    },
+    {
+      type: "list",
+      name: "saas_type",
+      message: "Select SaaS Type?",
+      choices: [SAASTYPE.api],
+      default: SAASTYPE.api,
+      validate: Boolean,
+    },
     {
       type: "list",
       name: "template",
@@ -45,26 +44,17 @@ export const userInput = async () => {
       validate: Boolean,
     },
     {
-      type: "list",
-      name: "architecture",
-      message: "Select architecture type?",
-      choices: [ARCHITECTURE.requestDriven, ARCHITECTURE.eventDriven],
-      default: ARCHITECTURE.requestDriven,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      type: "string",
+      name: "entityId",
+      message: "Enter Your Panacloud Portal User ID",
       validate: Boolean,
     },
-    // {
-    //   type: "string",
-    //   name: "entityId",
-    //   message: "Enter Your Panacloud Portal User ID",
-    //   validate: Boolean,
-    // },
-    // {
-    //   type: "string",
-    //   name: "api_token",
-    //   message: "Enter Your Panacloud Portal API Key",
-    //   validate: Boolean,
-    // },
+    {
+      type: "string",
+      name: "api_token",
+      message: "Enter Your Panacloud Portal API Key",
+      validate: Boolean,
+    },
     {
       type: "list",
       name: "api_type",
@@ -72,8 +62,7 @@ export const userInput = async () => {
       choices: [APITYPE.graphql, APITYPE.rest],
       default: APITYPE.graphql,
       when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi &&
-        answers.architecture !== ARCHITECTURE.eventDriven,
+        answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
     {
@@ -81,8 +70,7 @@ export const userInput = async () => {
       name: "schema_path",
       message: "GraphQL Schema File Path",
       when: (answers: any) =>
-        answers.api_type === APITYPE.graphql ||
-        answers.architecture === ARCHITECTURE.eventDriven,
+        answers.api_type === APITYPE.graphql,
       validate: (val: string) => fileExistsAsync(val),
     },
     {
@@ -90,8 +78,7 @@ export const userInput = async () => {
       name: "schema_path",
       message: "REST OpenAPI Specifications File Path",
       when: (answers: any) =>
-        answers.api_type === APITYPE.rest ||
-        answers.architecture !== ARCHITECTURE.eventDriven,
+        answers.api_type === APITYPE.rest,
       validate: (val: string) => fileExistsAsync(val),
     },
     {
