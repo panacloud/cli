@@ -55,6 +55,7 @@ export default class Create extends Command {
     const updatingCode = startSpinner("Updating CDK Code...");
 
     fse.removeSync("mock_lambda", { recursive: true });
+    fse.removeSync("lambdaLayer/mockApi", { recursive: true });
     fse.removeSync("consumer_lambda", { recursive: true });
     fse.removeSync("lib", { recursive: true });
 
