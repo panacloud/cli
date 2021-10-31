@@ -42,22 +42,23 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
             ? [{ arguments: {}, response: res }]
             : [
               {
-                ...(field.type.inspect().includes("[") &&
-                  field.type.inspect().includes("]")
+                ...(isArray(field.type.toString())
+                  // ...(field.type.inspect().includes("[") &&
+                  // field.type.inspect().includes("]")
                   ? { response: [] }
                   : { response: {} }),
               },
             ];
 
-        let responseType =
-          field.type.inspect().includes("[") &&
-            field.type.inspect().includes("]")
-            ? `[${responseTypeName}]`
-            : `${responseTypeName}`;
+        let responseType = isArray(field.type.toString())
+          // field.type.inspect().includes("[") &&
+          //   field.type.inspect().includes("]")
+          ? `${responseTypeName}[]`
+          : `${responseTypeName}`;
 
         field.args.length > 0
           ? typeStr = { "fields": { [type]: [{ arguments: `${description}${upperFirst(type)}Args`, response: responseType }] } }
-          : typeStr = { "fields": { [type]: [{ response: responseType }] } }
+          : typeStr = { "fields": { [type]: [{ arguments: {}, response: responseType }] } }
 
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
@@ -107,3 +108,7 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
     enumImports: enumImports,
   };
 };
+
+function isArray(typeName: string) {
+  return !!typeName.match(/[[a-zA-Z0-9]*]/g)
+}
