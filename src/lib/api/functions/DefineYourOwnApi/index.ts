@@ -145,16 +145,16 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
 
 
-    const gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
+    let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
 
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
     // Model Config
-    const queriesFields: any = gqlSchema.getQueryType()?.getFields();
-    const mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    const introspection = introspectionFromSchema(gqlSchema);
-    const subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+    let queriesFields: any = gqlSchema.getQueryType()?.getFields();
+    let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+    let introspection = introspectionFromSchema(gqlSchema);
+    let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
 
     model.api.schema = introspection;
     model.api.queiresFields = [...Object.keys(queriesFields)];
@@ -171,9 +171,31 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
     const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
 
+
     const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
     
+
+    if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length>0){
+
+
+     gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
+
+
+      queriesFields = gqlSchema.getQueryType()?.getFields();
+      mutationsFields = gqlSchema.getMutationType()?.getFields();
+      introspection = introspectionFromSchema(gqlSchema);
+  
+      model.api.schema = introspection;
+      model.api.queiresFields = [...Object.keys(queriesFields)];
+      model.api.mutationFields = [...Object.keys(mutationsFields)];
+
+    }
+
+
+    model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`
+
     model.api.asyncFields = asyncFieldSplitterOutput
+
 
 
     fs.writeFileSync(
@@ -245,7 +267,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   }
 
   try {
-    await exec(`cd editable_src/lambdaLayer/nodejs && npm install`);
+    await exec(`cd lambdaLayer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`);
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);

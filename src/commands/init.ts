@@ -119,14 +119,14 @@ export default class Create extends Command {
     // Error handling
     const validating = startSpinner("Validating Everything");
 
-    if (config.saasType === SAASTYPE.api) {
+    if (config!.saasType === SAASTYPE.api) {
       templateDir = path.resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      if (config.api?.template === TEMPLATE.defineApi) {
+      if (config!.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
-          config.api?.schemaPath,
+          config!.api?.schemaPath,
           validating,
-          config.api?.apiType
+          config!.api?.apiType
         );
       }
     }
