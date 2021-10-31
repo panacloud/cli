@@ -190,10 +190,11 @@ model:ApiModel, spinner:any
 
 
     for (let mutLambda  of Object.keys(panacloudConfigNew.lambdas[service])){
-      const isMutation = mutationFields?.includes(mutLambda);
+      //const isMutation = mutationFields?.includes(mutLambda);
 
-      if (isMutation && !panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`]){
+      //if (isMutation && !panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`]){
       
+      if (asyncFields?.includes(mutLambda)){
         panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`] = {} as PanacloudConfiglambdaParams
         panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`].asset_path = `mock_lambda/${service}/${mutLambda}_consumer/index.ts`
       }
