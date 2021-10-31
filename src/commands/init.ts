@@ -35,48 +35,47 @@ export default class Create extends Command {
 
   async run() {
     const { flags } = this.parse(Create);
-    // let config: Config;
-    // if (flags.test && flags.test === "mateen7861") {
-    //   config = {
-    //     entityId: "assdsad",
-    //     api_token: "asd",
-    //     saasType: "API" as any,
-    //     api: {
-    //       template: "Define Your Own API" as any,
-    //       language: "TypeScript" as any,
-    //       cloudprovider: "AWS" as any,
-    //       architecture: "Request-Driven Architecture" as any,
-    //       apiName: "myApi",
-    //       schemaPath: "../test/test-schemas/todo.graphql",
-    //       apiType: "GraphQL" as any,
-    //       lambdaStyle: "Multiple" as any,
-    //       mockApi: true,
-    //       database: DATABASE.dynamoDB,
-    //     } as any,
-    //   };
-    // } else {
-    //   let usrInput = await userInput();
-    //   config = {
-    //     entityId: usrInput.entityId,
-    //     api_token: usrInput.api_token,
-    //     saasType: usrInput.saas_type,
-    //     api: {
-    //       template: usrInput.template,
-    //       nestedResolver: usrInput.nestedResolver,
-    //       language: usrInput.language,
-    //       cloudprovider: usrInput.cloud_provider,
-    //       apiName: camelCase(usrInput.api_name),
-    //       schemaPath: usrInput.schema_path,
-    //       apiType: usrInput.api_type,
-    //       database:
-    //         usrInput.database === DATABASE.none ? undefined : usrInput.database,
-    //       architecture: usrInput.architecture,
-    //     },
-    //   };
-    // }
+    let config: Config;
+    if (flags.test && flags.test === "mateen7861") {
+      config = {
+        entityId: "assdsad",
+        api_token: "asd",
+        saasType: "API" as any,
+        api: {
+          template: "Define Your Own API" as any,
+          language: "TypeScript" as any,
+          cloudprovider: "AWS" as any,
+          architecture: "Request-Driven Architecture" as any,
+          apiName: "myApi",
+          schemaPath: "../test/test-schemas/todo.graphql",
+          apiType: "GraphQL" as any,
+          lambdaStyle: "Multiple" as any,
+          mockApi: true,
+          database: DATABASE.dynamoDB,
+        } as any,
+      };
+    } else {
+      let usrInput = await userInput();
+      config = {
+        entityId: usrInput.entityId,
+        api_token: usrInput.api_token,
+        saasType: usrInput.saas_type,
+        api: {
+          template: usrInput.template,
+          nestedResolver: usrInput.nestedResolver,
+          language: usrInput.language,
+          cloudprovider: usrInput.cloud_provider,
+          apiName: camelCase(usrInput.api_name),
+          schemaPath: usrInput.schema_path,
+          apiType: usrInput.api_type,
+          database:
+            usrInput.database === DATABASE.none ? undefined : usrInput.database,
+        },
+      };
+    }
 
     let templateDir;
-    let usrInput = await userInput();
+    // let usrInput = await userInput();
     // Questions
 
     // const config: Config = {
@@ -97,25 +96,25 @@ export default class Create extends Command {
     // }
 
     // Config to generate code.
-    const config: Config = {
-      // entityId: usrInput.entityId,
-      // api_token: usrInput.api_token,
-      saasType: SAASTYPE.api,
-      api: {
-        template: usrInput.template,
-        nestedResolver: usrInput.nestedResolver,
-        // language: usrInput.language,
-        // cloudprovider: usrInput.cloud_provider,
-        apiName: camelCase(usrInput.api_name),
-        schemaPath: usrInput.schema_path,
-        apiType:
-          usrInput.architecture === ARCHITECTURE.eventDriven
-            ? APITYPE.graphql
-            : usrInput.api_type,
-        database:
-          usrInput.database === DATABASE.none ? undefined : usrInput.database,
-      },
-    };
+    // const config: Config = {
+    //   // entityId: usrInput.entityId,
+    //   // api_token: usrInput.api_token,
+    //   saasType: SAASTYPE.api,
+    //   api: {
+    //     template: usrInput.template,
+    //     nestedResolver: usrInput.nestedResolver,
+    //     // language: usrInput.language,
+    //     // cloudprovider: usrInput.cloud_provider,
+    //     apiName: camelCase(usrInput.api_name),
+    //     schemaPath: usrInput.schema_path,
+    //     apiType:
+    //       usrInput.architecture === ARCHITECTURE.eventDriven
+    //         ? APITYPE.graphql
+    //         : usrInput.api_type,
+    //     database:
+    //       usrInput.database === DATABASE.none ? undefined : usrInput.database,
+    //   },
+    // };
 
     // Error handling
     const validating = startSpinner("Validating Everything");
