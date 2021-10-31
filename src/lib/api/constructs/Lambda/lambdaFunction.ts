@@ -106,7 +106,7 @@ export class LambdaFunction {
     `);
   }
 
-  public emptyLambdaFunction() {
+  public emptyLambdaFunction(nestedResolver?:boolean) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS")
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
@@ -117,6 +117,9 @@ export class LambdaFunction {
     //   `const data = await axios.post('http://sandbox:8080', event)`
     // );
     this.code.line(`console.log(JSON.stringify(event,null,2))`)
+    if(nestedResolver){
+      this.code.line(`return event.source![event.info.fieldName]`)
+    }
     this.code.line();
     this.code.line(`}`);
   }
