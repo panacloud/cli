@@ -1,8 +1,5 @@
 const { exec } = require("child_process");
-
 const fs = require("fs");
-const expect = require("chai").expect;
-const { execSync } = require("child_process");
 
 (async () => {
   const cmdList = [
