@@ -1,7 +1,0 @@
-query getToDo($toDoId: ID!){
-    getToDo(toDoId: $toDoId){
-        id
-        title
-        description
-    }
-}

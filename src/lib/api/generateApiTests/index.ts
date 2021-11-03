@@ -104,7 +104,7 @@ class APITests {
         ts.writeVariableDeclaration({
           name:"request",
           typeName:"",
-          initializer:"supertest(process.env.API_URL);",
+          initializer:"supertest(API_URL);",
           export:false
         },'const')
         ts.writeVariableDeclaration({

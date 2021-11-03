@@ -1,7 +1,0 @@
-query getToDos{
-    getToDos{
-        id
-        title
-        description
-    }
-}

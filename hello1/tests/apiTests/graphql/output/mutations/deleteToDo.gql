@@ -1,7 +1,0 @@
-mutation deleteToDo($toDoId: ID!){
-    deleteToDo(toDoId: $toDoId){
-        id
-        title
-        description
-    }
-}

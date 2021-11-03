@@ -1,7 +1,0 @@
-mutation updateToDo($toDoId: ID!, $toDoInput: ToDoInput){
-    updateToDo(toDoId: $toDoId, toDoInput: $toDoInput){
-        id
-        title
-        description
-    }
-}

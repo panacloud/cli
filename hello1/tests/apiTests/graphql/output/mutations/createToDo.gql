@@ -1,7 +1,0 @@
-mutation createToDo($toDoInput: ToDoInput){
-    createToDo(toDoInput: $toDoInput){
-        id
-        title
-        description
-    }
-}

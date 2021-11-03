@@ -1,7 +1,0 @@
-mutation deleteToDos{
-    deleteToDos{
-        id
-        title
-        description
-    }
-}
