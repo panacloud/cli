@@ -93,8 +93,14 @@ class APITests {
         code.openFile(this.outputFile);
         ts.writeImports('chai',["expect"])
         ts.writeAllImports('supertest','supertest')
-        ts.writeImports('../../lambdaLayer/mockApi/testCollections',["testCollections"])
-    
+        ts.writeImports('./AppSyncAPI',['AppsyncAPI'])
+        ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollections`,["testCollections"])
+        ts.writeVariableDeclaration({
+          name:"{API_KEY,API_URL}",
+          typeName:"",
+          initializer:"AppsyncAPI.getInstance()",
+          export:false
+        },'const')
         ts.writeVariableDeclaration({
           name:"request",
           typeName:"",

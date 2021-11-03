@@ -1,0 +1,11 @@
+{
+  "lambdas": {
+    "getToDo": { "asset_path": "mock_lambda/getToDo/index.ts" },
+    "getToDos": { "asset_path": "mock_lambda/getToDos/index.ts" },
+    "createToDo": { "asset_path": "mock_lambda/createToDo/index.ts" },
+    "updateToDo": { "asset_path": "mock_lambda/updateToDo/index.ts" },
+    "deleteToDo": { "asset_path": "mock_lambda/deleteToDo/index.ts" },
+    "deleteToDos": { "asset_path": "mock_lambda/deleteToDos/index.ts" }
+  },
+  "mockData": { "asset_path": "lambdaLayer" }
+}
