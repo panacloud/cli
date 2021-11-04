@@ -12,7 +12,7 @@ const fs = require("fs");
     cd hello1 && cdk deploy --ci --require-approval never --colors \
   --outputs-file ./tests/apiTests/appsyncCredentials.json`,
   `cd hello1 && yarn test --colors`,
-  `cd hello1 && yes | cdk destroy`,
+  `cd hello1 && yes | cdk destroy --colors`,
   `rm -rf hello1`
   ];
   for(const cmd of cmdList){
@@ -88,7 +88,7 @@ async function runCommand(cmd: string): Promise<void> {
         console.log(stdout);
         console.log(stderr);
         console.log(err)
-        // exec(`rm -rf hello1`)
+        execSync(`rm -rf hello1`)
         process.exit(1)
       }
       // the *entire* stdout and stderr (buffered)
