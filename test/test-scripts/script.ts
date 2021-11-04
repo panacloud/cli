@@ -3,23 +3,23 @@ const fs = require("fs");
 
 (async () => {
   const cmdList = [
-    `mkdir hello1 `,
-    `cd hello1 && ../bin/run init -t mateen7861`,
-    `cd hello1 && npx gqlg --schemaFilePath ../test/test-schemas/todo.graphql --destDirPath ./tests/apiTests/graphql/output/`,
-    `cd hello1 && yarn build`,
-    `cd hello1 && cdk bootstrap`,
+    `mkdir myApi `,
+    `cd myApi && ../bin/run init -t mateen7861`,
+    `cd myApi && npx gqlg --schemaFilePath ../test/test-schemas/todo.graphql --destDirPath ./tests/apiTests/graphql/output/`,
+    `cd myApi && yarn build`,
+    `cd myApi && cdk bootstrap`,
     `
-    cd hello1 && cdk deploy --ci --require-approval never --colors \
+    cd myApi && cdk deploy --ci --require-approval never --colors \
   --outputs-file ./tests/apiTests/appsyncCredentials.json`,
-  `cd hello1 && yarn test --colors`,
-  `cd hello1 && yes | cdk destroy --colors`,
-  `rm -rf hello1`
+  `cd myApi && yarn test --colors`,
+  `cd myApi && yes | cdk destroy --colors`,
+  `rm -rf myApi`
   ];
   for(const cmd of cmdList){
     if(cmd === cmdList[2]){
-      fs.writeFile("./hello1/tests/apiTests/appsyncCredentials.json","{}",async (err:any)=>{
+      fs.writeFile("./myApi/tests/apiTests/appsyncCredentials.json","{}",async (err:any)=>{
         if(err){
-          await runCommand('rm -rf hello1')
+          await runCommand('rm -rf myApi')
           process.exit(1)
         }
       })
@@ -36,7 +36,7 @@ async function runCommand(cmd: string): Promise<void> {
         console.log(stdout);
         console.log(stderr);
         console.log(err)
-        execSync(`rm -rf hello1`)
+        execSync(`rm -rf myApi`)
         process.exit(1)
       }
       console.log(stdout);
