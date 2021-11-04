@@ -1,4 +1,4 @@
-import { appsyncDatasourceHandler, appsyncPropertiesHandler, appsyncPropertiesInitializer, appsyncResolverhandler } from "./functions";
+import { appsyncDatasourceHandler, appsyncPropertiesHandler, appsyncPropertiesInitializer, appsyncResolverhandler ,appsyncCredentialsOutput} from "./functions";
 import { CONSTRUCTS, ApiModel, async_response_mutName } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
@@ -91,6 +91,9 @@ class AppsyncConstruct {
         appsyncResolverhandler(this.config, this.code);
         this.code.line();
         appsyncPropertiesInitializer(apiName,this.code)
+        this.code.line();
+        appsyncCredentialsOutput(this.code)
+        
       },
       ConstructProps,
       appsyncProperties

@@ -114,3 +114,15 @@ export const appsyncPropertiesInitializer = (
   code.line(`this.api_url = ${apiName}_appsync.attrGraphQlUrl;`);
   code.line(`this.api_key = ${apiName}_apiKey.attrApiKey;`);
 };
+
+export const appsyncCredentialsOutput= (code: CodeMaker)=>{
+  code.line(`new CfnOutput(this, "API_URL", {`)
+  code.line( " value: this.api_url")
+  code.line("});")
+  code.line()
+  code.line(`new CfnOutput(this, "API_KEY", {`)
+  code.line( "value: this.api_key")
+  code.line("});")
+  code.line()
+  
+}

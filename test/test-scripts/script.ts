@@ -6,11 +6,13 @@ const fs = require("fs");
     `mkdir hello1 `,
     `cd hello1 && ../bin/run init -t mateen7861`,
     `cd hello1 && npx gqlg --schemaFilePath ../test/test-schemas/todo.graphql --destDirPath ./tests/apiTests/graphql/output/`,
+    `cd hello1 && yarn build`,
+    `cd hello1 && cdk bootstrap`,
     `
     cd hello1 && cdk deploy --ci --require-approval never --colors \
   --outputs-file ./tests/apiTests/appsyncCredentials.json`,
   `cd hello1 && yarn test --colors`,
-  `cd hello1 && cdk destroy --colors`,
+  `cd hello1 && yes | cdk destroy`,
   `rm -rf hello1`
   ];
   for(const cmd of cmdList){

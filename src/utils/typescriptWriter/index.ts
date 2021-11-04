@@ -49,13 +49,13 @@ export class TypeScriptWriter {
     this.code.line(`it("${key} works correctly", (done) => {`)
     this.code.line(`
     request
-    .post("/graphql")
+    .post("/")
     .set("x-api-key",API_KEY)
     .send({ query: ${key} ,variables:args})
     .end((err: any, res: any) => {
-      expect(err).not.to.be.null;
+      expect(err).to.be.null;
      expect(res.status).to.equal(200);
-     expect(res.body.data[${key}]).to.equal(response);
+     expect(res.body.data["${key}"]).to.eql(response);
       done();
     });
     `)
