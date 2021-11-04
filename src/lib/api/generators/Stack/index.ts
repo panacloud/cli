@@ -70,7 +70,6 @@ export class CdkStack {
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
       () => {
-        this.code.line(`new AspectController(this)`)
           // manager.apiManagerInitializer(apiName);
           this.code.line();
         if (database == DATABASE.dynamoDB) {
@@ -115,8 +114,12 @@ export class CdkStack {
           eventBridge.eventBridgeConstructInitializer(this.config.api);
         }
 
+        this.code.line(`new AspectController(this)`)
+
+
       }
     );
+
 
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);
