@@ -9,7 +9,7 @@ Panacloud is an unified API development, fundraising, and ownership economy plat
 
 Panacloud CLI accelerates the building of multi-tenant serverless SaaS APIs. The CLI applies the design-first paradigm and implements the best practices for designing GraphQL APIs using public cloud serverless and infrastructure as code technologies. The CLI takes a [GraphQL API](https://graphql.org/) [schema](https://graphql.org/learn/schema/) that has been augmented with Panacloud directives and creates [infrastructure as code (IaC)](https://acloudguru.com/blog/engineering/cloudformation-terraform-or-cdk-guide-to-iac-on-aws), mock lambdas, tests, and scaffolding for genuine lambdas that include business logic and database requests. It makes use of [AWS CDK](https://aws.amazon.com/cdk/) for IaC. It now only supports AWS, TypeScript and GraphQL, but future versions will also support Azure and Google Cloud, OpenAPI and other languages as well.
 
-![CLI Flow](/assets/img/cli.png "CLI Diagram")
+![CLI Flow](cli.png "CLI Diagram")
 
 
 The generated serverless SaaS API project supports multi-tenant usage based billing and monetering and is closely integrated with the [Panacloud portal](https://www.panacloud.org). The developer just needs to write the specific code required by the Multi-Tenant SaaS project. This greatly reduces custom developer coding and increases speed to market. GraphQL and Open REST APIs can be built by using the Panacloud CLI. The APIs may use Graph or Relational databases, etc.
