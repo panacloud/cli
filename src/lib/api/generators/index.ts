@@ -63,13 +63,16 @@ export const generator = async (
     await mockApiTestCollections({ config, dummyData });
     await EditableMockApiTestCollections({ config, dummyData, type });
     await customLambda({ config, type });
+  
+  }
+  if(config.api.apiType === APITYPE.graphql){
+    apiTests({config})
+    execSync(`npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`)
   }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
     await eventBridgeConstruct({ config });
   }
-  apiTests({config})
-  execSync(`npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`)
-
+  
 };
 
