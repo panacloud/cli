@@ -1,3 +1,4 @@
+import { execSync } from "child_process";
 import {
   ApiModel,
   APITYPE,
@@ -18,8 +19,7 @@ import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
-import { apiTests } from "../generateApiTests";
-import { execSync } from "child_process";
+import { apiTests } from "./ApiTest";
 
 export const generator = async (
   config: ApiModel,
@@ -36,6 +36,11 @@ export const generator = async (
   // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
     await AppsyncApiConstruct({ config });
+    apiTests({ config });
+    config.api.schemaPath;
+    execSync(
+      `npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`
+    );
     // AppsyncConstructTest({ config });
   } else if (config.api.apiType === APITYPE.rest) {
     await ApiGatewayConstruct({ config });
@@ -68,9 +73,4 @@ export const generator = async (
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
     await eventBridgeConstruct({ config });
   }
-  apiTests({config})
-  config.api.schemaPath
-  execSync(`npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`)
-
 };
-
