@@ -20,7 +20,7 @@ import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
 import { apiTests } from "./ApiTests";
 import { execSync } from "child_process";
-
+const fs = require("fs")
 export const generator = async (
   config: ApiModel,
   panacloudConfig: PanacloudconfigFile,
@@ -68,6 +68,17 @@ export const generator = async (
   if(config.api.apiType === APITYPE.graphql){
     apiTests({config})
     execSync(`npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`)
+    fs.writeFile("./tests/apiTests/appsyncCredentials.json",`{
+      "${config.api.apiName}Stack" : {
+        "apiUrl":"",
+        "apiKey":""
+      }
+    }`,async (err:any)=>{
+      if(err){
+        console.log(err)
+        process.exit(1)
+      }
+    })
   }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {

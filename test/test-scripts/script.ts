@@ -15,14 +15,6 @@ const fs = require("fs");
   `rm -rf myApi`
   ];
   for(const cmd of cmdList){
-    if(cmd === cmdList[2]){
-      fs.writeFile("./myApi/tests/apiTests/appsyncCredentials.json","{}",async (err:any)=>{
-        if(err){
-          await runCommand('rm -rf myApi')
-          process.exit(1)
-        }
-      })
-    }
     await runCommand(cmd)
   }
  
