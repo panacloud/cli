@@ -31,9 +31,9 @@ export enum CONSTRUCTS {
 }
 
 export enum TEMPLATE {
-  basicApi = "Basic Skeleton API",
+  basicApi = "Basic API Scaffolding",
   todoApi = "Todo CRUD API",
-  defineApi = "Define Your Own API",
+  defineApi = "Generate API Scaffolding from Schema",
 }
 
 export enum CLOUDPROVIDER {
