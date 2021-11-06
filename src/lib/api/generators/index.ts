@@ -2,18 +2,12 @@ import {
   ApiModel,
   APITYPE,
   DATABASE,
-  ARCHITECTURE,
   PanacloudconfigFile,
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
 import { AppsyncApiConstruct } from "./Appsync";
 import { auroraDBConstruct } from "./AuroraServerless";
 import { CdkAppClass } from "./bin";
-import { AppsyncConstructTest } from "./CdkTests/Appsync";
-import { auroraDBConstructTest } from "./CdkTests/AuroraServerless";
-import { dynamodbConstructTest } from "./CdkTests/Dynamodb";
-import { lambdaConstructTest } from "./CdkTests/Lambda";
-import { neptuneDBConstructTest } from "./CdkTests/Neptune";
 import { dynamoDBConstruct } from "./DynamoDB";
 import { multipleLambda } from "./Lambda/multipleLambda";
 import { customLambda } from "./Lambda/customLambda";
@@ -27,7 +21,12 @@ import { TestCollectionType } from "../apiMockDataGenerator";
 import { apiTests } from "../generateApiTests";
 import { execSync } from "child_process";
 
-export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile, type: string, dummyData: TestCollectionType) => {
+export const generator = async (
+  config: ApiModel,
+  panacloudConfig: PanacloudconfigFile,
+  type: string,
+  dummyData: TestCollectionType
+) => {
   // bin file
   await CdkAppClass({ config });
 
@@ -38,7 +37,6 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
   if (config.api.apiType === APITYPE.graphql) {
     await AppsyncApiConstruct({ config });
     // AppsyncConstructTest({ config });
-
   } else if (config.api.apiType === APITYPE.rest) {
     await ApiGatewayConstruct({ config });
   }
@@ -57,25 +55,18 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
     // dynamodbConstructTest({ config });
   }
 
-  // lambda Test
-  // lambdaConstructTest({ config });
-  // lambda Construct
-
-
-
   // Single or Multi
   if (config.api.apiType === APITYPE.rest) {
     await singleLambda({ config });
-  }
-  else if (config.api.apiType === APITYPE.graphql) {
+  } else if (config.api.apiType === APITYPE.graphql) {
     await multipleLambda({ config });
     await mockApiTestCollections({ config, dummyData });
-    await EditableMockApiTestCollections({ config, dummyData, type })
+    await EditableMockApiTestCollections({ config, dummyData, type });
     await customLambda({ config, type });
   }
 
-  if (config.api.asyncFields &&  config.api.asyncFields.length >0) {
-    await eventBridgeConstruct({ config })
+  if (config.api.asyncFields && config.api.asyncFields.length > 0) {
+    await eventBridgeConstruct({ config });
   }
   apiTests({config})
   config.api.schemaPath
