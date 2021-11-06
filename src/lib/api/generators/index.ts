@@ -25,6 +25,7 @@ import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
 import { apiTests } from "../generateApiTests";
+import { execSync } from "child_process";
 
 export const generator = async (config: ApiModel, panacloudConfig: PanacloudconfigFile, type: string, dummyData: TestCollectionType) => {
   // bin file
@@ -77,6 +78,8 @@ export const generator = async (config: ApiModel, panacloudConfig: Panacloudconf
     await eventBridgeConstruct({ config })
   }
   apiTests({config})
+  config.api.schemaPath
+  execSync(`npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`)
 
 };
 

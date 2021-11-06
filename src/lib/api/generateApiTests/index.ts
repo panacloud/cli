@@ -122,7 +122,7 @@ class APITests {
         ts.writeVariableDeclaration({
           name:`{${key}}`,
           typeName:"",
-          initializer:`${isMutation?"require('./graphql/output/mutations')":"require('./graphql/output/queries')"}`,
+          initializer:`${isMutation?"require('./graphql/mutations')":"require('./graphql/queries')"}`,
           export:false
         },'const')
         

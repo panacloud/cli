@@ -5,7 +5,6 @@ const fs = require("fs");
   const cmdList = [
     `mkdir myApi `,
     `cd myApi && ../bin/run init -t mateen7861`,
-    `cd myApi && npx gqlg --schemaFilePath ../test/test-schemas/todo.graphql --destDirPath ./tests/apiTests/graphql/output/`,
     `cd myApi && yarn build`,
     `cd myApi && cdk bootstrap`,
     `
