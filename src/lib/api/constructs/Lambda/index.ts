@@ -17,7 +17,7 @@ interface Environment {
 export class Lambda {
   code: CodeMaker;
   panacloudConfig: PanacloudconfigFile
-  // configPanacloud: PanacloudconfigFile = fse.readJsonSync('custom_src/panacloudconfig.json')
+  // configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   constructor(_code: CodeMaker, panacloudConfig: PanacloudconfigFile) {
     this.code = _code;
     this.panacloudConfig = panacloudConfig;
@@ -31,7 +31,9 @@ export class Lambda {
     securityGroupsName?: string,
     environments?: Environment[],
     vpcSubnets?: string,
-    roleName?: string
+    roleName?: string,
+    microServiceName?:string,
+    nestedResolver?:boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
     let handlerName: string
@@ -39,13 +41,32 @@ export class Lambda {
     let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
-    if(functionName){
+    if(functionName){      
       const {lambdas} = this.panacloudConfig;
-      const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
-      handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-      const splitPath = lambdas[functionName].asset_path.split("/");
-      splitPath.pop();
-      handlerAsset = functionName? splitPath.join("/") : "lambda";
+      if (microServiceName){
+        const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
+        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+        const splitPath = lambdas[microServiceName][functionName].asset_path.split("/");
+        splitPath.pop();
+        handlerAsset = functionName? splitPath.join("/") : "lambda";
+      }
+      else{
+        if(nestedResolver){
+          const {nestedLambdas} = this.panacloudConfig;
+          const handlerfile = nestedLambdas[functionName].asset_path.split("/")[nestedLambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = nestedLambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
+        else{
+          const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = lambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
+      }
     }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
@@ -83,7 +104,7 @@ export class Lambda {
     );
   }
 
-  public lambdaLayer(apiName: string) {
+  public lambdaLayer(apiName: string, path: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -92,7 +113,7 @@ export class Lambda {
         initializer: () => {
           this.code
             .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
-          code: lambda.Code.fromAsset('lambdaLayer'),
+          code: lambda.Code.fromAsset("${path}"),
         })`);
         },
       },
@@ -267,4 +288,27 @@ export class Lambda {
     },
   });`);
   }
+
+
+  
+  public addLambdaVar(
+    lambdaName:string, env:Environment, apiName:string
+    ) {
+      
+   //   functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn
+   
+   const functionName = lambdaName? `${apiName}_lambdaFn_${lambdaName}` : `${apiName}_lambdaFn`
+
+   this.code.line(`${functionName}.addEnvironment(${env.name},${env.value})`)
+
+      
+    }
+  
+
+
+
+
+
 }
+
+

@@ -1,15 +1,23 @@
 import { CodeMaker } from "codemaker";
 import { TypeScriptWriter } from '../../../../utils/typescriptWriter'
+import { Imports } from "../../constructs/ConstructsImports";
 
 
 
-class VisitorClass {
+class ConstructVisitor {
     constructor() {
     }
 
-    async DefineVisitorClass(code: CodeMaker) {
+    async DefineDefaultVisitor(code: CodeMaker) {
         const ts = new TypeScriptWriter(code);
-        ts.writeBasicClassBlock({ name: "VisitorClass", export: false,implements: "IAspect" }, undefined, undefined, () => {
+
+        const imp = new Imports(code);
+
+        imp.importIconstruct();
+        imp.importIaspect();
+        imp.importLambda();
+
+        ts.writeBasicClassBlock({ name: "DefaultVisitor", export: true, implements: "IAspect" }, undefined, undefined, () => {
         },
             [{
                 static: false, name: "visit", visibility: "public", outputType: "void", props: "node: IConstruct", content: () => {
@@ -28,9 +36,9 @@ class VisitorClass {
 
 
 
-export const defineVisitorClass = async (
+export const defineDefaultVisitor = async (
     code: CodeMaker
 ): Promise<void> => {
-    const builder = new VisitorClass();
-    await builder.DefineVisitorClass(code);
+    const builder = new ConstructVisitor();
+    await builder.DefineDefaultVisitor(code);
 };

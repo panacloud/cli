@@ -1,6 +1,9 @@
+import { Config } from "@oclif/config";
 import { CodeMaker } from "codemaker";
 import {
+  API,
   APITYPE,
+  async_response_mutName,
   DATABASE
 } from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
@@ -10,7 +13,9 @@ import { DynamoDB } from "../../../constructs/Dynamodb";
 export const importHandlerForStack = (
   database: string,
   apiType: string,
-  code: CodeMaker
+  code: CodeMaker,
+  asyncFields?: string[],
+
 ) => {
   const imp = new Imports(code);
   imp.importsForStack();
@@ -20,10 +25,13 @@ export const importHandlerForStack = (
   } else {
     imp.importForApiGatewayConstruct();
   }
-  imp.importForLambdaConstruct();
+  if (asyncFields && asyncFields.length > 0) {
+    imp.importForEventBrideConstruct();
+  }
+
   databaseImportHandler(database, code);
-  imp.importApiManager();
-  imp.importAspectBaseClass();
+  // imp.importApiManager();
+  imp.importAspectController();
 };
 
 export const databaseImportHandler = (database: string, code: CodeMaker) => {
@@ -41,10 +49,9 @@ export const databaseImportHandler = (database: string, code: CodeMaker) => {
 
 export const LambdaAccessHandler = (
   code: CodeMaker,
-  apiName: string,
-  apiType: string,
-  mutationsAndQueries: any
+  config:API
 ) => {
+  const {apiType,apiName} = config
   const dynamodb = new DynamoDB(code);
   if (apiType === APITYPE.rest) {
     dynamodb.dbConstructLambdaAccess(
@@ -55,16 +62,28 @@ export const LambdaAccessHandler = (
     );
     code.line();
   } else {
+    const {apiName,queiresFields,mutationFields,nestedResolver} = config
+    let mutationsAndQueries = [...queiresFields!,...mutationFields!]
+    if(nestedResolver){
+      const {nestedResolverFieldsAndLambdas} = config
+      const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+      mutationsAndQueries = [...mutationsAndQueries,...nestedResolverLambdas]
+    }
     mutationsAndQueries.forEach((key: string) => {
+
+     if (key !== async_response_mutName){
       dynamodb.dbConstructLambdaAccess(
         apiName,
         `${apiName}_table`,
-        `${apiName}Lambda`,
         apiType,
         key
       );
+
+    }
     });
+
     code.line();
+    
   }
 };
 

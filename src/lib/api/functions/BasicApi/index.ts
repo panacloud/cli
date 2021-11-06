@@ -13,7 +13,7 @@ const fse = require("fs-extra");
 const _ = require("lodash");
 
 async function basicApi(config: Config, templateDir: string) {
-  const { api_token, entityId } = config;
+  // const { api_token, entityId } = config;
 
   const workingDir = _.snakeCase(path.basename(process.cwd()));
   const generatingCode = startSpinner("Generating CDK Code...");
@@ -63,16 +63,16 @@ async function basicApi(config: Config, templateDir: string) {
     }
   );
 
-  writeFileAsync(
-    `./cdk.context.json`,
-    JSON.stringify(contextInfo(api_token, entityId)),
-    (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    }
-  );
+  // writeFileAsync(
+  //   `./cdk.context.json`,
+  //   JSON.stringify(contextInfo(api_token, entityId)),
+  //   (err: string) => {
+  //     if (err) {
+  //       stopSpinner(generatingCode, `Error: ${err}`, true);
+  //       process.exit(1);
+  //     }
+  //   }
+  // );
 
   mkdirRecursiveAsync(`lib`);
   mkdirRecursiveAsync(`bin`);

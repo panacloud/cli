@@ -2,22 +2,26 @@ import { CodeMaker } from "codemaker";
 import {
   ApiModel,
   APITYPE,
+  ARCHITECTURE,
   CONSTRUCTS,
   DATABASE,
   PanacloudconfigFile
 } from "../../../../utils/constants";
-import { apiManager } from "../../constructs/ApiManager";
 import { Appsync } from "../../constructs/Appsync";
 import { AuroraServerless } from "../../constructs/AuroraServerless";
 import { Cdk } from "../../constructs/Cdk";
 import { DynamoDB } from "../../constructs/Dynamodb";
 import { Lambda } from "../../constructs/Lambda";
 import { Neptune } from "../../constructs/Neptune";
+import { EventBridge } from "../../constructs/EventBridge";
 import {
   importHandlerForStack,
   LambdaAccessHandler,
   propsHandlerForApiGatewayConstruct,
 } from "./functions";
+import { LambdaConstructFile } from "../Lambda";
+import { Imports } from "../../constructs/ConstructsImports";
+// import { LambdaConstructFile } from "../Lambda";
 const upperFirst = require("lodash/upperFirst");
 const camelCase = require("lodash/camelCase");
 
@@ -46,24 +50,27 @@ export class CdkStack {
       this.config.api;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
-      const { queiresFields, mutationFields } = this.config.api;
+      const { queiresFields, mutationFields,asyncFields } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
     const cdk = new Cdk(this.code);
-    const manager = new apiManager(this.code);
+    // const manager = new apiManager(this.code);
     const dynamodb = new DynamoDB(this.code);
     const neptune = new Neptune(this.code);
     const aurora = new AuroraServerless(this.code);
+    const imp = new Imports(this.code);
     const lambda = new Lambda(this.code, this.panacloudConfig);
     const appsync = new Appsync(this.code);
-    importHandlerForStack(database, apiType, this.code);
+    const eventBridge = new EventBridge(this.code);
+    importHandlerForStack(database, apiType, this.code, this.config.api.asyncFields);
+    imp.importLambda();
+    database !== DATABASE.dynamoDB && imp.importEc2()
     this.code.line();
 
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
       () => {
-        this.code.line(`new AspectBaseClass({scope:this})`)
-          manager.apiManagerInitializer(apiName);
+          // manager.apiManagerInitializer(apiName);
           this.code.line();
         if (database == DATABASE.dynamoDB) {
           dynamodb.dynmaodbConstructInitializer(apiName, this.code);
@@ -75,16 +82,10 @@ export class CdkStack {
           aurora.auroradbConstructInitializer(apiName, this.code);
           this.code.line();
         }
-        
-        lambda.lambdaConstructInitializer(apiName, database);
-        
-        database === DATABASE.dynamoDB &&
-          LambdaAccessHandler(
-            this.code,
-            apiName,
-            apiType,
-            mutationsAndQueries
-          );
+
+        LambdaConstructFile(this.config, this.panacloudConfig, this.code)
+
+        database === DATABASE.dynamoDB && LambdaAccessHandler(this.code,this.config.api);
 
         if (apiType === APITYPE.graphql) {
           appsync.appsyncConstructInitializer(
@@ -98,8 +99,27 @@ export class CdkStack {
           propsHandlerForApiGatewayConstruct(this.code, apiName);
           this.code.line("})");
         }
+
+
+     
+
+        if (this.config.api.asyncFields &&  this.config.api.asyncFields.length >0) {
+
+          for (let asyncField of this.config.api.asyncFields){
+            lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_END_POINT"',value:`${apiName}.api_url`},apiName)
+            lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_KEY"',value:`${apiName}.api_key`},apiName)
+
+          }
+
+          eventBridge.eventBridgeConstructInitializer(this.config.api);
+        }
+
+        this.code.line(`new AspectController(this)`)
+
+
       }
     );
+
 
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);

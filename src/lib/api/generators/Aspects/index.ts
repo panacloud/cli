@@ -5,8 +5,8 @@ import {
   import { CodeMaker } from "codemaker";
 import { Imports } from "../../constructs/ConstructsImports";
  
-  import {aspectBaseClass} from './aspectBaseClass'
-import { defineVisitorClass } from "./visitorClass";
+  import {defineAspectController} from './aspectController'
+import { defineDefaultVisitor } from "./defaultVisitor";
 
   type props = {
     config: ApiModel;
@@ -14,8 +14,6 @@ import { defineVisitorClass } from "./visitorClass";
   
   class createAspects {
     code: CodeMaker;
-    outputFile: string = `index.ts`;
-    outputDir: string = `custom_src/aspects`;
     stackName:string
 
     constructor(props: props) {
@@ -25,19 +23,17 @@ import { defineVisitorClass } from "./visitorClass";
   
     async defineAspects() {
 
-    this.code.openFile(this.outputFile);
 
-    const imp = new Imports(this.code);
+    this.code.openFile('AspectController.ts');
+     await defineAspectController(this.code)
+     this.code.closeFile('AspectController.ts');
+     await this.code.save('editable_src/aspects');
 
-     imp.importLambda();
-     imp.importAspects();
-     imp.importIaspect();
-     imp.importStack();
-     imp.importIconstruct();
-     await aspectBaseClass(this.code)
-     await defineVisitorClass(this.code)
-     this.code.closeFile(this.outputFile);
-     await this.code.save(this.outputDir);
+     
+    this.code.openFile('DefaultVisitor.ts');
+     await defineDefaultVisitor(this.code)
+     this.code.closeFile('DefaultVisitor.ts');
+     await this.code.save('editable_src/aspects');
     }
   }
   

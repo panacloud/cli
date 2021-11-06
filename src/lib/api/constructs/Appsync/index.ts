@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { API, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
+import { API, async_response_mutName, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -52,9 +52,24 @@ export class Appsync {
   }
 
   public initializeApiKeyForAppsync(apiName: string) {
-    this.code.line(`new appsync.CfnApiKey(this,"apiKey",{
-        apiId:${apiName}_appsync.attrApiId
-    })`);
+    const ts = new TypeScriptWriter(this.code);
+
+
+    ts.writeVariableDeclaration(
+      {
+        name: `${this.apiName}_apiKey`,
+        typeName: "appsync.CfnApiKey",
+        initializer: () => {
+          this.code
+            .line(`new appsync.CfnApiKey(this,"apiKey",{
+              apiId:${apiName}_appsync.attrApiId
+          })`);
+        },
+      },
+      "const"
+    );
+
+
   }
 
   public appsyncConstructInitializer(config: API) {
@@ -77,25 +92,54 @@ export class Appsync {
   }
 
   public appsyncDatabasePropsHandler(config: API, code: CodeMaker) {
-    const { apiName, queiresFields, mutationFields, database } = config;
+    const {
+      apiName,
+      queiresFields,
+      mutationFields,
+      database,
+      nestedResolver,
+      nestedResolverFieldsAndLambdas,
+    } = config;
+
+    let nestedResolverFields: {
+      [key: string]: {
+        fieldName: string;
+        lambda: string;
+      }[];
+    };
+    let nestedResolverLambdas: string[] = [];
+
+    if (nestedResolverFieldsAndLambdas) {
+      nestedResolverFields =
+        nestedResolverFieldsAndLambdas.nestedResolverFields;
+      nestedResolverLambdas =
+        nestedResolverFieldsAndLambdas?.nestedResolverLambdas;
+    }
+
     const mutationsAndQueries: string[] = [
       ...queiresFields!,
       ...mutationFields!,
     ];
+
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
 
-    if (database === DATABASE.dynamoDB) {
-      mutationsAndQueries.forEach((key: string) => {
+    if (nestedResolver) {
+      const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
+      nestedResolverLambdas?.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
-      });
-    } else {
-      mutationsAndQueries.forEach((key: string) => {
-        lambdafunc = `${apiName}_lambdaFn_${key}Arn`;
-        code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc},`);
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
       });
     }
+    mutationsAndQueries.forEach((key: string) => {
+
+      if (key !== async_response_mutName){
+      lambdafunc = `${apiName}_lambdaFn_${key}`;
+      code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
+
+    }
+    });
   }
 
   public appsyncLambdaDataSource(
@@ -104,7 +148,6 @@ export class Appsync {
     functionName: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-
     const ds_initializerName =
       this.apiName + "dataSourceGraphql" + functionName;
     const ds_variable = `ds_${dataSourceName}_${functionName}`;
@@ -130,28 +173,101 @@ export class Appsync {
     );
   }
 
+
+
+  public appsyncNoneDataSource(
+    mutationName: string
+  ) {
+    const ts = new TypeScriptWriter(this.code);
+    const ds_initializerName = this.apiName + "dataSourceGraphql" + mutationName;
+    const ds_variable = `ds_${this.apiName}_${mutationName}`;
+    const ds_name = `${this.apiName}_dataSource_${mutationName}`;
+
+    ts.writeVariableDeclaration(
+      {
+        name: ds_variable,
+        typeName: "appsync.CfnDataSource",
+        initializer: () => {
+          this.code
+            .line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
+          name: "${ds_name}",
+          apiId: ${this.apiName}_appsync.attrApiId,
+          type:"NONE",
+          serviceRoleArn:${this.apiName}_serviceRole.roleArn
+         })`);
+        },
+      },
+      "const"
+    );
+  }
+
+
+
   public appsyncLambdaResolver(
     fieldName: string,
     typeName: string,
-    dataSourceName: string
+    dataSourceName: string,
+    nestedResolver?: boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
+    let resolverVariable = nestedResolver ? `${typeName}_${fieldName}_resolver`: `${fieldName}_resolver`;
+    let resolverName = nestedResolver ? `${typeName}_${fieldName}_resolver` : `${fieldName}_resolver`;
     ts.writeVariableDeclaration(
       {
-        name: `${fieldName}_resolver`,
+        name: resolverVariable,
         typeName: "appsync.CfnResolver",
         initializer: () => {
-          this.code.line(`new appsync.CfnResolver(this,'${fieldName}_resolver',{
+          this.code.line(`new appsync.CfnResolver(this,'${resolverName}',{
             apiId: ${this.apiName}_appsync.attrApiId,
             typeName: "${typeName}",
             fieldName: "${fieldName}",
-            dataSourceName: ${dataSourceName}.name
+            dataSourceName: ${dataSourceName}.name,
         })`);
         },
       },
       "const"
     );
   }
+
+
+
+  public appsyncNoneDataSourceResolver(
+    fieldName: string,
+    typeName: string,
+    dataSourceName: string,
+  ) {
+    const ts = new TypeScriptWriter(this.code);
+    let resolverVariable =  `${fieldName}_resolver` 
+    const requestMappingTemplate = `\`{
+      "version" : "2017-02-28",
+      "payload": $context.arguments.input
+      }\``
+
+    const responseMappingTemplate =  `"$context.result"`
+
+    ts.writeVariableDeclaration(
+      {
+        name: resolverVariable,
+        typeName: "appsync.CfnResolver",
+        initializer: () => {
+          this.code.line(`new appsync.CfnResolver(this,'${fieldName}_resolver',{
+            apiId: ${this.apiName}_appsync.attrApiId,
+            typeName: "${typeName}",
+            fieldName: "${fieldName}",
+            dataSourceName: ${dataSourceName}.name,
+           requestMappingTemplate: ${requestMappingTemplate} ,
+           responseMappingTemplate: ${responseMappingTemplate}
+       
+        })`);
+        },
+      },
+      "const"
+    );
+  }
+
+
+
+
 
   public appsyncTestConstructInitializer(
     apiName: string,

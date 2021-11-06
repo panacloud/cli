@@ -23,6 +23,11 @@ export class Imports {
     ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync"]);
   }
 
+  public importForEventBrideConstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports(`./${CONSTRUCTS.eventBridge}`, [CONSTRUCTS.eventBridge]);
+  }
+
   public importApiGateway() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_apigateway as apigw"]);
@@ -53,7 +58,6 @@ export class Imports {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_lambda as lambda"]);
   }
-
   public importNeptune() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_neptune as neptune"]);
@@ -170,9 +174,14 @@ export class Imports {
     ts.writeImports("constructs/lib/construct", ["IConstruct"]);
   }
 
-  public importAspectBaseClass() {
+  public importAspectController() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports("../custom_src/aspects", ["AspectBaseClass"]);
+    ts.writeImports("../editable_src/aspects/AspectController", ["AspectController"]);
+  }
+
+  public importDefaultVisitor() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("./DefaultVisitor", ["DefaultVisitor"]);
   }
 
 

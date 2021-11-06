@@ -6,11 +6,20 @@ import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
-import { TEMPLATE, SAASTYPE, Config, DATABASE, LANGUAGE, CLOUDPROVIDER, APITYPE } from "../utils/constants";
-import { writeFileAsync } from "../lib/fs";
+import {
+  TEMPLATE,
+  SAASTYPE,
+  Config,
+  DATABASE,
+  APITYPE,
+  CLOUDPROVIDER,
+  LANGUAGE,
+  ARCHITECTURE,
+} from "../utils/constants";
 const path = require("path");
 const chalk = require("chalk");
 const fs = require("fs");
+const fse = require("fs-extra");
 const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
@@ -21,6 +30,7 @@ export default class Create extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
+    test: flags.boolean({ char: "t" }),
   };
 
   async run() {
@@ -31,40 +41,65 @@ export default class Create extends Command {
     // Questions
     let usrInput = await userInput();
 
+    // const config: Config = {
+    //   saasType: SAASTYPE.api,
+    //   entityId: 'a',
+    //   "api_token": "d",
+    //   api: {
+    //     "cloudprovider": CLOUDPROVIDER.aws,
+    //     "language": LANGUAGE.typescript,
+    //     "template": TEMPLATE.defineApi,
+    //     "schemaPath": "schema.graphql",
+    //     "apiName": "myApi",
+    //     "nestedResolver": true,
+    //     // database:undefined,
+    //     "database": DATABASE.none,
+    //     apiType: APITYPE.graphql,
+    //   }
+    // }
+
     // Config to generate code.
     const config: Config = {
-      entityId: usrInput.entityId,
-      api_token: usrInput.api_token,
-      saasType: usrInput.saas_type,
+      // entityId: usrInput.entityId,
+      // api_token: usrInput.api_token,
+      saasType: SAASTYPE.api,
       api: {
         template: usrInput.template,
-        language: usrInput.language,
-        cloudprovider: usrInput.cloud_provider,
+        nestedResolver: usrInput.nestedResolver,
+        // language: usrInput.language,
+        // cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
-        apiType: usrInput.api_type,
-        database: usrInput.database === DATABASE.none? undefined : usrInput.database,
+        apiType:usrInput.api_type,
+        database:
+          usrInput.database === DATABASE.none ? undefined : usrInput.database,
       },
     };
 
     // Error handling
     const validating = startSpinner("Validating Everything");
 
-    if (config.saasType === SAASTYPE.api) {
+    if (config!.saasType === SAASTYPE.api) {
       templateDir = path.resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      if (config.api?.template === TEMPLATE.defineApi) {
+      if (config!.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
-          config.api?.schemaPath,
+          config!.api?.schemaPath,
           validating,
-          config.api?.apiType
+          config!.api?.apiType
         );
       }
     }
 
-    writeFileAsync(
+    fse.writeJson(
       `./codegenconfig.json`,
-      JSON.stringify(config),
+      {
+        ...config,
+        api: {
+          ...config.api,
+          schemaPath: "./editable_src/graphql/schema/schema.graphql",
+        },
+      },
       (err: string) => {
         if (err) {
           stopSpinner(validating, `Error: ${err}`, true);
@@ -86,12 +121,14 @@ export default class Create extends Command {
     }
 
     const generatingTypes = startSpinner("Generating Types");
+
     try {
       await exec(`npx graphql-codegen`);
     } catch (error) {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
+
     stopSpinner(generatingTypes, "Generating Types", false);
 
     const formatting = startSpinner("Formatting Code");
@@ -107,11 +144,13 @@ export default class Create extends Command {
         "!*.lock",
         "!*.yaml",
         "!*.yml",
+        "editable_src/panacloudconfig.json",
       ],
       {
         gitignore: true,
       }
     );
+
     files.forEach(async (file: any) => {
       const data = fs.readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
