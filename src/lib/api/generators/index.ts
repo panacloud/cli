@@ -18,7 +18,7 @@ import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
-import { apiTests } from "../generateApiTests";
+import { apiTests } from "./ApiTests";
 import { execSync } from "child_process";
 
 export const generator = async (
