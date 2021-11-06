@@ -69,7 +69,6 @@ export const generator = async (
     await eventBridgeConstruct({ config });
   }
   apiTests({config})
-  config.api.schemaPath
   execSync(`npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`)
 
 };
