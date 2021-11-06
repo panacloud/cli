@@ -1,7 +1,7 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE } from "../../../utils/constants";
-import { TypeScriptWriter } from "../../../utils/typescriptWriter";
-import { Imports } from "../constructs/ConstructsImports";
+import { ApiModel, APITYPE } from "../../../../utils/constants";
+import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+import { Imports } from "../../constructs/ConstructsImports";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -72,10 +72,7 @@ class APITests {
       api: {
         apiType,
         generalFields,
-        microServiceFields,
         mutationFields,
-        queiresFields,
-        apiName,
       },
     } = this.config;
 
