@@ -27,7 +27,7 @@ async function runCommand(cmd: string): Promise<void> {
         console.log(stdout);
         console.log(stderr);
         console.log(err)
-        execSync(`rm -rf myApi`)
+        // execSync(`rm -rf myApi`)
         process.exit(1)
       }
       console.log(stdout);
