@@ -1,5 +1,5 @@
-import { appsyncDatasourceHandler, appsyncResolverhandler } from "./functions";
-import { CONSTRUCTS, LAMBDASTYLE, Config, ApiModel } from "../../../../utils/constants";
+import { appsyncDatasourceHandler, appsyncPropertiesHandler, appsyncPropertiesInitializer, appsyncResolverhandler } from "./functions";
+import { CONSTRUCTS, ApiModel, async_response_mutName } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { Cdk } from "../../constructs/Cdk";
 import { Iam } from "../../constructs/Iam";
@@ -7,11 +7,15 @@ import { Imports } from "../../constructs/ConstructsImports";
 import { CodeMaker } from "codemaker";
 import { readFileSync } from "fs";
 import * as path from "path";
-import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+import { Property } from "../../../../utils/typescriptWriter";
 
 type StackBuilderProps = {
   config: ApiModel;
 };
+interface ConstructPropsType {
+  name: string;
+  type: string;
+}
 
 class AppsyncConstruct {
   outputFile: string = `index.ts`;
@@ -24,37 +28,46 @@ class AppsyncConstruct {
   }
 
   async AppsyncConstructFile() {
-    const {
-      api: { apiName, lambdaStyle, schema , schemaPath },
-    } = this.config;
-    const ts = new TypeScriptWriter(this.code);
+    const { api: { apiName, schemaPath, queiresFields, mutationFields,nestedResolver,nestedResolverFieldsAndLambdas,asyncFields}} = this.config;
     this.code.openFile(this.outputFile);
     const appsync = new Appsync(this.code);
     const cdk = new Cdk(this.code);
     const iam = new Iam(this.code);
     const imp = new Imports(this.code);
-    const schemaGql = readFileSync(
-      path.resolve(schemaPath)
-    ).toString("utf8");
-    const mutations = schema.type.Mutation ? schema.type.Mutation : {};
-    const queries = schema.type.Query ? schema.type.Query : {};
-    const mutationsAndQueries = { ...mutations, ...queries };
+    const schemaGql = readFileSync(path.resolve(schemaPath)).toString("utf8");
+    const mutationsAndQueries: string[] = [
+      ...queiresFields!,
+      ...mutationFields!,
+    ];
+
     imp.importAppsync();
     imp.importIam();
 
-    let ConstructProps = [
-      {
-        name: `${apiName}_lambdaFnArn`,
-        type: "string",
-      },
-    ];
+    const appsyncProperties: Property[] = appsyncPropertiesHandler();
 
-    if (lambdaStyle && lambdaStyle === LAMBDASTYLE.multi) {
-      Object.keys(mutationsAndQueries).forEach((key: string, index: number) => {
-        ConstructProps[index] = {
+
+    let ConstructProps: ConstructPropsType[] = [];
+    
+    mutationsAndQueries.forEach((key: string) => {
+
+    if (key !== async_response_mutName){
+
+      ConstructProps.push({
+        name: `${apiName}_lambdaFn_${key}Arn`,
+        type: "string",
+
+
+      })
+
+    }
+    });
+
+    if(nestedResolver){
+      nestedResolverFieldsAndLambdas?.nestedResolverLambdas?.forEach((key: string) => {
+        ConstructProps.push({
           name: `${apiName}_lambdaFn_${key}Arn`,
           type: "string",
-        };
+        })
       });
     }
 
@@ -73,16 +86,14 @@ class AppsyncConstruct {
         this.code.line();
         iam.attachLambdaPolicyToRole(`${apiName}`);
         this.code.line();
-        appsyncDatasourceHandler(
-          apiName,
-          lambdaStyle,
-          this.code,
-          mutationsAndQueries
-        );
+        appsyncDatasourceHandler(this.config, this.code);
         this.code.line();
-        appsyncResolverhandler(apiName, lambdaStyle, this.code, schema.type);
+        appsyncResolverhandler(this.config, this.code);
+        this.code.line();
+        appsyncPropertiesInitializer(apiName,this.code)
       },
-      ConstructProps
+      ConstructProps,
+      appsyncProperties
     );
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);

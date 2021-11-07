@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { TypeScriptWriter, Property } from "../../../../utils/typescriptWriter";
+import { Property } from "../../../../utils/typescriptWriter";
 import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -21,7 +21,6 @@ export class DyanmoDBConstruct {
   }
 
   async construcDynamoDBConstructFile() {
-    const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
     const { apiName } = this.config.api;
     const cdk = new Cdk(this.code);
@@ -29,7 +28,7 @@ export class DyanmoDBConstruct {
     const dynamoDB = new DynamoDB(this.code);
     // imports for dynamodb constructs
     imp.importDynamodb();
-    
+
     const properties: Property[] = [
       // properties declaration for dynamoDb constructs
       {

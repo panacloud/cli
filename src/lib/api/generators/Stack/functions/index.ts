@@ -1,5 +1,11 @@
+import { Config } from "@oclif/config";
 import { CodeMaker } from "codemaker";
-import { APITYPE, DATABASE, LAMBDASTYLE } from "../../../../../utils/constants";
+import {
+  API,
+  APITYPE,
+  async_response_mutName,
+  DATABASE
+} from "../../../../../utils/constants";
 import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { DynamoDB } from "../../../constructs/Dynamodb";
@@ -7,20 +13,25 @@ import { DynamoDB } from "../../../constructs/Dynamodb";
 export const importHandlerForStack = (
   database: string,
   apiType: string,
-  code: CodeMaker
+  code: CodeMaker,
+  asyncFields?: string[],
+
 ) => {
-  const cdk = new Cdk(code);
   const imp = new Imports(code);
   imp.importsForStack();
-  imp.importsForConstructs()
-  imp.importApiManager();
+  imp.importsForConstructs();
   if (apiType === APITYPE.graphql) {
     imp.importForAppsyncConstruct();
   } else {
     imp.importForApiGatewayConstruct();
   }
-  imp.importForLambdaConstruct();
+  if (asyncFields && asyncFields.length > 0) {
+    imp.importForEventBrideConstruct();
+  }
+
   databaseImportHandler(database, code);
+  // imp.importApiManager();
+  imp.importAspectController();
 };
 
 export const databaseImportHandler = (database: string, code: CodeMaker) => {
@@ -28,43 +39,51 @@ export const databaseImportHandler = (database: string, code: CodeMaker) => {
   if (database === DATABASE.dynamoDB) {
     imp.importForDynamodbConstruct();
   }
-  if (database === DATABASE.neptuneDB) {
+  else if (database === DATABASE.neptuneDB) {
     imp.importForNeptuneConstruct();
   }
-  if (database === DATABASE.auroraDB) {
+  else if (database === DATABASE.auroraDB) {
     imp.importForAuroraDbConstruct();
   }
 };
 
 export const LambdaAccessHandler = (
   code: CodeMaker,
-  apiName: string,
-  lambdaStyle: LAMBDASTYLE,
-  apiType: string,
-  mutationsAndQueries: any
+  config:API
 ) => {
+  const {apiType,apiName} = config
   const dynamodb = new DynamoDB(code);
-  if (lambdaStyle === LAMBDASTYLE.single || apiType === APITYPE.rest) {
+  if (apiType === APITYPE.rest) {
     dynamodb.dbConstructLambdaAccess(
       apiName,
       `${apiName}_table`,
       `${apiName}Lambda`,
-      lambdaStyle,
       apiType
     );
     code.line();
-  } else if (lambdaStyle === LAMBDASTYLE.multi && apiType === APITYPE.graphql) {
-    Object.keys(mutationsAndQueries).forEach((key) => {
+  } else {
+    const {apiName,queiresFields,mutationFields,nestedResolver} = config
+    let mutationsAndQueries = [...queiresFields!,...mutationFields!]
+    if(nestedResolver){
+      const {nestedResolverFieldsAndLambdas} = config
+      const {nestedResolverLambdas} = nestedResolverFieldsAndLambdas!
+      mutationsAndQueries = [...mutationsAndQueries,...nestedResolverLambdas]
+    }
+    mutationsAndQueries.forEach((key: string) => {
+
+     if (key !== async_response_mutName){
       dynamodb.dbConstructLambdaAccess(
         apiName,
         `${apiName}_table`,
-        `${apiName}Lambda`,
-        lambdaStyle,
         apiType,
         key
       );
+
+    }
     });
+
     code.line();
+    
   }
 };
 

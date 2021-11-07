@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, CONSTRUCTS, LAMBDASTYLE } from "../../../../utils/constants";
+import { APITYPE, CONSTRUCTS } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class DynamoDB {
@@ -32,18 +32,12 @@ export class DynamoDB {
   public grantFullAccess(
     lambda: string,
     tableName: string,
-    lambdaStyle: string,
-    functionName?: string
+    functionName: string
   ) {
-    if (lambdaStyle === LAMBDASTYLE.single) {
-      this.code.line(
-        `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn);`
-      );
-    } else if (lambdaStyle === LAMBDASTYLE.multi) {
       this.code.line(
         `${tableName}.grantFullAccess(props!.${lambda}_lambdaFn_${functionName});`
       );
-    }
+    
   }
 
   public dynmaodbConstructInitializer(apiName: string, code: CodeMaker) {
@@ -65,18 +59,16 @@ export class DynamoDB {
   public dbConstructLambdaAccess(
     apiName: string,
     dbConstructName: string,
-    lambdaConstructName: string,
-    lambdaStyle: string,
     apiType: string,
     functionName?: string
   ) {
-    if (lambdaStyle === LAMBDASTYLE.single || apiType === APITYPE.rest) {
+    if (apiType === APITYPE.rest) {
       this.code.line(
-        `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn);`
+        `${dbConstructName}.table.grantFullAccess(${apiName}_lambdaFn);`
       );
-    } else if (lambdaStyle === LAMBDASTYLE.multi) {
+    } else {
       this.code.line(
-        `${dbConstructName}.table.grantFullAccess(${lambdaConstructName}.${apiName}_lambdaFn_${functionName});`
+        `${dbConstructName}.table.grantFullAccess(${apiName}_lambdaFn_${functionName});`
       );
     }
   }

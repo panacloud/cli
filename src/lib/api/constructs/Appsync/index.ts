@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
+import { API, async_response_mutName, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 interface Props {
@@ -12,7 +12,7 @@ export class Appsync {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-  
+
   public apiName: string = "appsync_api";
   public initializeAppsyncApi(name: string, authenticationType?: string) {
     this.apiName = name;
@@ -52,19 +52,29 @@ export class Appsync {
   }
 
   public initializeApiKeyForAppsync(apiName: string) {
-    this.code.line(`new appsync.CfnApiKey(this,"apiKey",{
-        apiId:${apiName}_appsync.attrApiId
-    })`);
+    const ts = new TypeScriptWriter(this.code);
+
+
+    ts.writeVariableDeclaration(
+      {
+        name: `${this.apiName}_apiKey`,
+        typeName: "appsync.CfnApiKey",
+        initializer: () => {
+          this.code
+            .line(`new appsync.CfnApiKey(this,"apiKey",{
+              apiId:${apiName}_appsync.attrApiId
+          })`);
+        },
+      },
+      "const"
+    );
+
+
   }
 
-  public appsyncConstructInitializer(
-    apiName: string,
-    lambdaStyle: string,
-    database: string,
-    mutationsAndQueries: any,
-    code: CodeMaker
-  ) {
-    const ts = new TypeScriptWriter(code);
+  public appsyncConstructInitializer(config: API) {
+    const { apiName } = config;
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}`,
@@ -73,13 +83,7 @@ export class Appsync {
           this.code.line(
             `new ${CONSTRUCTS.appsync}(this,"${apiName}${CONSTRUCTS.appsync}",{`
           );
-          this.appsyncDatabasePropsHandler(
-            apiName,
-            lambdaStyle,
-            database,
-            mutationsAndQueries,
-            code
-          );
+          this.appsyncDatabasePropsHandler(config, this.code);
           this.code.line("})");
         },
       },
@@ -87,60 +91,68 @@ export class Appsync {
     );
   }
 
-  public appsyncDatabasePropsHandler(
-    apiName: string,
-    lambdaStyle: string,
-    database: string,
-    mutationsAndQueries: any,
-    code: CodeMaker
-  ) {
+  public appsyncDatabasePropsHandler(config: API, code: CodeMaker) {
+    const {
+      apiName,
+      queiresFields,
+      mutationFields,
+      database,
+      nestedResolver,
+      nestedResolverFieldsAndLambdas,
+    } = config;
+
+    let nestedResolverFields: {
+      [key: string]: {
+        fieldName: string;
+        lambda: string;
+      }[];
+    };
+    let nestedResolverLambdas: string[] = [];
+
+    if (nestedResolverFieldsAndLambdas) {
+      nestedResolverFields =
+        nestedResolverFieldsAndLambdas.nestedResolverFields;
+      nestedResolverLambdas =
+        nestedResolverFieldsAndLambdas?.nestedResolverLambdas;
+    }
+
+    const mutationsAndQueries: string[] = [
+      ...queiresFields!,
+      ...mutationFields!,
+    ];
+
     let apiLambda = apiName + "Lambda";
     let lambdafunc = `${apiName}_lambdaFn`;
-    if (lambdaStyle === LAMBDASTYLE.single && database === DATABASE.dynamoDB) {
-      code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn`);
-    }
-    if (lambdaStyle === LAMBDASTYLE.multi && database === DATABASE.dynamoDB) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
+
+    if (nestedResolver) {
+      const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
+      nestedResolverLambdas?.forEach((key) => {
         lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}.functionArn,`);
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
       });
     }
-    if (
-      lambdaStyle === LAMBDASTYLE.single &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
-      lambdafunc = `${apiName}_lambdaFnArn`;
-      code.line(`${lambdafunc} : ${apiLambda}.${lambdafunc}`);
+    mutationsAndQueries.forEach((key: string) => {
+
+      if (key !== async_response_mutName){
+      lambdafunc = `${apiName}_lambdaFn_${key}`;
+      code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
+
     }
-    if (
-      lambdaStyle === LAMBDASTYLE.multi &&
-      (database === DATABASE.neptuneDB || database === DATABASE.auroraDB)
-    ) {
-      Object.keys(mutationsAndQueries).forEach((key) => {
-        lambdafunc = `${apiName}_lambdaFn_${key}`;
-        code.line(`${lambdafunc}Arn : ${apiLambda}.${lambdafunc}Arn,`);
-      });
-    }
+    });
   }
 
   public appsyncLambdaDataSource(
     dataSourceName: string,
     serviceRole: string,
-    lambdaStyle: string,
-    functionName?: string
+    functionName: string
   ) {
     const ts = new TypeScriptWriter(this.code);
-    let ds_initializerName = this.apiName + "dataSourceGraphql";
-    let ds_variable = `ds_${dataSourceName}`;
-    let ds_name = `${dataSourceName}_dataSource`;
-    let lambdaFunctionArn = `props!.${this.apiName}_lambdaFnArn`;
-
-    if (lambdaStyle === LAMBDASTYLE.multi) {
-      ds_initializerName = this.apiName + "dataSourceGraphql" + functionName;
-      ds_variable = `ds_${dataSourceName}_${functionName}`;
-      ds_name = `${this.apiName}_dataSource_${functionName}`;
-      lambdaFunctionArn = `props!.${this.apiName}_lambdaFn_${functionName}Arn`;
-    }
+    const ds_initializerName =
+      this.apiName + "dataSourceGraphql" + functionName;
+    const ds_variable = `ds_${dataSourceName}_${functionName}`;
+    const ds_name = `${this.apiName}_dataSource_${functionName}`;
+    const lambdaFunctionArn = `props!.${this.apiName}_lambdaFn_${functionName}Arn`;
 
     ts.writeVariableDeclaration(
       {
@@ -161,27 +173,127 @@ export class Appsync {
     );
   }
 
+
+
+  public appsyncNoneDataSource(
+    mutationName: string
+  ) {
+    const ts = new TypeScriptWriter(this.code);
+    const ds_initializerName = this.apiName + "dataSourceGraphql" + mutationName;
+    const ds_variable = `ds_${this.apiName}_${mutationName}`;
+    const ds_name = `${this.apiName}_dataSource_${mutationName}`;
+
+    ts.writeVariableDeclaration(
+      {
+        name: ds_variable,
+        typeName: "appsync.CfnDataSource",
+        initializer: () => {
+          this.code
+            .line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
+          name: "${ds_name}",
+          apiId: ${this.apiName}_appsync.attrApiId,
+          type:"NONE",
+          serviceRoleArn:${this.apiName}_serviceRole.roleArn
+         })`);
+        },
+      },
+      "const"
+    );
+  }
+
+
+
   public appsyncLambdaResolver(
     fieldName: string,
     typeName: string,
-    dataSourceName: string
+    dataSourceName: string,
+    nestedResolver?: boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
+    let resolverVariable = nestedResolver ? `${typeName}_${fieldName}_resolver`: `${fieldName}_resolver`;
+    let resolverName = nestedResolver ? `${typeName}_${fieldName}_resolver` : `${fieldName}_resolver`;
     ts.writeVariableDeclaration(
       {
-        name: `${fieldName}_resolver`,
+        name: resolverVariable,
+        typeName: "appsync.CfnResolver",
+        initializer: () => {
+          this.code.line(`new appsync.CfnResolver(this,'${resolverName}',{
+            apiId: ${this.apiName}_appsync.attrApiId,
+            typeName: "${typeName}",
+            fieldName: "${fieldName}",
+            dataSourceName: ${dataSourceName}.name,
+        })`);
+        },
+      },
+      "const"
+    );
+  }
+
+
+
+  public appsyncNoneDataSourceResolver(
+    fieldName: string,
+    typeName: string,
+    dataSourceName: string,
+  ) {
+    const ts = new TypeScriptWriter(this.code);
+    let resolverVariable =  `${fieldName}_resolver` 
+    const requestMappingTemplate = `\`{
+      "version" : "2017-02-28",
+      "payload": $context.arguments.input
+      }\``
+
+    const responseMappingTemplate =  `"$context.result"`
+
+    ts.writeVariableDeclaration(
+      {
+        name: resolverVariable,
         typeName: "appsync.CfnResolver",
         initializer: () => {
           this.code.line(`new appsync.CfnResolver(this,'${fieldName}_resolver',{
             apiId: ${this.apiName}_appsync.attrApiId,
             typeName: "${typeName}",
             fieldName: "${fieldName}",
-            dataSourceName: ${dataSourceName}.name
+            dataSourceName: ${dataSourceName}.name,
+           requestMappingTemplate: ${requestMappingTemplate} ,
+           responseMappingTemplate: ${responseMappingTemplate}
+       
         })`);
         },
       },
       "const"
     );
+  }
+
+
+
+
+
+  public appsyncTestConstructInitializer(
+    apiName: string,
+    database: string,
+    mutationsAndQueries: string[]
+  ) {
+    let lambdafunc = `${apiName}_lambdaFn`;
+    this.code.line(
+      `const ${CONSTRUCTS.appsync}_stack = new ${CONSTRUCTS.appsync}(stack, "${CONSTRUCTS.appsync}Test", {`
+    );
+    if (database === DATABASE.dynamoDB) {
+      mutationsAndQueries.forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        this.code.line(
+          `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}.functionArn,`
+        );
+      });
+    } else {
+      mutationsAndQueries.forEach((key) => {
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        this.code.line(
+          `${lambdafunc}Arn : ${CONSTRUCTS.lambda}_stack.${lambdafunc}Arn,`
+        );
+      });
+    }
+    this.code.line(`})`);
   }
 
   public appsyncApiTest() {

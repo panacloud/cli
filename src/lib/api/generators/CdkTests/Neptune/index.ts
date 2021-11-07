@@ -23,7 +23,6 @@ export class NeptuneDBConstructTest {
   }
 
   async construcNeptuneDBConstructTestFile() {
-    const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
 
     const { apiName } = this.config.api;

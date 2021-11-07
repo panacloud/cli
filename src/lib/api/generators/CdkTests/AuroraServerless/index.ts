@@ -5,7 +5,7 @@ import { Cdk } from "../../../constructs/Cdk";
 import { Imports } from "../../../constructs/ConstructsImports";
 import { AuroraServerless } from "../../../constructs/AuroraServerless";
 import { Iam } from "../../../constructs/Iam";
-import { subnetAuroraFunction } from "./functions";
+import { subnetAuroraFunction, auroradbIdentifierCalls } from "./functions";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -31,31 +31,15 @@ export class AuroraServerlessDBConstructTest {
     const auroradb = new AuroraServerless(this.code);
     const imp = new Imports(this.code);
     const iam = new Iam(this.code);
+
     imp.ImportsForTest();
     imp.importForAuroraDbConstructInTest();
     this.code.line();
     cdk.initializeTest("Auroradb Constructs Test", () => {
       this.code.line();
       iam.constructorIdentifier(CONSTRUCTS.auroraDB);
-      this.code.line(
-        `const public_subnets = ${CONSTRUCTS.auroraDB}_stack.vpcRef.publicSubnets;`
-      );
-      auroradb.route_tableIdentifier("public");
       this.code.line();
-      this.code.line(
-        `const private_subnets = ${CONSTRUCTS.auroraDB}_stack.vpcRef.privateSubnets;`
-      );
-      auroradb.route_tableIdentifier("private");
-      this.code.line();
-      iam.natgatewayIdentifier("1", 0);
-      this.code.line();
-      iam.natgatewayIdentifier("2", 1);
-      this.code.line();
-      iam.internetGatewayIdentifier();
-      this.code.line();
-      iam.eipIdentifier("1", 0);
-      this.code.line();
-      iam.eipIdentifier("2", 1);
+      auroradbIdentifierCalls(this.code);
       this.code.line();
       auroradb.initializeTestForEC2Vpc();
       this.code.line();

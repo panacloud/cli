@@ -1,0 +1,14 @@
+schema: ./editable_src/graphql/schema/schema.graphql
+generates:
+  ./editable_src/graphql/types.ts:
+    plugins:
+      - typescript
+  ./lambdaLayer/mockApi/types.ts:
+    plugins:
+      - typescript
+  ./editable_src/lambdaLayer/mockApi/types.ts:
+    plugins:
+      - typescript
+config:
+  declarationKind: 'interface'
+  useImplementingTypes: true

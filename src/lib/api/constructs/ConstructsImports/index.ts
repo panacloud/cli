@@ -13,7 +13,7 @@ export class Imports {
     ts.writeImports("aws-cdk-lib", ["Stack", "StackProps"]);
   }
 
-  public importsForConstructs(){
+  public importsForConstructs() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("constructs", ["Construct"]);
   }
@@ -21,6 +21,11 @@ export class Imports {
   public importAppsync() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync"]);
+  }
+
+  public importForEventBrideConstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports(`./${CONSTRUCTS.eventBridge}`, [CONSTRUCTS.eventBridge]);
   }
 
   public importApiGateway() {
@@ -42,12 +47,17 @@ export class Imports {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_iam as iam"]);
   }
+  
+  public importEventBridge() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["aws_events as events"])
+    ts.writeImports("aws-cdk-lib", ["aws_events_targets as targets"])
+  } 
 
   public importLambda() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_lambda as lambda"]);
   }
-
   public importNeptune() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports("aws-cdk-lib", ["aws_neptune as neptune"]);
@@ -137,10 +147,42 @@ export class Imports {
     ts.writeImports(`../lib/${CONSTRUCTS.auroraDB}`, [CONSTRUCTS.auroraDB]);
   }
 
-  public ImportsForTest(
-  ) {
+  public ImportsForTest() {
     const ts = new TypeScriptWriter(this.code);
-      this.code.line(`import * as cdk from "aws-cdk-lib"`)
-      this.code.line(`import "@aws-cdk/assert/jest"`);
+    this.code.line(`import * as cdk from "aws-cdk-lib"`);
+    this.code.line(`import "@aws-cdk/assert/jest"`);
   }
+
+
+  public importAspects() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["Aspects"]);
+  }
+
+  public importIaspect() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["IAspect"]);
+  }
+
+  public importStack() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["Stack"]);
+  }
+
+  public importIconstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("constructs/lib/construct", ["IConstruct"]);
+  }
+
+  public importAspectController() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("../editable_src/aspects/AspectController", ["AspectController"]);
+  }
+
+  public importDefaultVisitor() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("./DefaultVisitor", ["DefaultVisitor"]);
+  }
+
+
 }

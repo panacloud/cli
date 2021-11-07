@@ -1,34 +1,73 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS, DATABASE, LAMBDASTYLE } from "../../../../utils/constants";
+import {
+  APITYPE,
+  CONSTRUCTS,
+  DATABASE,
+  PanacloudconfigFile
+} from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+const fse = require("fs-extra");
 
 interface Environment {
   name: string;
   value: string;
 }
 
+
 export class Lambda {
   code: CodeMaker;
-  constructor(_code: CodeMaker) {
+  panacloudConfig: PanacloudconfigFile
+  // configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
+  constructor(_code: CodeMaker, panacloudConfig: PanacloudconfigFile) {
     this.code = _code;
+    this.panacloudConfig = panacloudConfig;
+
   }
 
   public initializeLambda(
     apiName: string,
-    lambdaStyle: string,
     functionName?: string,
     vpcName?: string,
     securityGroupsName?: string,
     environments?: Environment[],
     vpcSubnets?: string,
-    roleName?: string
+    roleName?: string,
+    microServiceName?:string,
+    nestedResolver?:boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
-    let lambdaConstructName: string = `${apiName}Lambda`;
-    let lambdaVariable: string = `${apiName}_lambdaFn`;
-    let funcName: string = `${apiName}Lambda`;
-    let handlerName: string = "main.handler";
-    let handlerAsset: string = "lambda";
+    let handlerName: string
+    let handlerAsset: string
+    let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
+    let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
+    let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
+    if(functionName){      
+      const {lambdas} = this.panacloudConfig;
+      if (microServiceName){
+        const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
+        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+        const splitPath = lambdas[microServiceName][functionName].asset_path.split("/");
+        splitPath.pop();
+        handlerAsset = functionName? splitPath.join("/") : "lambda";
+      }
+      else{
+        if(nestedResolver){
+          const {nestedLambdas} = this.panacloudConfig;
+          const handlerfile = nestedLambdas[functionName].asset_path.split("/")[nestedLambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = nestedLambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
+        else{
+          const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
+          const splitPath = lambdas[functionName].asset_path.split("/");
+          splitPath.pop();
+          handlerAsset = functionName? splitPath.join("/") : "lambda";
+        }
+      }
+    }
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`
@@ -40,20 +79,7 @@ export class Lambda {
       ? `vpcSubnets: { subnetType: ${vpcSubnets} },`
       : "";
     let role = roleName ? `role: ${roleName},` : "";
-
-    if (lambdaStyle === LAMBDASTYLE.multi) {
-      lambdaConstructName = `${apiName}Lambda${functionName}`;
-      lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
-      funcName = `${apiName}Lambda${functionName}`;
-      handlerName = `${functionName}.handler`;
-      handlerAsset = `lambda/${functionName}`;
-    }
-
-    if (lambdaStyle === LAMBDASTYLE.multi) {
-      lambdaVariable = `${apiName}_lambdaFn_${functionName}`;
-      funcName = `${apiName}Lambda${functionName}`;
-      handlerName = `${functionName}.handler`;
-    }
+    let lambdaLayer = `layers:[${apiName}_lambdaLayer],`;
 
     ts.writeVariableDeclaration(
       {
@@ -65,7 +91,7 @@ export class Lambda {
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
         code: lambda.Code.fromAsset("${handlerAsset}"),
-        layers:[${apiName}_lambdaLayer],
+        ${lambdaLayer}
         ${role}
         ${vpc}
         ${securityGroups}
@@ -78,7 +104,7 @@ export class Lambda {
     );
   }
 
-  public lambdaLayer(apiName: string) {
+  public lambdaLayer(apiName: string, path: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -87,7 +113,7 @@ export class Lambda {
         initializer: () => {
           this.code
             .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
-          code: lambda.Code.fromAsset('lambdaLayer'),
+          code: lambda.Code.fromAsset("${path}"),
         })`);
         },
       },
@@ -95,34 +121,77 @@ export class Lambda {
     );
   }
 
-  public lambdaConstructInitializer(
-    apiName: string,
-    database: string,
-    code: CodeMaker
-  ) {
-    const ts = new TypeScriptWriter(code);
+  public lambdaConstructInitializer(apiName: string, database: string) {
+    const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}Lambda`,
         typeName: CONSTRUCTS.lambda,
         initializer: () => {
           this.code.line(
-            `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}",{`
+            `new ${CONSTRUCTS.lambda}(this,"${apiName}${CONSTRUCTS.lambda}"`
           );
           if (database === DATABASE.dynamoDB) {
-            code.line(`tableName:${apiName}_table.table.tableName`);
+            this.code.line(",{");
+            this.code.line(`tableName:${apiName}_table.table.tableName`);
+            this.code.line("}");
           } else if (database === DATABASE.neptuneDB) {
-            code.line(`SGRef:${apiName}_neptunedb.SGRef,`);
-            code.line(`VPCRef:${apiName}_neptunedb.VPCRef,`);
-            code.line(
+            this.code.line(",{");
+            this.code.line(`SGRef:${apiName}_neptunedb.SGRef,`);
+            this.code.line(`VPCRef:${apiName}_neptunedb.VPCRef,`);
+            this.code.line(
               `neptuneReaderEndpoint:${apiName}_neptunedb.neptuneReaderEndpoint`
             );
+            this.code.line("}");
           } else if (database === DATABASE.auroraDB) {
-            code.line(`secretRef:${apiName}_auroradb.secretRef,`);
-            code.line(`vpcRef:${apiName}_auroradb.vpcRef,`);
-            code.line(`serviceRole: ${apiName}_auroradb.serviceRole`);
+            this.code.line(",{");
+            this.code.line(`secretRef:${apiName}_auroradb.secretRef,`);
+            this.code.line(`vpcRef:${apiName}_auroradb.vpcRef,`);
+            this.code.line(`serviceRole: ${apiName}_auroradb.serviceRole`);
+            this.code.line("}");
           }
-          this.code.line("})");
+          this.code.line(")");
+        },
+      },
+      "const"
+    );
+  }
+
+  public lambdaTestConstructInitializer(
+    database: string,
+    code: CodeMaker
+  ) {
+    const ts = new TypeScriptWriter(code);
+    ts.writeVariableDeclaration(
+      {
+        name: `${CONSTRUCTS.lambda}_stack`,
+        typeName: "",
+        initializer: () => {
+          this.code.line(
+            `new ${CONSTRUCTS.lambda}(stack, "${CONSTRUCTS.lambda}Test"`
+          );
+          if (database === DATABASE.dynamoDB) {
+            code.line(",{");
+            code.line(
+              `tableName: ${CONSTRUCTS.dynamoDB}_stack.table.tableName`
+            );
+            code.line("}");
+          } else if (database === DATABASE.neptuneDB) {
+            code.line(",{");
+            code.line(`SGRef: ${CONSTRUCTS.neptuneDB}_stack.SGRef,`);
+            code.line(`VPCRef: ${CONSTRUCTS.neptuneDB}_stack.VPCRef,`);
+            code.line(
+              `neptuneReaderEndpoint: ${CONSTRUCTS.neptuneDB}_stack.neptuneReaderEndpoint`
+            );
+            this.code.line("}");
+          } else if (database === DATABASE.auroraDB) {
+            code.line(",{");
+            code.line(`secretRef: ${CONSTRUCTS.auroraDB}_stack.secretRef,`);
+            code.line(`vpcRef: ${CONSTRUCTS.auroraDB}_stack.vpcRef,`);
+            code.line(`serviceRole: ${CONSTRUCTS.auroraDB}_stack.serviceRole`);
+            this.code.line("}");
+          }
+          this.code.line(")");
         },
       },
       "const"
@@ -133,18 +202,12 @@ export class Lambda {
     lambda: string,
     envName: string,
     value: string,
-    lambdaStyle: string,
-    functionName?: string
+    functionName: string
   ) {
-    if (lambdaStyle === LAMBDASTYLE.single) {
-      this.code.line(
-        `${lambda}_lambdaFn.addEnvironment("${envName}", ${value});`
-      );
-    } else if (lambdaStyle === LAMBDASTYLE.multi) {
       this.code.line(
         `${lambda}_lambdaFn_${functionName}.addEnvironment("${envName}", ${value});`
       );
-    }
+    
   }
 
   public initializeTestForLambdaWithDynamoDB(
@@ -225,4 +288,27 @@ export class Lambda {
     },
   });`);
   }
+
+
+  
+  public addLambdaVar(
+    lambdaName:string, env:Environment, apiName:string
+    ) {
+      
+   //   functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn
+   
+   const functionName = lambdaName? `${apiName}_lambdaFn_${lambdaName}` : `${apiName}_lambdaFn`
+
+   this.code.line(`${functionName}.addEnvironment(${env.name},${env.value})`)
+
+      
+    }
+  
+
+
+
+
+
 }
+
+

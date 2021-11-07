@@ -1,139 +1,58 @@
-import {CONSTRUCTS,APITYPE,DATABASE,ApiModel} from "../../../../utils/constants";
-import { Cdk } from "../../constructs/Cdk";
-import { Imports } from "../../constructs/ConstructsImports";
+import {
+  APITYPE,
+  DATABASE,
+  ApiModel,
+  PanacloudconfigFile,
+} from "../../../../utils/constants";
 import { CodeMaker } from "codemaker";
-import { Property } from "../../../../utils/typescriptWriter";
 import {
   lambdaHandlerForAuroradb,
   lambdaHandlerForDynamodb,
   lambdaHandlerForNeptunedb,
-  lambdaProperiesHandlerForAuroraDb,
-  lambdaProperiesHandlerForDynoDb,
-  lambdaProperiesHandlerForNeptuneDb,
-  lambdaPropsHandlerForAuroradb,
-  lambdaPropsHandlerForNeptunedb,
+  lambdaInitializerForGeneralFields,
+  lambdaInitializerForMicroServices,
+  lambdaInitializerForNestedResolvers,
 } from "./functions";
+import { Lambda } from "../../constructs/Lambda";
 
-type StackBuilderProps = {
-  config: ApiModel;
-};
+export const LambdaConstructFile = async (
+  config: ApiModel,
+  panacloudConfig: PanacloudconfigFile,
+  code: CodeMaker
+) => {
+  const {
+    api: {
+      apiName,
+      apiType,
+      database,
+      nestedResolver
+    }
+  } = config;
+  let mutationsAndQueries: string[] = [];
+  let general_Fields: string[] = [];
+  let microService_Fields: { [k: string]: any[] } = {};
 
-class lambdaConstruct {
-  outputFile: string = `index.ts`;
-  outputDir: string = `lib/${CONSTRUCTS.lambda}`;
-  config: ApiModel;
-  code: CodeMaker;
-  constructor(props: StackBuilderProps) {
-    this.config = props.config;
-    this.code = new CodeMaker();
+  if (apiType === APITYPE.graphql) {
+    const { queiresFields, mutationFields, generalFields, microServiceFields} = config.api;
+    mutationsAndQueries = [...queiresFields!, ...mutationFields!];
+    general_Fields = generalFields!;
+    microService_Fields = microServiceFields!;
   }
+  
+  const lambda = new Lambda(code, panacloudConfig);
 
-  async LambdaConstructFile() {
-    const {
-      api: { apiName, lambdaStyle, apiType, database, schema },
-    } = this.config;
-    let mutations = {};
-    let queries = {};
-    if (apiType === APITYPE.graphql) {
-      mutations = schema.type.Mutation ? schema.type.Mutation : {};
-      queries = schema.type.Query ? schema.type.Query : {};
+  if (database === DATABASE.none) {
+    lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
+    lambdaInitializerForMicroServices(config.api,panacloudConfig,code)
+    lambdaInitializerForGeneralFields(config.api,panacloudConfig,code,general_Fields)
+    if(nestedResolver){
+      lambdaInitializerForNestedResolvers(config.api,panacloudConfig,code)
     }
-    const mutationsAndQueries = { ...mutations, ...queries };
-
-    let lambdaPropsWithName: string | undefined;
-    let lambdaProps: { name: string; type: string }[] | undefined;
-    let lambdaProperties: Property[] | undefined;
-    this.code.openFile(this.outputFile);
-    const cdk = new Cdk(this.code);
-    const imp = new Imports(this.code);
-    imp.importLambda();
-
-    if (database === DATABASE.dynamoDB) {
-      lambdaProps = [
-        {
-          name: "tableName",
-          type: "string",
-        },
-      ];
-      lambdaPropsWithName = "handlerProps";
-      lambdaProperties = lambdaProperiesHandlerForDynoDb(
-        lambdaStyle,
-        apiName,
-        apiType,
-        mutationsAndQueries
-      );
-    }
-    if (database === DATABASE.neptuneDB) {
-      imp.importEc2()
-      lambdaPropsWithName = "handlerProps";
-      lambdaProps = lambdaPropsHandlerForNeptunedb();
-      lambdaProperties = lambdaProperiesHandlerForNeptuneDb(
-        apiName,
-        apiType,
-        lambdaStyle,
-        database,
-        mutationsAndQueries
-      );
-    }
-    if (database === DATABASE.auroraDB) {
-      imp.importEc2()
-      imp.importIam()
-      lambdaPropsWithName = "handlerProps";
-      lambdaProps = lambdaPropsHandlerForAuroradb();
-      lambdaProperties = lambdaProperiesHandlerForAuroraDb(
-        apiName,
-        apiType,
-        lambdaStyle,
-        database,
-        mutationsAndQueries
-      );
-    }
-    cdk.initializeConstruct(
-      CONSTRUCTS.lambda,
-      lambdaPropsWithName,
-      () => {
-        if (database === DATABASE.dynamoDB) {
-          lambdaHandlerForDynamodb(
-            this.code,
-            apiName,
-            apiType,
-            lambdaStyle,
-            database,
-            mutationsAndQueries
-          );
-        }
-        if (database === DATABASE.neptuneDB) {
-          lambdaHandlerForNeptunedb(
-            this.code,
-            lambdaStyle,
-            database,
-            apiType,
-            apiName,
-            mutationsAndQueries
-          );
-        }
-        if (database === DATABASE.auroraDB) {
-          lambdaHandlerForAuroradb(
-            this.code,
-            lambdaStyle,
-            database,
-            apiType,
-            apiName,
-            mutationsAndQueries
-          );
-        }
-      },
-      lambdaProps,
-      lambdaProperties
-    );
-    this.code.closeFile(this.outputFile);
-    await this.code.save(this.outputDir);
+  } else if (database === DATABASE.dynamoDB) {
+    lambdaHandlerForDynamodb(code, panacloudConfig, config);
+  } else if (database === DATABASE.neptuneDB) {
+    lambdaHandlerForNeptunedb(code, panacloudConfig, config);
+  } else if (database === DATABASE.auroraDB) {
+    lambdaHandlerForAuroradb(code, panacloudConfig, config);
   }
-}
-
-export const LambdaConstruct = async (
-  props: StackBuilderProps
-): Promise<void> => {
-  const builder = new lambdaConstruct(props);
-  await builder.LambdaConstructFile();
 };

@@ -1,7 +1,7 @@
 import { CodeMaker } from "codemaker";
 import { CONSTRUCTS } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-
+const lowerCase = require('lodash/lowerCase')
 export class Neptune {
   code: CodeMaker;
   constructor(_code: CodeMaker) {
@@ -54,12 +54,11 @@ export class Neptune {
         initializer: () => {
           this.code.line(` new neptune.CfnDBSubnetGroup(
             this,
-            "${apiName}neptuneSubnetGroup",
+            "${lowerCase(apiName)}-neptune-subnet-group",
             {
               dbSubnetGroupDescription: "${apiName} Subnet",
-              subnetIds: ${vpcName}.selectSubnets({ subnetType: ec2.SubnetType.ISOLATED })
-                .subnetIds,
-              dbSubnetGroupName: "${apiName}_subnetgroup",
+              subnetIds: ${vpcName}.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_ISOLATED }).subnetIds,
+              dbSubnetGroupName: "${lowerCase(apiName)}-neptune-subnet-group",
             }
           );`);
         },

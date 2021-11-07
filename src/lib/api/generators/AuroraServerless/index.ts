@@ -49,16 +49,14 @@ export class AuroraDBConstruct {
       undefined,
       () => {
         ec2.initializeVpc(apiName);
-        this.code.line;
-
+        this.code.line();
         aurora.initializeAuroraCluster(apiName, `${apiName}_vpc`);
-        this.code.line;
-
+        this.code.line();
         iam.serviceRoleForLambda(apiName, [
           "AmazonRDSDataFullAccess",
           "service-role/AWSLambdaVPCAccessExecutionRole",
         ]);
-        this.code.line;
+        this.code.line();
 
         ts.writeVariableDeclaration(
           {
