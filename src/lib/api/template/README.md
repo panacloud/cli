@@ -25,7 +25,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ## Useful commands
 
- * `panacloud update` updates the generated code and is run after updating the schema in the `editable_src//graphql/schema/` directory 
+ * `panacloud update` updates the generated code and is run after updating the schema in the `editable_src/graphql/schema/` directory 
  * `npm run build`   compile typescript to js
  * `npm run watch`   watch for changes and compile
  * `npm run test`    perform the jest unit tests
