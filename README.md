@@ -130,5 +130,18 @@ OPTIONS
 _See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/merge.ts)_
 <!-- commandsstop -->
 
+## The Panacloud Dapp and Protocol Complements the CLI
+
+ The [Panacloud Dapp](https://www.panacloud.org/) and [protocol](https://github.com/panacloud/protocol) complements this CLI and facilitates the API developer to: 
+ 
+ 1. [Tokenize](https://cryptonews.com/news/tokenization-crowdfunding-in-the-era-of-cryptocurrency-and-b-10972.htm) the APIs and raise funding for API development.
+ 2. Document the developer ownership of the API by issuing you an [NFT](https://ethereum.org/en/nft/).
+ 3. Market the APIs to the application developers in the API bazaar/store.
+ 4. Create a decentralized [autonomous organization (DAO)](https://ethereum.org/en/dao/) for the APIs for governance in which the API token holders i.e. developer, investors, and users can participate.
+ 5. Monitor APIs and do multi-tenant billing and clearing on the Ethereum blockchain using smart contracts. 
+ 6. Issue tokens to API early adopters and users to incentivize them to subscribe and use the APIs and become a participant in the [Owership Economy](https://variant.fund/writing/the-ownership-economy-crypto-and-consumer-software).
+ 8. Allow the stakeholders to cash out whenever they require liquidity by selling API tokens.
+
+
 
 
