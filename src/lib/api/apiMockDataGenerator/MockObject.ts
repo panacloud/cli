@@ -119,46 +119,46 @@ class RootObjectResponse extends ObjectResponse {
       let type = response.type.toString() as ScalarType;
       const _isArray = isArray(type);
       type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+      console.log("Response Type",response.type.toJSON())
+      // if (type === "String") {
+      //   this.objectResponses.push(new StringObjectResponse(graphQLSchema, response, _isArray));
 
-      if (type === "String") {
-        this.objectResponses.push(new StringObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (type === "Int") {
+      //   this.objectResponses.push(new IntObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (type === "Int") {
-        this.objectResponses.push(new IntObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (type === "ID") {
+      //   this.objectResponses.push(new IdObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (type === "ID") {
-        this.objectResponses.push(new IdObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (type === "Float") {
+      //   this.objectResponses.push(new FloatObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (type === "Float") {
-        this.objectResponses.push(new FloatObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (type === "Boolean") {
+      //   this.objectResponses.push(new BoolObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (type === "Boolean") {
-        this.objectResponses.push(new BoolObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (type === "AWSTimestamp") {
+      //   this.objectResponses.push(new AWSTimeStampObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (type === "AWSTimestamp") {
-        this.objectResponses.push(new AWSTimeStampObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (type === "AWSEmail") {
+      //   this.objectResponses.push(new AWSEmailObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (type === "AWSEmail") {
-        this.objectResponses.push(new AWSEmailObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (type === "AWSURL") {
+      //   this.objectResponses.push(new AWSURLObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (type === "AWSURL") {
-        this.objectResponses.push(new AWSURLObjectResponse(graphQLSchema, response, _isArray));
+      // } else if (this.isEnum(type)) {
+      //   this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
 
-      } else if (this.isEnum(type)) {
-        this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
+      //   /* if the field type is nested and come to resolve again */
+      // } else if (this.resolvedCustomObjectTypes.includes(type)) {
+      //   // } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
+      //   this.objectResponses.push(new NestedCustomObjectResponse(graphQLSchema, response, _isArray));
 
-        /* if the field type is nested and come to resolve again */
-      } else if (this.resolvedCustomObjectTypes.includes(type)) {
-        // } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
-        this.objectResponses.push(new NestedCustomObjectResponse(graphQLSchema, response, _isArray));
+      //   /* if the field type is interface*/
+      // } else if (isInterfaceType(this.graphQLSchema.getType(type))) {
+      //   this.objectResponses.push(new CustomInterfaceObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
 
-        /* if the field type is interface*/
-      } else if (isInterfaceType(this.graphQLSchema.getType(type))) {
-        this.objectResponses.push(new CustomInterfaceObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
-
-      } else {
-        this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
-      }
+      // } else {
+      //   this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
+      // }
     });
 
   }
@@ -182,45 +182,49 @@ class RootObjectRequest extends ObjectRequest {
     // console.log("childNumber", this.childNumber)
 
     fieldRequests.forEach((request: GraphQLArgument) => {
+
       let type = request.type.toString() as ScalarType;
       const _isArray = isArray(type);
+      
       type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
-      // console.log(type)
-      if (type === "String") {
-        this.objectRequests.push(new StringObjectRequest(graphQLSchema, request, _isArray));
+     
+      console.log("Request Type::::::>",      request.type.toJSON()
+      )
+      // if (type === "String") {
+      //   this.objectRequests.push(new StringObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (type === "Int") {
-        this.objectRequests.push(new IntObjectRequest(graphQLSchema, request, _isArray));
+      // } else if (type === "Int") {
+      //   this.objectRequests.push(new IntObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (type === "ID") {
-        this.objectRequests.push(new IdObjectRequest(graphQLSchema, request, _isArray));
+      // } else if (type === "ID") {
+      //   this.objectRequests.push(new IdObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (type === "Float") {
-        this.objectRequests.push(new FloatObjectRequest(graphQLSchema, request, _isArray));
+      // } else if (type === "Float") {
+      //   this.objectRequests.push(new FloatObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (type === "Boolean") {
-        this.objectRequests.push(new BoolObjectRequest(graphQLSchema, request, _isArray));
+      // } else if (type === "Boolean") {
+      //   this.objectRequests.push(new BoolObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (type === "AWSTimestamp") {
-        this.objectRequests.push(new AWSTimeStampObjectRequest(graphQLSchema, request, _isArray));
+      // } else if (type === "AWSTimestamp") {
+      //   this.objectRequests.push(new AWSTimeStampObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (type === "AWSEmail") {
-        this.objectRequests.push(new AWSEmailStampObjectRequest(graphQLSchema, request, _isArray));
+      // } else if (type === "AWSEmail") {
+      //   this.objectRequests.push(new AWSEmailStampObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (type === "AWSURL") {
-        this.objectRequests.push(new AWSURLObjectRequest(graphQLSchema, request, _isArray));
+      // } else if (type === "AWSURL") {
+      //   this.objectRequests.push(new AWSURLObjectRequest(graphQLSchema, request, _isArray));
 
-      } else if (this.isEnum(type)) {
-        this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
+      // }
+      //  else if (this.isEnum(type)) {
+      //   this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
 
-        /* if the field type is nested and come to resolve again */
-      } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
-        this.objectRequests.push(new NestedCustomObjectRequest(graphQLSchema, request, _isArray));
+      //   /* if the field type is nested and come to resolve again */
+      // } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
+      //   this.objectRequests.push(new NestedCustomObjectRequest(graphQLSchema, request, _isArray));
 
-      } else {
-        this.objectRequests.push(new CustomObjectRequest(graphQLSchema, request, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
-
-      }
+      // } else {
+      //   this.objectRequests.push(new CustomObjectRequest(graphQLSchema, request, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
+      // }
     });
 
   }
