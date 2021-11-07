@@ -1,12 +1,3 @@
-type Query {
-  getAllBlogs(): [BlogPost]
-  getBlogPost(id: ID!): BlogPost
-}
-
-type Mutation {
-  addBlogPost(title: String!, content: String!, authorID: ID!): BlogPost!
-}
-
 type BlogPost {
   id: ID!
   title: String!
@@ -18,4 +9,13 @@ type Author {
   id: ID!
   name: String!
   hasBlog: [BlogPost]
+}
+
+type Query {
+  getAllBlogs: [BlogPost]
+  getBlogPost(id: ID!): BlogPost
+}
+
+type Mutation {
+  addBlogPost(title: String!, content: String!, authorID: ID!): BlogPost!
 }
