@@ -23,7 +23,7 @@ export default class Create extends Command {
     const validating = startSpinner("Validating Everything");
 
     const configCli: Config = fse.readJsonSync("codegenconfig.json");
-
+    
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api.apiType === APITYPE.graphql) {
         if (configCli.api?.template === TEMPLATE.defineApi) {
