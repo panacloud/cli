@@ -34,6 +34,15 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
  * `cdk synth`       emits the synthesized CloudFormation template
 
 
- ## The Panacloud Dapp Complements Your APIs
+ ## The Panacloud Dapp and Protocol Complements Your APIs
 
- The [Panacloud Dapp](https://www.panacloud.org/) complements the Panacloud CLI and facilitates the API developer to tokenize the APIs and raise funding for API development, document your ownership of the API by issuing you an [NFT](https://ethereum.org/en/nft/), market your APIs to the application developers in the API bazzar, create an decentralized [autonomous organization (DAO)](https://ethereum.org/en/dao/) for your APIs for governance in which the API token holders i.e. you, investors, and users can participate, monitor your APIs and do multi-tenant billing and clearing on the Ethereum blockchain using smart contracts. 
+ The [Panacloud Dapp](https://www.panacloud.org/) and [protocol](https://github.com/panacloud/protocol) complements the [Panacloud CLI](https://github.com/panacloud/cli) and facilitates you, the API developer to: 
+ 
+ 1. [Tokenize](https://cryptonews.com/news/tokenization-crowdfunding-in-the-era-of-cryptocurrency-and-b-10972.htm) your APIs and raise funding for API development.
+ 2. Document your ownership of the API by issuing you an [NFT](https://ethereum.org/en/nft/).
+ 3. Market your APIs to the application developers in the API bazaar/store.
+ 4. Create a decentralized [autonomous organization (DAO)](https://ethereum.org/en/dao/) for your APIs for governance in which the API token holders i.e. you, investors, and users can participate.
+ 5. Monitor your APIs and do multi-tenant billing and clearing on the Ethereum blockchain using smart contracts. 
+ 6. Issue tokens to your API early adopters and users to incentivize them to subscribe and use your APIs and become a participant in the [Owership Economy](https://variant.fund/writing/the-ownership-economy-crypto-and-consumer-software).
+ 8. Cash out whenever you require liquidity by selling your API tokens.
+
