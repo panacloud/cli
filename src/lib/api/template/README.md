@@ -32,3 +32,8 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
  * `cdk synth`       emits the synthesized CloudFormation template
+
+
+ ## The Panacloud Dapp Complements Your APIs
+
+ The [Panacloud Dapp](https://www.panacloud.org/) complements the Panacloud CLI and facilitates the API developer to tokenize the APIs and raise funding for API development, document your ownership of the API by issuing you an [NFT](https://ethereum.org/en/nft/), market your APIs to the application developers in the API bazzar, create an decentralized [autonomous organization (DAO)](https://ethereum.org/en/dao/) for your APIs for governance in which the API token holders i.e. you, investors, and users can participate, monitor your APIs and do multi-tenant billing and clearing on the Ethereum blockchain using smart contracts. 
