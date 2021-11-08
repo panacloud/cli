@@ -3,7 +3,7 @@ type Tweet {
     # The tweet text. No more than 140 characters!
     body: String
     # When the tweet was published
-    date: Date
+    date: AWSDate
     # Who published the tweet
     Author: User
     # Views, retweets, likes, etc
@@ -17,7 +17,7 @@ type User {
     last_name: String
     full_name: String
     name: String @deprecated
-    avatar_url: Url
+    avatar_url: AWSURL
 }
 
 type Stat {
@@ -29,7 +29,7 @@ type Stat {
 
 type Notification {
     id: ID
-    date: Date
+    date: AWSDate
     type: String
 }
 
@@ -37,15 +37,10 @@ type Meta {
     count: Int
 }
 
-scalar Url
-scalar Date
-
 type Query {
     Tweet(id: ID!): Tweet
     Tweets(limit: Int, skip: Int, sort_field: String, sort_order: String): [Tweet]
     TweetsMeta: Meta
-    myDate:Date
-    myUrl:Url
     User(id: ID!): User
     Notifications(limit: Int): [Notification]
     NotificationsMeta: Meta
