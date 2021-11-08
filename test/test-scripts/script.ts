@@ -4,7 +4,7 @@ const fs = require("fs");
 (async () => {
   const cmdList = [
     `mkdir myApi `,
-    `cd myApi && ../bin/run init -t mateen7861`,
+    `cd myApi && ../bin/run init -t`,
     `cd myApi && yarn build`,
     `cd myApi && cdk bootstrap`,
     `

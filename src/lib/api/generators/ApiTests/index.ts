@@ -2,7 +2,7 @@ import { CodeMaker } from "codemaker";
 import { ApiModel, APITYPE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { Imports } from "../../constructs/ConstructsImports";
-
+import TestWriter from "./functions"
 type StackBuilderProps = {
   config: ApiModel;
 };
@@ -57,7 +57,6 @@ class APITests {
           code.closeBlock()
         code.closeBlock()
        
-         
         code.line();
 
         code.closeFile(this.outputFile);
@@ -81,6 +80,7 @@ class APITests {
         const code = new CodeMaker();
         const imp = new Imports(code);
         const ts = new TypeScriptWriter(code);
+        const tw = new TestWriter(code)
 
         const key = generalFields![i];
         
@@ -124,7 +124,7 @@ class APITests {
         },'const')
         
         
-        ts.writeApiTests(key)
+        tw.writeApiTests(key)
         code.line();
 
         code.closeFile(this.outputFile);

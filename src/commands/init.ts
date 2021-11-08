@@ -30,16 +30,23 @@ export default class Create extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
-    test: flags.string({ char: "t" }),
+    test: flags.boolean({ char: "t" }),
   };
 
   async run() {
     const { flags } = this.parse(Create);
     let config: Config;
-    if (flags.test && flags.test === "mateen7861") {
+    const placeholder = process.argv[1];
+    console.log("Process ",process.argv)
+    if (flags.test&&
+      !(
+        placeholder.includes("node_modules") ||
+        placeholder.includes("@panacloud") ||
+        placeholder.includes("npm")
+      )) {
       config = {
-        entityId: "assdsad",
-        api_token: "asd",
+        entityId: "testId",
+        api_token: "testToken",
         saasType: "API" as any,
         api: {
           template: "Define Your Own API" as any,
