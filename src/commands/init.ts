@@ -207,6 +207,6 @@ export default class Create extends Command {
 
     stopSpinner(formatting, "Formatting Done", false);
 
-    this.log(chalk.greenBright("Build your Billion Dollar API"));
+    this.log(chalk.greenBright("Now Start Building Yur Multi-Tenant Serverless Unicorn APIs"));
   }
 }
