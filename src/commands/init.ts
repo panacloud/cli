@@ -37,7 +37,6 @@ export default class Create extends Command {
     const { flags } = this.parse(Create);
     let config: Config;
     const placeholder = process.argv[1];
-    console.log("Process ",process.argv)
     if (flags.test&&
       !(
         placeholder.includes("node_modules") ||
