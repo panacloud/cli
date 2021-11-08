@@ -1,4 +1,4 @@
-# Generating CDK Project for a Simple Schema using Panacloud CLI
+# Build a Serverless API for a Simple Schema using Panacloud CLI
 
 Before getting started you need to install the following packages and libraries:
 
