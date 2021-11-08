@@ -1,4 +1,4 @@
-# Build a Serverless API for a Simple Schema using Panacloud CLI
+# Build a GraphQL Serverless API for a Simple Schema using Panacloud CLI and Deploy it on AWS
 
 Before getting started you need to install the following packages and libraries:
 
