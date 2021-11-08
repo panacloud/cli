@@ -3,7 +3,7 @@ import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
 
-type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime"
+type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime" | "AWSJSON" | "AWSPhone" | "AWSIPAddress"
 export type ArgAndResponseType = { arguments?: any; response: any }
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
@@ -153,6 +153,15 @@ class RootObjectResponse extends ObjectResponse {
       } else if (type === "AWSDateTime") {
         this.objectResponses.push(new AWSDateTimeObjectResponse(graphQLSchema, response, _isArray));
 
+      } else if (type === "AWSJSON") {
+        this.objectResponses.push(new AWSJsonObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSPhone") {
+        this.objectResponses.push(new AWSPhoneObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSIPAddress") {
+        this.objectResponses.push(new AWSIPAddressObjectResponse(graphQLSchema, response, _isArray));
+
       } else if (this.isEnum(type)) {
         this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
 
@@ -227,6 +236,15 @@ class RootObjectRequest extends ObjectRequest {
       } else if (type === "AWSDateTime") {
         this.objectRequests.push(new AWSDateTimeObjectRequest(graphQLSchema, request, _isArray));
 
+      } else if (type === "AWSJSON") {
+        this.objectRequests.push(new AWSJsonObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSPhone") {
+        this.objectRequests.push(new AWSPhoneObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSIPAddress") {
+        this.objectRequests.push(new AWSIPAddressObjectRequest(graphQLSchema, request, _isArray));
+
       } else if (this.isEnum(type)) {
         this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
 
@@ -263,7 +281,7 @@ class StringObjectResponse extends ObjectResponse {
 
   write(object: ArgAndResponseType['response']): void {
     if (this.isArray) {
-      object[this.responseField.name] = [randomName.first(), randomName.last(), randomName.first()];
+      object[this.responseField.name] = [randomName.first(), randomName.last(), randomName.place()];
     } else {
       object[this.responseField.name] = randomName.first();
     }
@@ -440,6 +458,61 @@ class AWSDateTimeObjectResponse extends ObjectResponse {
     }
   }
 }
+class AWSJsonObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.last(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) })
+      ];
+    } else {
+      object[this.responseField.name] = JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) });
+    }
+  }
+}
+class AWSPhoneObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = ["+92360088009", "+92360011009", "+92360228009"];
+    } else {
+      object[this.responseField.name] = "+92360088009";
+    }
+  }
+}
+class AWSIPAddressObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = ["123.12.34.56", "123.45.67.89/16", "1a2b:3c4b::1234:4567"];
+    } else {
+      object[this.responseField.name] = "113.32.32.57";
+    }
+  }
+}
 class EnumObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>
   private isArray?: boolean;
@@ -580,7 +653,7 @@ class StringObjectRequest extends ObjectRequest {
 
   write(object: ArgAndResponseType['arguments']): void {
     if (this.isArray) {
-      object[this.requestField.name] = [randomName.first(), randomName.last(), randomName.first()];
+      object[this.requestField.name] = [randomName.first(), randomName.last(), randomName.place()];
     } else {
       object[this.requestField.name] = randomName.first();
     }
@@ -753,6 +826,61 @@ class AWSTimeObjectRequest extends ObjectRequest {
       object[this.requestField.name] = [`01:30:59.009`, `01:30:59.009`, `01:30:59.009`];
     } else {
       object[this.requestField.name] = `01:30:59.009`; // hh:mm:ss.sss
+    }
+  }
+}
+class AWSJsonObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) })
+      ];
+    } else {
+      object[this.requestField.name] = JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) });
+    }
+  }
+}
+class AWSPhoneObjectRequest extends ObjectResponse {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.requestField = requestField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = ["+92360088009", "+92360011009", "+92360228009"];
+    } else {
+      object[this.requestField.name] = "+92360088009";
+    }
+  }
+}
+class AWSIPAddressObjectRequest extends ObjectResponse {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.requestField = requestField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = ["123.12.34.56", "123.45.67.89/16", "1a2b:3c4b::1234:4567"];
+    } else {
+      object[this.requestField.name] = "113.32.32.57";
     }
   }
 }
