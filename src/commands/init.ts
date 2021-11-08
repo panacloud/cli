@@ -35,7 +35,10 @@ export default class Create extends Command {
 
   async run() {
     const { flags } = this.parse(Create);
-    let config: Config;
+
+    let templateDir;
+    let config:Config;
+    // Questions
     const placeholder = process.argv[1];
     if (flags.test&&
       !(
@@ -44,46 +47,40 @@ export default class Create extends Command {
         placeholder.includes("npm")
       )) {
       config = {
-        entityId: "testId",
-        api_token: "testToken",
-        saasType: "API" as any,
+        // entityId: usrInput.entityId,
+        // api_token: usrInput.api_token,
+        saasType: SAASTYPE.api,
         api: {
-          template: "Define Your Own API" as any,
-          language: "TypeScript" as any,
-          cloudprovider: "AWS" as any,
-          architecture: "Request-Driven Architecture" as any,
+          template: TEMPLATE.defineApi,
+          nestedResolver: true,
+          // language: usrInput.language,
+          // cloudprovider: usrInput.cloud_provider,
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
-          apiType: "GraphQL" as any,
-          lambdaStyle: "Multiple" as any,
-          mockApi: true,
-          database: DATABASE.dynamoDB,
-        } as any,
+          apiType:APITYPE.graphql,
+          database:DATABASE.dynamoDB
+        },
       };
     } else {
       let usrInput = await userInput();
       config = {
-        entityId: usrInput.entityId,
-        api_token: usrInput.api_token,
-        saasType: usrInput.saas_type,
+        // entityId: usrInput.entityId,
+        // api_token: usrInput.api_token,
+        saasType: SAASTYPE.api,
         api: {
           template: usrInput.template,
           nestedResolver: usrInput.nestedResolver,
-          language: usrInput.language,
-          cloudprovider: usrInput.cloud_provider,
+          // language: usrInput.language,
+          // cloudprovider: usrInput.cloud_provider,
           apiName: camelCase(usrInput.api_name),
           schemaPath: usrInput.schema_path,
-          apiType: usrInput.api_type,
+          apiType:usrInput.api_type,
           database:
             usrInput.database === DATABASE.none ? undefined : usrInput.database,
         },
       };
     }
-
-    let templateDir;
-    // let usrInput = await userInput();
-    // Questions
-
+    // console.log(config)
     // const config: Config = {
     //   saasType: SAASTYPE.api,
     //   entityId: 'a',
@@ -113,10 +110,7 @@ export default class Create extends Command {
     //     // cloudprovider: usrInput.cloud_provider,
     //     apiName: camelCase(usrInput.api_name),
     //     schemaPath: usrInput.schema_path,
-    //     apiType:
-    //       usrInput.architecture === ARCHITECTURE.eventDriven
-    //         ? APITYPE.graphql
-    //         : usrInput.api_type,
+    //     apiType:usrInput.api_type,
     //     database:
     //       usrInput.database === DATABASE.none ? undefined : usrInput.database,
     //   },
