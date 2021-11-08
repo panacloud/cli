@@ -3,7 +3,7 @@ import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
 
-type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime"
+type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime"
 export type ArgAndResponseType = { arguments?: any; response: any }
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
@@ -150,6 +150,9 @@ class RootObjectResponse extends ObjectResponse {
       } else if (type === "AWSTime") {
         this.objectResponses.push(new AWSTimeObjectResponse(graphQLSchema, response, _isArray));
 
+      } else if (type === "AWSDateTime") {
+        this.objectResponses.push(new AWSDateTimeObjectResponse(graphQLSchema, response, _isArray));
+
       } else if (this.isEnum(type)) {
         this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
 
@@ -220,6 +223,9 @@ class RootObjectRequest extends ObjectRequest {
 
       } else if (type === "AWSTime") {
         this.objectRequests.push(new AWSTimeObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSDateTime") {
+        this.objectRequests.push(new AWSDateTimeObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (this.isEnum(type)) {
         this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
@@ -414,6 +420,23 @@ class AWSTimeObjectResponse extends ObjectResponse {
       object[this.responseField.name] = [`01:30:59.009`, `01:30:59.009`, `01:30:59.009`];
     } else {
       object[this.responseField.name] = `01:30:59.009`; // hh:mm:ss.sss
+    }
+  }
+}
+class AWSDateTimeObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [new Date().toISOString(), new Date().toISOString(), new Date().toISOString()];
+    } else {
+      object[this.responseField.name] = new Date().toISOString(); // YYYY-MM-DDThh:mm:ss.sssZ
     }
   }
 }
@@ -696,6 +719,23 @@ class AWSDateObjectRequest extends ObjectRequest {
       object[this.requestField.name] = [`2021-10-08`, `2021-10-09`, `2021-10-10`];
     } else {
       object[this.requestField.name] = `2021-10-08`; // YYYY-MM-DD
+    }
+  }
+}
+class AWSDateTimeObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [new Date().toISOString(), new Date().toISOString(), new Date().toISOString()];
+    } else {
+      object[this.requestField.name] = new Date().toISOString(); // YYYY-MM-DDThh:mm:ss.sssZ
     }
   }
 }
