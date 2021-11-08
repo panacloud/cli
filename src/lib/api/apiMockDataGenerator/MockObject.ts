@@ -167,7 +167,6 @@ class RootObjectResponse extends ObjectResponse {
 
         /* if the field type is nested and come to resolve again */
       } else if (this.resolvedCustomObjectTypes.includes(type)) {
-        // } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
         this.objectResponses.push(new NestedCustomObjectResponse(graphQLSchema, response, _isArray));
 
         /* if the field type is interface*/
@@ -617,8 +616,17 @@ class CustomObjectResponse extends ObjectResponse {
     const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     resolvedCustomObjectTypes?.push(type);
     const objectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
-    const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
-    this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
+    try {
+      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
+    } catch (error: any) {
+      // console.log("error: 946", error.message);
+      if (error.message.includes("objectType.getFields is not a function")) {
+        throw Error(objectType.toString() + " type in your graphql schema is not supported in mock data generator");
+      }
+      throw error;
+    }
+
   }
 
   write(object: ArgAndResponseType['response']) {
@@ -939,9 +947,14 @@ class CustomObjectRequest extends ObjectRequest {
     const type = requestField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     resolvedCustomObjectTypes?.push(type)
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
-    const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
+    try {
+      const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
+      this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
+    } catch (error: any) {
+      console.log("error: 946", error.toString())
+      throw Error(error)
+    }
 
-    this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
   }
 
   write(object: ArgAndResponseType['arguments']) {
