@@ -1,4 +1,4 @@
-const { exec,execSync } = require("child_process");
+const { exec, execSync } = require("child_process");
 const fs = require("fs");
 
 (async () => {
@@ -10,20 +10,20 @@ const fs = require("fs");
     `
     cd myApi && cdk deploy --ci --require-approval never --colors \
   --outputs-file ./tests/apiTests/appsyncCredentials.json`,
-  `cd myApi && yarn test --colors`,
-  `cd myApi && yes | cdk destroy --colors`,
-  `rm -rf myApi`
+    `cd myApi && yarn test --colors`,
+    `cd myApi && yes | cdk destroy --colors`,
+    `rm -rf myApi`
   ];
-  for(const cmd of cmdList){
+  for (const cmd of cmdList) {
     await runCommand(cmd)
   }
- 
+
 })();
 
 async function runCommand(cmd: string): Promise<void> {
   return new Promise(function (resolve) {
-    exec(cmd,async (err: any, stdout: any, stderr: any) => {
-      if(err){
+    exec(cmd, async (err: any, stdout: any, stderr: any) => {
+      if (err) {
         console.log(stdout);
         console.log(stderr);
         console.log(err)

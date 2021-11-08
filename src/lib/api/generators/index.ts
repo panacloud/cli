@@ -63,18 +63,19 @@ export const generator = async (
     await mockApiTestCollections({ config, dummyData });
     await EditableMockApiTestCollections({ config, dummyData, type });
     await customLambda({ config, type });
-  
+
   }
-  if(config.api.apiType === APITYPE.graphql){
-    apiTests({config})
-    execSync(`npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`)
-    fs.writeFile("./tests/apiTests/appsyncCredentials.json",`{
+  if (config.api.apiType === APITYPE.graphql) {
+    apiTests({ config })
+
+    execSync(`npx gql-generator npx gqlg --schemaFilePath ../test/test-schemas/todo.graphql --destDirPath ./tests/apiTests/graphql/`)
+    fs.writeFile("./tests/apiTests/appsyncCredentials.json", `{
       "${config.api.apiName}Stack" : {
         "apiUrl":"",
         "apiKey":""
       }
-    }`,async (err:any)=>{
-      if(err){
+    }`, async (err: any) => {
+      if (err) {
         console.log(err)
         process.exit(1)
       }
@@ -84,6 +85,6 @@ export const generator = async (
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
     await eventBridgeConstruct({ config });
   }
-  
+
 };
 

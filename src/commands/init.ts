@@ -1,5 +1,5 @@
-import { Command, flags } from "@oclif/command";
-import { startSpinner, stopSpinner } from "../lib/spinner";
+import { Command, flags } from '@oclif/command'
+import { startSpinner, stopSpinner } from "../lib/spinner"
 import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
 import {
@@ -37,10 +37,10 @@ export default class Create extends Command {
     const { flags } = this.parse(Create);
 
     let templateDir;
-    let config:Config;
+    let config: Config;
     // Questions
     const placeholder = process.argv[1];
-    if (flags.test&&
+    if (flags.test &&
       !(
         placeholder.includes("node_modules") ||
         placeholder.includes("@panacloud") ||
@@ -57,8 +57,8 @@ export default class Create extends Command {
           // cloudprovider: usrInput.cloud_provider,
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
-          apiType:APITYPE.graphql,
-          database:DATABASE.dynamoDB
+          apiType: APITYPE.graphql,
+          database: DATABASE.dynamoDB
         },
       };
     } else {
@@ -74,12 +74,13 @@ export default class Create extends Command {
           // cloudprovider: usrInput.cloud_provider,
           apiName: camelCase(usrInput.api_name),
           schemaPath: usrInput.schema_path,
-          apiType:usrInput.api_type,
+          apiType: usrInput.api_type,
           database:
             usrInput.database === DATABASE.none ? undefined : usrInput.database,
         },
       };
     }
+
     // console.log(config)
     // const config: Config = {
     //   saasType: SAASTYPE.api,
