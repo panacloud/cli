@@ -65,21 +65,6 @@ export const generator = async (
   }
   if (config.api.apiType === APITYPE.graphql) {
     apiTests({ config });
-    // fs.writeFile(
-    //   "./tests/apiTests/appsyncCredentials.json",
-    //   `{
-    //   "${config.api.apiName}Stack" : {
-    //     "apiUrl":"",
-    //     "apiKey":""
-    //   }
-    // }`,
-    //   async (err: any) => {
-    //     if (err) {
-    //       console.log(err);
-    //       process.exit(1);
-    //     }
-    //   }
-    // );
   }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
