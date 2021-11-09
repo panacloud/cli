@@ -19,8 +19,7 @@ import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
 import { apiTests } from "./ApiTests";
-import { execSync } from "child_process";
-const fs = require("fs")
+const fs = require("fs");
 export const generator = async (
   config: ApiModel,
   panacloudConfig: PanacloudconfigFile,
@@ -63,28 +62,27 @@ export const generator = async (
     await mockApiTestCollections({ config, dummyData });
     await EditableMockApiTestCollections({ config, dummyData, type });
     await customLambda({ config, type });
-
   }
   if (config.api.apiType === APITYPE.graphql) {
-    apiTests({ config })
-
-    execSync(`npx gql-generator npx gqlg --schemaFilePath ../test/test-schemas/todo.graphql --destDirPath ./tests/apiTests/graphql/`)
-    fs.writeFile("./tests/apiTests/appsyncCredentials.json", `{
+    apiTests({ config });
+    fs.writeFile(
+      "./tests/apiTests/appsyncCredentials.json",
+      `{
       "${config.api.apiName}Stack" : {
         "apiUrl":"",
         "apiKey":""
       }
-    }`, async (err: any) => {
-      if (err) {
-        console.log(err)
-        process.exit(1)
+    }`,
+      async (err: any) => {
+        if (err) {
+          console.log(err);
+          process.exit(1);
+        }
       }
-    })
+    );
   }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
     await eventBridgeConstruct({ config });
   }
-
 };
-

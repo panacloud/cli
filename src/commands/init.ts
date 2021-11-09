@@ -1,5 +1,6 @@
-import { Command, flags } from '@oclif/command'
-import { startSpinner, stopSpinner } from "../lib/spinner"
+import { Command, flags } from "@oclif/command";
+import { execSync } from "child_process";
+import { startSpinner, stopSpinner } from "../lib/spinner";
 import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
 import {
@@ -40,12 +41,14 @@ export default class Create extends Command {
     let config: Config;
     // Questions
     const placeholder = process.argv[1];
-    if (flags.test &&
+    if (
+      flags.test &&
       !(
         placeholder.includes("node_modules") ||
         placeholder.includes("@panacloud") ||
         placeholder.includes("npm")
-      )) {
+      )
+    ) {
       config = {
         // entityId: usrInput.entityId,
         // api_token: usrInput.api_token,
@@ -58,7 +61,7 @@ export default class Create extends Command {
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
-          database: DATABASE.dynamoDB
+          database: DATABASE.dynamoDB,
         },
       };
     } else {
@@ -80,42 +83,6 @@ export default class Create extends Command {
         },
       };
     }
-
-    // console.log(config)
-    // const config: Config = {
-    //   saasType: SAASTYPE.api,
-    //   entityId: 'a',
-    //   "api_token": "d",
-    //   api: {
-    //     "cloudprovider": CLOUDPROVIDER.aws,
-    //     "language": LANGUAGE.typescript,
-    //     "template": TEMPLATE.defineApi,
-    //     "schemaPath": "schema.graphql",
-    //     "apiName": "myApi",
-    //     "nestedResolver": true,
-    //     // database:undefined,
-    //     "database": DATABASE.none,
-    //     apiType: APITYPE.graphql,
-    //   }
-    // }
-
-    // Config to generate code.
-    // const config: Config = {
-    //   // entityId: usrInput.entityId,
-    //   // api_token: usrInput.api_token,
-    //   saasType: SAASTYPE.api,
-    //   api: {
-    //     template: usrInput.template,
-    //     nestedResolver: usrInput.nestedResolver,
-    //     // language: usrInput.language,
-    //     // cloudprovider: usrInput.cloud_provider,
-    //     apiName: camelCase(usrInput.api_name),
-    //     schemaPath: usrInput.schema_path,
-    //     apiType:usrInput.api_type,
-    //     database:
-    //       usrInput.database === DATABASE.none ? undefined : usrInput.database,
-    //   },
-    // };
 
     // Error handling
     const validating = startSpinner("Validating Everything");
@@ -161,6 +128,19 @@ export default class Create extends Command {
       }
     }
 
+    const setUpForTest = startSpinner("Setup For Test");
+
+    try {
+      exec(
+        `npx gql-generator npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`
+      );
+    } catch (error) {
+      stopSpinner(setUpForTest, `Error: ${error}`, true);
+      process.exit(1);
+    }
+
+    stopSpinner(setUpForTest, "Generating Types", false);
+
     const generatingTypes = startSpinner("Generating Types");
 
     try {
@@ -170,7 +150,7 @@ export default class Create extends Command {
       process.exit(1);
     }
 
-    stopSpinner(generatingTypes, "Generating Types", false);
+    stopSpinner(generatingTypes, "Generated Types", false);
 
     const formatting = startSpinner("Formatting Code");
     // Formatting files.
@@ -202,6 +182,10 @@ export default class Create extends Command {
 
     stopSpinner(formatting, "Formatting Done", false);
 
-    this.log(chalk.greenBright("Now Start Building Yur Multi-Tenant Serverless Unicorn APIs"));
+    this.log(
+      chalk.greenBright(
+        "Now Start Building Yur Multi-Tenant Serverless Unicorn APIs"
+      )
+    );
   }
 }
