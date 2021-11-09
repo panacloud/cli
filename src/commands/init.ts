@@ -132,7 +132,7 @@ export default class Create extends Command {
 
     try {
       exec(
-        `npx gql-generator npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`
+        `npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`
       );
     } catch (error) {
       stopSpinner(setUpForTest, `Error: ${error}`, true);
