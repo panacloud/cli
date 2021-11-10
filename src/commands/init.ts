@@ -132,7 +132,7 @@ export default class Create extends Command {
 
     try {
       exec(
-        `npx gqlg --schemaFilePath ${config.api.schemaPath} --destDirPath ./tests/apiTests/graphql/`
+        `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
       );
     } catch (error) {
       stopSpinner(setUpForTest, `Error: ${error}`, true);
