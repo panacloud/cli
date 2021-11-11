@@ -208,6 +208,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
         }
       }
     );
+    
    
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
@@ -272,6 +273,21 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);
   }
+  fs.writeFileSync(
+    "./tests/apiTests/appsyncCredentials.json",
+    `{
+    "${config.api.apiName}Stack" : {
+      "apiUrl":"",
+      "apiKey":""
+    }
+  }`,
+   (err: any) => {
+      if (err) {
+        console.log(err);
+        process.exit(1);
+      }
+    }
+  )
 
   stopSpinner(installingModules, "Modules installed", false);
 }

@@ -149,21 +149,7 @@ export default class Create extends Command {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
-    fs.writeFile(
-      "./tests/apiTests/appsyncCredentials.json",
-      `{
-      "${config.api.apiName}Stack" : {
-        "apiUrl":"",
-        "apiKey":""
-      }
-    }`,
-     (err: any) => {
-        if (err) {
-          console.log(err);
-          process.exit(1);
-        }
-      }
-    )
+
     stopSpinner(generatingTypes, "Generated Types", false);
 
     const formatting = startSpinner("Formatting Code");
