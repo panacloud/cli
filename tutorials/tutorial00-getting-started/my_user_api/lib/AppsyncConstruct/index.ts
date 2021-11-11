@@ -119,5 +119,7 @@ type Mutation {
 
     this.api_url = myUserApi_appsync.attrGraphQlUrl;
     this.api_key = myUserApi_apiKey.attrApiKey;
+
+
   }
 }
