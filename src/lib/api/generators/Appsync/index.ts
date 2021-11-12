@@ -41,10 +41,11 @@ class AppsyncConstruct {
     ];
 
     imp.importAppsync();
+    imp.importCfnOutput();
     imp.importIam();
 
-    const appsyncProperties: Property[] = appsyncPropertiesHandler();
-
+    //const appsyncProperties: Property[] = appsyncPropertiesHandler();
+    const appsyncProperties: Property[] = [];
 
     let ConstructProps: ConstructPropsType[] = [];
     
