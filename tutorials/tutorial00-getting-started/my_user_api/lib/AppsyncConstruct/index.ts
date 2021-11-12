@@ -1,4 +1,5 @@
 import { aws_appsync as appsync } from "aws-cdk-lib";
+import { CfnOutput as CfnOutput } from "aws-cdk-lib";
 import { aws_iam as iam } from "aws-cdk-lib";
 import { Construct } from "constructs";
 interface AppsyncProps {
@@ -7,9 +8,6 @@ interface AppsyncProps {
 }
 
 export class AppsyncConstruct extends Construct {
-  public api_url: string;
-  public api_key: string;
-
   constructor(scope: Construct, id: string, props?: AppsyncProps) {
     super(scope, id);
 
@@ -117,9 +115,15 @@ type Mutation {
     addUser_resolver.node.addDependency(myUserApi_schema);
     addUser_resolver.node.addDependency(ds_myUserApi_addUser);
 
-    this.api_url = myUserApi_appsync.attrGraphQlUrl;
-    this.api_key = myUserApi_apiKey.attrApiKey;
-
-
+    new CfnOutput(this, "APIGraphQlURL", {
+      value: myUserApi_appsync.attrGraphQlUrl,
+      description: "The URL of the GraphQl API",
+      exportName: "graphQlAPIURL",
+    });
+    new CfnOutput(this, "GraphQLAPIKey", {
+      value: myUserApi_apiKey.attrApiKey || "",
+      description: "The API Key of the GraphQl API",
+      exportName: "graphQlAPIKey",
+    });
   }
 }

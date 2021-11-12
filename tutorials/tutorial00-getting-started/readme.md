@@ -77,6 +77,8 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ## Deploying the Serverless API Mocks in the AWS Cloud
 
+Note: The official documentation of CDK version 2 is available [here](https://docs.aws.amazon.com/cdk/api/v2/)
+
 Before we proceed to deploy the project lets first understand what it contains. 
 
 If you have already not done so, you need to [bootstrap](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html) the cdk by using this command:
@@ -85,9 +87,13 @@ cdk bootstrap
 
 Once we are done with bootstrapping we want to deploy the Mock Serverless APIs. The project is already generated for you, you just have to deploy it:
 
-cdk deploy
+npm run deploy
 
+After deploying check out the `cdk-outputs.json` file in the project root it contains the URL and Key of the API.
 
+When you want to destroy the deployed stack just give this command:
+
+npm run destroy
 
 
 ## Running Automated API Tests Against the Mock APIs
