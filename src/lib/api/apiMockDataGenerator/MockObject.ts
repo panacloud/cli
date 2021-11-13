@@ -2,6 +2,7 @@ import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArg
 import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
+let startCase = require("lodash/startCase");
 
 type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime" | "AWSJSON" | "AWSPhone" | "AWSIPAddress"
 export type ArgAndResponseType = { arguments?: any; response: any }
@@ -535,7 +536,11 @@ class EnumObjectResponse extends ObjectResponse {
   }
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`; // ==> ApiSaasType.Music
+    let enum_imp: string = startCase(this.enumType);   ////Modifying case specific to codegen
+    if(enum_imp.includes(" ")){
+      enum_imp = enum_imp.split(" ").join("_")
+    }
+    return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`; // ==> ApiSaasType.Music
   }
 }
 class NestedCustomObjectResponse extends ObjectResponse {
@@ -916,7 +921,11 @@ class EnumObjectRequest extends ObjectRequest {
 
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    let enum_imp: string = startCase(this.enumType);   ////Modifying case specific to codegen
+    if(enum_imp.includes(" ")){
+      enum_imp = enum_imp.split(" ").join("_")
+    }
+    return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
   }
 
 }
