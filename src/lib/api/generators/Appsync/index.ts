@@ -41,7 +41,7 @@ class AppsyncConstruct {
     ];
 
     imp.importAppsync();
-    imp.importCfnOutput();
+    // imp.importCfnOutput();
     imp.importIam();
 
     //const appsyncProperties: Property[] = appsyncPropertiesHandler();
@@ -92,9 +92,7 @@ class AppsyncConstruct {
         appsyncResolverhandler(this.config, this.code);
         this.code.line();
         appsyncPropertiesInitializer(apiName,this.code)
-        this.code.line();
-        appsyncCredentialsOutput(this.code)
-        
+        this.code.line();        
       },
       ConstructProps,
       appsyncProperties
