@@ -1,5 +1,4 @@
 const { exec, execSync } = require("child_process");
-const fs = require("fs");
 
 (async () => {
   const cmdList = [
@@ -12,12 +11,20 @@ const fs = require("fs");
   --outputs-file ./tests/apiTests/appsyncCredentials.json`,
     `cd myApi && yarn test --colors`,
     `cd myApi && yes | cdk destroy --colors`,
-    `rm -rf myApi`
+    `rm -rf myApi`,
   ];
   for (const cmd of cmdList) {
-    await runCommand(cmd)
+    if (
+      !(
+        cmd === `cd myApi && ../bin/run init -t` && process.platform === "win32"
+      )
+    ) {
+      await runCommand(cmd);
+    } else {
+      await runCommand(`cd myApi && ..\\bin\\run init -t`);
+      continue;
+    }
   }
-
 })();
 
 async function runCommand(cmd: string): Promise<void> {
@@ -26,9 +33,9 @@ async function runCommand(cmd: string): Promise<void> {
       if (err) {
         console.log(stdout);
         console.log(stderr);
-        console.log(err)
-        // execSync(`rm -rf myApi`)
-        process.exit(1)
+        console.log(err);
+        execSync(`rm -rf myApi`);
+        process.exit(1);
       }
       console.log(stdout);
       console.log(stderr);
