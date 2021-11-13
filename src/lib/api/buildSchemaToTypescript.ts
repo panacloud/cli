@@ -50,15 +50,20 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
               },
             ];
 
+        if(responseTypeName === "Int"){
+          responseTypeName = 'number'
+        }
+
         let responseType = isArray(field.type.toString())
           // field.type.inspect().includes("[") &&
           //   field.type.inspect().includes("]")
           ? `${responseTypeName}[]`
           : `${responseTypeName}`;
 
+
         field.args.length > 0
-          ? typeStr = { "fields": { [type]: [{ arguments: `${description}${upperFirst(type)}Args`, response: responseType }] } }
-          : typeStr = { "fields": { [type]: [{ arguments: {}, response: responseType }] } }
+          ? typeStr = { "fields": { [type]: [{ arguments: `${description}${upperFirst(type)}Args`, response: upperFirst(responseType) }] } }
+          : typeStr = { "fields": { [type]: [{ arguments: {}, response: upperFirst(responseType) }] } }
 
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
@@ -76,23 +81,22 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         // if (responseTypeName !== "String" &&
         //     responseTypeName !== "Int" &&
         //     responseTypeName !== "ID") {
-        //       console.log("responseTypeName ", responseTypeName)
+              console.log("responseTypeName ", responseTypeName)
 
               if (
                 (responseTypeName === "String" ||
-                  responseTypeName === "Int" ||
-                  responseTypeName === "ID") &&
-                field.args.length !== 0
-              ) {
-                console.log("responseTypeName not qualt ", responseTypeName)
+                  responseTypeName === "number" ||
+                  responseTypeName === "ID" ||
+                  responseTypeName === "Boolean") &&
+                field.args.length !== 0) {
                 allImports.push(`${description}${upperFirst(type)}Args`);
               } else if (field.args.length > 0) {
-                console.log("responseTypeName greater ", responseTypeName)
                 allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
                 allImports.push(`${description}${upperFirst(type)}Args`);
               } else {
-                console.log("responseTypeName else ", responseTypeName)
-                allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
+                if((responseTypeName !== "String" && responseTypeName !== "number" && responseTypeName !== "ID" && responseTypeName !== "Boolean")){
+                  allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
+                }
               }
             // }
 
