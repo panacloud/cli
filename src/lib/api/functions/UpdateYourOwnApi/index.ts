@@ -4,10 +4,10 @@ import { Config, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
-import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
+import { microServicesDirectiveFieldSplitter } from "../../directives/microServicesDirective";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
-import { AsyncDirective, asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
+import { AsyncDirective, asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../directives/asyncDirective";
 
 const path = require("path");
 const fs = require("fs");
