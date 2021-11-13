@@ -5,11 +5,11 @@ export const testCollections: TestCollection = {
     addUser: [
       {
         arguments: {
-          name: "Camella",
+          name: "Olenka",
         },
         response: {
-          id: "Karolina",
-          name: "Faydra",
+          id: "Wandis",
+          name: "Leonie",
         },
       },
     ],
