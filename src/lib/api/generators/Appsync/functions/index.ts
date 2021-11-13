@@ -126,3 +126,15 @@ export const appsyncPropertiesInitializer = (
   });`);
   
 };
+
+export const appsyncCredentialsOutput= (code: CodeMaker)=>{
+  code.line(`new CfnOutput(this, "API_URL", {`)
+  code.line( " value: this.api_url")
+  code.line("});")
+  code.line()
+  code.line(`new CfnOutput(this, "API_KEY", {`)
+  code.line( "value: this.api_key")
+  code.line("});")
+  code.line()
+  
+}

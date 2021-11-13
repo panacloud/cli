@@ -23,7 +23,7 @@ export default class Create extends Command {
     const validating = startSpinner("Validating Everything");
 
     const configCli: Config = fse.readJsonSync("codegenconfig.json");
-
+    
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api.apiType === APITYPE.graphql) {
         if (configCli.api?.template === TEMPLATE.defineApi) {
@@ -58,6 +58,7 @@ export default class Create extends Command {
     fse.removeSync("lambdaLayer/mockApi", { recursive: true });
     fse.removeSync("consumer_lambda", { recursive: true });
     fse.removeSync("lib", { recursive: true });
+    fse.removeSync("tests/apiTests",{recursive:true})
 
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api?.template === TEMPLATE.defineApi) {

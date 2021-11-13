@@ -18,7 +18,8 @@ import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
-
+import { apiTests } from "./ApiTests";
+const fs = require("fs");
 export const generator = async (
   config: ApiModel,
   panacloudConfig: PanacloudconfigFile,
@@ -61,6 +62,9 @@ export const generator = async (
     await mockApiTestCollections({ config, dummyData });
     await EditableMockApiTestCollections({ config, dummyData, type });
     await customLambda({ config, type });
+  }
+  if (config.api.apiType === APITYPE.graphql) {
+    apiTests({ config });
   }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
