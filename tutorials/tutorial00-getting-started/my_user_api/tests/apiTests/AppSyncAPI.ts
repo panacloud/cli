@@ -1,5 +1,5 @@
 import validUrl from "valid-url";
-import appsyncCredentials from "./appsyncCredentials.json";
+import appsyncCredentials from "../../cdk-outputs.json";
 const values: string[] = Object.values(
   Object.entries(appsyncCredentials)[0][1]
 );
