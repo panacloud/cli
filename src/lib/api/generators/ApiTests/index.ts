@@ -25,7 +25,7 @@ class APITests {
 
     code.openFile(this.outputFile);
     ts.writeAllImports("valid-url", "validUrl");
-    ts.writeAllImports("./appsyncCredentials.json", "appsyncCredentials");
+    ts.writeAllImports("../../cdk-outputs.json", "appsyncCredentials");
 
     ts.writeVariableDeclaration(
       {

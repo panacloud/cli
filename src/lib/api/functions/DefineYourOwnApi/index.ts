@@ -207,11 +207,10 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     );
 
     fs.writeFileSync(
-      "./tests/apiTests/appsyncCredentials.json",
+      "./cdk-outputs.json",
       `{
       "${config.api.apiName}Stack" : {
-        "apiUrl":"",
-        "apiKey":""
+       
       }
     }`,
       (err: any) => {

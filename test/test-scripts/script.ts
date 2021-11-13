@@ -8,7 +8,7 @@ const { exec, execSync } = require("child_process");
     `cd myApi && cdk bootstrap`,
     `
     cd myApi && cdk deploy --ci --require-approval never --colors \
-  --outputs-file ./tests/apiTests/appsyncCredentials.json`,
+  --outputs-file ./cdk-outputs.json`,
     `cd myApi && yarn test --colors`,
     `cd myApi && yes | cdk destroy --colors`,
     `rm -rf myApi`,
