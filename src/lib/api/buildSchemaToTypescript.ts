@@ -78,26 +78,21 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         typeStrings = { ...typeStrings, [type]: typeStr };
 
 
-        // if (responseTypeName !== "String" &&
-        //     responseTypeName !== "Int" &&
-        //     responseTypeName !== "ID") {
-              console.log("responseTypeName ", responseTypeName)
-
-              if (
-                (responseTypeName === "String" ||
-                  responseTypeName === "number" ||
-                  responseTypeName === "ID" ||
-                  responseTypeName === "Boolean") &&
-                field.args.length !== 0) {
-                allImports.push(`${description}${upperFirst(type)}Args`);
-              } else if (field.args.length > 0) {
-                allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
-                allImports.push(`${description}${upperFirst(type)}Args`);
-              } else {
-                if((responseTypeName !== "String" && responseTypeName !== "number" && responseTypeName !== "ID" && responseTypeName !== "Boolean")){
-                  allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
-                }
-              }
+        if (
+          (responseTypeName === "String" ||
+            responseTypeName === "number" ||
+            responseTypeName === "ID" ||
+            responseTypeName === "Boolean") &&
+          field.args.length !== 0) {
+          allImports.push(`${description}${upperFirst(type)}Args`);
+        } else if (field.args.length > 0) {
+          allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
+          allImports.push(`${description}${upperFirst(type)}Args`);
+        } else {
+          if((responseTypeName !== "String" && responseTypeName !== "number" && responseTypeName !== "ID" && responseTypeName !== "Boolean")){
+            allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
+          }
+        }
             // }
 
 
