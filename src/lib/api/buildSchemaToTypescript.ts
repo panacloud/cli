@@ -1,4 +1,5 @@
 let upperFirst = require("lodash/upperFirst");
+let startCase = require("lodash/startCase");
 import { GraphQLFieldMap, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, isInterfaceType } from 'graphql';
 const fse = require("fs-extra");
 
@@ -68,7 +69,11 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
             if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
-              allEnumImports.push(v.name);
+              let enum_imp: string = startCase(v.name);
+              if(enum_imp.includes(" ")){
+                enum_imp = enum_imp.split(" ").join("_")
+              }
+              allEnumImports.push(enum_imp);
             }
           }
         });
