@@ -1,5 +1,9 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE } from "../../../../utils/constants";
+import {
+  ApiModel,
+  APITYPE,
+  async_response_mutName,
+} from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { Imports } from "../../constructs/ConstructsImports";
 import TestWriter from "./functions";
@@ -84,67 +88,69 @@ class APITests {
 
         const isMutation = mutationFields?.includes(key);
 
-        code.openFile(this.outputFile);
-        ts.writeImports("chai", ["expect"]);
-        ts.writeAllImports("supertest", "supertest");
-        ts.writeImports("./AppSyncAPI", ["AppsyncAPI"]);
-        ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollections`, [
-          "testCollections",
-        ]);
-        ts.writeVariableDeclaration(
-          {
-            name: "{API_KEY,API_URL}",
-            typeName: "",
-            initializer: "AppsyncAPI.getInstance()",
-            export: false,
-          },
-          "const"
-        );
-        ts.writeVariableDeclaration(
-          {
-            name: "request",
-            typeName: "",
-            initializer: "supertest(API_URL);",
-            export: false,
-          },
-          "const"
-        );
-        ts.writeVariableDeclaration(
-          {
-            name: "args",
-            typeName: "",
-            initializer: `testCollections.fields.${key}[0].arguments`,
-            export: false,
-          },
-          "const"
-        );
-        ts.writeVariableDeclaration(
-          {
-            name: "response",
-            typeName: "",
-            initializer: `testCollections.fields.${key}[0].response`,
-            export: false,
-          },
-          "const"
-        );
-        ts.writeVariableDeclaration(
-          {
-            name: `{${key}}`,
-            typeName: "",
-            initializer: `${
-              isMutation
-                ? "require('./graphql/mutations')"
-                : "require('./graphql/queries')"
-            }`,
-            export: false,
-          },
-          "const"
-        );
+        if (key !== async_response_mutName) {
+          code.openFile(this.outputFile);
+          ts.writeImports("chai", ["expect"]);
+          ts.writeAllImports("supertest", "supertest");
+          ts.writeImports("./AppSyncAPI", ["AppsyncAPI"]);
+          ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollections`, [
+            "testCollections",
+          ]);
+          ts.writeVariableDeclaration(
+            {
+              name: "{API_KEY,API_URL}",
+              typeName: "",
+              initializer: "AppsyncAPI.getInstance()",
+              export: false,
+            },
+            "const"
+          );
+          ts.writeVariableDeclaration(
+            {
+              name: "request",
+              typeName: "",
+              initializer: "supertest(API_URL);",
+              export: false,
+            },
+            "const"
+          );
+          ts.writeVariableDeclaration(
+            {
+              name: "args",
+              typeName: "",
+              initializer: `testCollections.fields.${key}[0].arguments`,
+              export: false,
+            },
+            "const"
+          );
+          ts.writeVariableDeclaration(
+            {
+              name: "response",
+              typeName: "",
+              initializer: `testCollections.fields.${key}[0].response`,
+              export: false,
+            },
+            "const"
+          );
+          ts.writeVariableDeclaration(
+            {
+              name: `{${key}}`,
+              typeName: "",
+              initializer: `${
+                isMutation
+                  ? "require('./graphql/mutations')"
+                  : "require('./graphql/queries')"
+              }`,
+              export: false,
+            },
+            "const"
+          );
 
-        tw.writeApiTests(key);
-        code.line();
+          tw.writeApiTests(key);
+          code.line();
 
-        code.closeFile(this.outputFile);
+          code.closeFile(this.outputFile);
+        }
       });
 
       this.outputDir = `tests/apiTests/`;
