@@ -9,7 +9,10 @@ import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
-import { asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
+import {
+  asyncDirectiveFieldSplitter,
+  asyncDirectiveResponseCreator,
+} from "../../asyncDirective";
 const path = require("path");
 const fs = require("fs");
 const YAML = require("yamljs");
@@ -41,8 +44,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         fse.copy(`${templateDir}/${file}`, ".gitignore");
-      }
-      else {
+      } else {
         await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
@@ -94,13 +96,14 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
     await mkdirRecursiveAsync(`editable_src/aspects`);
     await mkdirRecursiveAsync(`editable_src/lambda`);
+    await mkdirRecursiveAsync(`tests`);
+    await mkdirRecursiveAsync(`tests/apiTests`);
 
     fs.readdirSync(templateDir).forEach(async (file: any) => {
       if (file === "lambdaLayer") {
         await fse.copy(`${templateDir}/${file}`, "editable_src/lambdaLayer");
       }
     });
-
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -143,8 +146,6 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     });
 
-
-
     let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
 
     const mockObject = new RootMockObject(gqlSchema);
@@ -168,35 +169,31 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.generalFields = fieldSplitterOutput.generalFields;
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
+    const asyncFieldSplitterOutput =
+      asyncDirectiveFieldSplitter(mutationsFields);
 
-    const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
+    const newSchema = asyncDirectiveResponseCreator(
+      mutationsFields,
+      subscriptionsFields,
+      schema,
+      asyncFieldSplitterOutput
+    );
 
-
-    const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
-    
-
-    if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length>0){
-
-
-     gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
-
+    if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length > 0) {
+      gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
 
       queriesFields = gqlSchema.getQueryType()?.getFields();
       mutationsFields = gqlSchema.getMutationType()?.getFields();
       introspection = introspectionFromSchema(gqlSchema);
-  
+
       model.api.schema = introspection;
       model.api.queiresFields = [...Object.keys(queriesFields)];
       model.api.mutationFields = [...Object.keys(mutationsFields)];
-
     }
 
+    model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`;
 
-    model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`
-
-    model.api.asyncFields = asyncFieldSplitterOutput
-
-
+    model.api.asyncFields = asyncFieldSplitterOutput;
 
     fs.writeFileSync(
       `./editable_src/graphql/schema/schema.graphql`,
@@ -208,8 +205,22 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
         }
       }
     );
-    
-   
+
+    fs.writeFileSync(
+      "./tests/apiTests/appsyncCredentials.json",
+      `{
+      "${config.api.apiName}Stack" : {
+        "apiUrl":"",
+        "apiKey":""
+      }
+    }`,
+      (err: any) => {
+        if (err) {
+          console.log(err);
+          process.exit(1);
+        }
+      }
+    );
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
     model.api.mockApiData = mockApiCollection;
@@ -254,7 +265,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   await CreateAspects({ config: model });
 
   // Codegenerator Function
-  await generator(model, PanacloudConfig, 'init', dummyData);
+  await generator(model, PanacloudConfig, "init", dummyData);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
@@ -268,29 +279,13 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   }
 
   try {
-    await exec(`cd lambdaLayer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`);
+    await exec(
+      `cd lambdaLayer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`
+    );
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);
   }
-  if(config.api.apiType===APITYPE.graphql){
-    fs.writeFileSync(
-      "./tests/apiTests/appsyncCredentials.json",
-      `{
-      "${config.api.apiName}Stack" : {
-        "apiUrl":"",
-        "apiKey":""
-      }
-    }`,
-     (err: any) => {
-        if (err) {
-          console.log(err);
-          process.exit(1);
-        }
-      }
-    )
-  }
-  
 
   stopSpinner(installingModules, "Modules installed", false);
 }
