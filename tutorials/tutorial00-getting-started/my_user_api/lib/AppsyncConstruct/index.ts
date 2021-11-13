@@ -1,4 +1,4 @@
-import { aws_appsync as appsync } from "aws-cdk-lib";
+import { aws_appsync as appsync, CfnOutput } from "aws-cdk-lib";
 import { CfnOutput as CfnOutput } from "aws-cdk-lib";
 import { aws_iam as iam } from "aws-cdk-lib";
 import { Construct } from "constructs";
@@ -124,6 +124,14 @@ type Mutation {
       value: myUserApi_apiKey.attrApiKey || "",
       description: "The API Key of the GraphQl API",
       exportName: "graphQlAPIKey",
+    });
+
+    new CfnOutput(this, "API_URL", {
+      value: this.api_url,
+    });
+
+    new CfnOutput(this, "API_KEY", {
+      value: this.api_key,
     });
   }
 }
