@@ -72,21 +72,36 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
 
         typeStrings = { ...typeStrings, [type]: typeStr };
 
-        if (
-          (responseTypeName === "String" ||
-            responseTypeName === "Int" ||
-            responseTypeName === "ID") &&
-          field.args.length !== 0
-        ) {
-          allImports.push(`${description}${upperFirst(type)}Args`);
-        } else if (field.args.length > 0) {
-          allImports.push(...(responseTypeName.split(' | ')));
-          allImports.push(`${description}${upperFirst(type)}Args`);
-        } else {
-          allImports.push(...(responseTypeName.split(' | ')));
-        }
+
+        // if (responseTypeName !== "String" &&
+        //     responseTypeName !== "Int" &&
+        //     responseTypeName !== "ID") {
+        //       console.log("responseTypeName ", responseTypeName)
+
+              if (
+                (responseTypeName === "String" ||
+                  responseTypeName === "Int" ||
+                  responseTypeName === "ID") &&
+                field.args.length !== 0
+              ) {
+                console.log("responseTypeName not qualt ", responseTypeName)
+                allImports.push(`${description}${upperFirst(type)}Args`);
+              } else if (field.args.length > 0) {
+                console.log("responseTypeName greater ", responseTypeName)
+                allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
+                allImports.push(`${description}${upperFirst(type)}Args`);
+              } else {
+                console.log("responseTypeName else ", responseTypeName)
+                allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
+              }
+            // }
+
+
       }
     });
+
+    // console.log("allImports ", allImports)
+
   };
 
   if (gqlSchema.getMutationType()) {
