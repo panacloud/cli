@@ -9,7 +9,7 @@
     "watch": "tsc -w",
     "test": " mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit",
     "cdk": "cdk",
-    "deploy": "cdk deploy --outputs-file ./cdk-outputs.json",
+    "deploy": "tsc && cdk deploy --outputs-file ./cdk-outputs.json",
     "codegen": "graphql-codegen",
     "destroy": "cdk destroy"
   },
