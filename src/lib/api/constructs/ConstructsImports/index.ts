@@ -23,6 +23,11 @@ export class Imports {
     ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync","CfnOutput"]);
   }
 
+  public importCfnOutput() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["CfnOutput as CfnOutput"]);
+  }
+
   public importForEventBrideConstruct() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports(`./${CONSTRUCTS.eventBridge}`, [CONSTRUCTS.eventBridge]);
