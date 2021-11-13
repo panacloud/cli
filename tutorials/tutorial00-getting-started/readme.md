@@ -85,11 +85,21 @@ If you have already not done so, you need to [bootstrap](https://docs.aws.amazon
 
 cdk bootstrap
 
-Once we are done with bootstrapping we want to deploy the Mock Serverless APIs. The project is already generated for you, you just have to deploy it:
+Once we are done with bootstrapping we want to deploy the Mock Serverless APIs. 
+
+The project is already generated for you, you just have to compile it:
+
+npm run build
+
+Then you have to deploy the project:
 
 npm run deploy
 
-After deploying check out the `cdk-outputs.json` file in the project root it contains the URL and Key of the API.
+After deploying check out the `cdk-outputs.json` file in the project root it contains the URL and Key of the deployed APIs.
+
+Now run the tests:
+
+npm run test
 
 When you want to destroy the deployed stack just give this command:
 
