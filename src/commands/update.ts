@@ -67,15 +67,25 @@ export default class Create extends Command {
     }
 
     stopSpinner(updatingCode, "CDK Code Updated", false);
+    const setUpForTest = startSpinner("Setup For Test");
+    try {
+      exec(
+        `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
+      );
+    } catch (error) {
+      stopSpinner(setUpForTest, `Error: ${error}`, true);
+      process.exit(1);
+    }
+    stopSpinner(setUpForTest, "Generating Types", false);
 
     const generatingTypes = startSpinner("Generating Types");
-
     try {
       await exec(`npx graphql-codegen`);
     } catch (error) {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
+
 
     stopSpinner(generatingTypes, "Types generated", false);
 
