@@ -1,13 +1,17 @@
 import { Command, flags } from "@oclif/command";
+import { extname } from "path";
+import {
+  readFileSync,
+  writeFileSync,
+  removeSync,
+  readJsonSync,
+} from "fs-extra";
+import * as globby from "globby";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { updateYourOwnApi } from "../lib/api/functions";
 import { validateSchemaFile } from "../lib/api/errorHandling";
 import { TEMPLATE, SAASTYPE, Config, APITYPE } from "../utils/constants";
-const path = require("path");
-const fse = require("fs-extra");
-const fs = require("fs");
 const prettier = require("prettier");
-const globby = require("globby");
 const exec = require("await-exec");
 
 export default class Create extends Command {
@@ -22,7 +26,7 @@ export default class Create extends Command {
 
     const validating = startSpinner("Validating Everything");
 
-    const configCli: Config = fse.readJsonSync("codegenconfig.json");
+    const configCli: Config = readJsonSync("codegenconfig.json");
 
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api.apiType === APITYPE.graphql) {
@@ -54,10 +58,10 @@ export default class Create extends Command {
 
     const updatingCode = startSpinner("Updating CDK Code...");
 
-    fse.removeSync("mock_lambda", { recursive: true });
-    fse.removeSync("lambdaLayer/mockApi", { recursive: true });
-    fse.removeSync("consumer_lambda", { recursive: true });
-    fse.removeSync("lib", { recursive: true });
+    removeSync("mock_lambda");
+    removeSync("lambdaLayer/mockApi");
+    removeSync("consumer_lambda");
+    removeSync("lib");
 
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api?.template === TEMPLATE.defineApi) {
@@ -99,11 +103,11 @@ export default class Create extends Command {
     );
 
     files.forEach(async (file: any) => {
-      const data = fs.readFileSync(file, "utf8");
+      const data = readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
-        parser: path.extname(file) === ".json" ? "json" : "typescript",
+        parser: extname(file) === ".json" ? "json" : "typescript",
       });
-      await fs.writeFileSync(file, nextData, "utf8");
+      await writeFileSync(file, nextData, "utf8");
     });
 
     stopSpinner(formatting, "Formatting Done", false);

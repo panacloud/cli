@@ -1,4 +1,9 @@
 import { Command, flags } from "@oclif/command";
+import { camelCase } from "lodash";
+import { resolve, extname } from "path";
+import { writeJsonSync, readFileSync, writeFileSync } from "fs-extra";
+import { greenBright } from "chalk";
+import * as globby from "globby";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
@@ -16,14 +21,9 @@ import {
   LANGUAGE,
   ARCHITECTURE,
 } from "../utils/constants";
-const path = require("path");
-const chalk = require("chalk");
-const fs = require("fs");
-const fse = require("fs-extra");
+
 const prettier = require("prettier");
-const globby = require("globby");
 const exec = require("await-exec");
-const camelCase = require("lodash/camelCase");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
@@ -36,27 +36,10 @@ export default class Create extends Command {
   async run() {
     const { flags } = this.parse(Create);
 
-    let templateDir;
+    let templateDir: string;
 
     // Questions
     let usrInput = await userInput();
-
-    // const config: Config = {
-    //   saasType: SAASTYPE.api,
-    //   entityId: 'a',
-    //   "api_token": "d",
-    //   api: {
-    //     "cloudprovider": CLOUDPROVIDER.aws,
-    //     "language": LANGUAGE.typescript,
-    //     "template": TEMPLATE.defineApi,
-    //     "schemaPath": "schema.graphql",
-    //     "apiName": "myApi",
-    //     "nestedResolver": true,
-    //     // database:undefined,
-    //     "database": DATABASE.none,
-    //     apiType: APITYPE.graphql,
-    //   }
-    // }
 
     // Config to generate code.
     const config: Config = {
@@ -70,7 +53,7 @@ export default class Create extends Command {
         // cloudprovider: usrInput.cloud_provider,
         apiName: camelCase(usrInput.api_name),
         schemaPath: usrInput.schema_path,
-        apiType:usrInput.api_type,
+        apiType: usrInput.api_type,
         database:
           usrInput.database === DATABASE.none ? undefined : usrInput.database,
       },
@@ -80,7 +63,7 @@ export default class Create extends Command {
     const validating = startSpinner("Validating Everything");
 
     if (config!.saasType === SAASTYPE.api) {
-      templateDir = path.resolve(__dirname, "../lib/api/template");
+      templateDir = resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
       if (config!.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
@@ -91,22 +74,13 @@ export default class Create extends Command {
       }
     }
 
-    fse.writeJson(
-      `./codegenconfig.json`,
-      {
-        ...config,
-        api: {
-          ...config.api,
-          schemaPath: "./editable_src/graphql/schema/schema.graphql",
-        },
+    writeJsonSync(`./codegenconfig.json`, {
+      ...config,
+      api: {
+        ...config.api,
+        schemaPath: "./editable_src/graphql/schema/schema.graphql",
       },
-      (err: string) => {
-        if (err) {
-          stopSpinner(validating, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      }
-    );
+    });
 
     stopSpinner(validating, "Everything's fine", false);
 
@@ -114,9 +88,9 @@ export default class Create extends Command {
       if (config?.api?.template === TEMPLATE.todoApi) {
         await todoApi(config);
       } else if (config.api?.template === TEMPLATE.defineApi) {
-        await defineYourOwnApi(config, templateDir);
+        await defineYourOwnApi(config, templateDir!);
       } else {
-        await basicApi(config, templateDir);
+        await basicApi(config, templateDir!);
       }
     }
 
@@ -152,15 +126,17 @@ export default class Create extends Command {
     );
 
     files.forEach(async (file: any) => {
-      const data = fs.readFileSync(file, "utf8");
+      const data = readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
-        parser: path.extname(file) === ".json" ? "json" : "typescript",
+        parser: extname(file) === ".json" ? "json" : "typescript",
       });
-      await fs.writeFileSync(file, nextData, "utf8");
+      await writeFileSync(file, nextData, "utf8");
     });
 
     stopSpinner(formatting, "Formatting Done", false);
 
-    this.log(chalk.greenBright("Now Start Building Yur Multi-Tenant Serverless Unicorn APIs"));
+    this.log(
+      greenBright("Now Start Building Yur Multi-Tenant Serverless Unicorn APIs")
+    );
   }
 }
