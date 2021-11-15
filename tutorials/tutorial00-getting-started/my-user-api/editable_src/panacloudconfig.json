@@ -1,0 +1,8 @@
+{
+  "lambdas": {
+    "user": { "asset_path": "mock_lambda/user/index.ts" },
+    "addUser": { "asset_path": "mock_lambda/addUser/index.ts" },
+    "deleteUser": { "asset_path": "mock_lambda/deleteUser/index.ts" }
+  },
+  "mockData": { "asset_path": "lambdaLayer" }
+}

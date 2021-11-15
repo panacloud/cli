@@ -1,35 +1,22 @@
-1. API URL and Key are not being printed and saved in a file
+Thing to do in the CLI:
 
-Note that the url and key is only available after deployment, therefore we cannot save it before deployment.
+1. Remove Bug: If we give update command without changing the schema it updates the schema and tests
 
+2. Rename the lambdaLayer to mockLambdaLayer. 
+There are three seprate concepts here in this context:
+a. Mock lambda layer.
+b. Test collection data types.
+c. The test data itself (This test data is used in two ways in the mock lambdas on the server and on the client to test the APIs)(This test data can be auto-generated and also manually produced)
 
+Therefore, we must have a test data file in the editiable_src directory so that developer can add the test data manually. 
 
-Reference:
+This means we will have a second testCollection in the editable_src, so that developer can also manually add test data. 
+Note: If the developer has written and developed the real lambda may be only manually written test data should be used to run tests.
+Maybe have a test collection configuration in the panacloudconfig.json
 
-///Print Graphql Api Url on console after deploy
-    new cdk.CfnOutput(this, "APIGraphQlURL", {
-      value: api.graphqlUrl
-    })
+4. Make a backup copy of schema and panacloudconfig.json in the hidden .panacloud directory (just like git tool makes in .git). So that when we give panacloud update command we know what has changed and what is unchanged. This way we will be able to inform the developer. 
 
-    ///Print API Key on console after deploy
-    new cdk.CfnOutput(this, "GraphQLAPIKey", {
-      value: api.apiKey || ''
-    });
-
-
-2. We should read the lambda names from the config file not hard code it in the stack file
-
-lambda.Code.fromAsset("mock_lambda/user")
-
-
-3. Why embeding schama inside Appsync Construct
-
-
-4. Rename auguments to request in tests
-
-5. Muti-tenant billing constructs
-
-6. Should be move AppSyncConstruct and VpcNeptureConstruct into a seprate npm repo
+5. Create Database connection object, request object and response object in real lambda stubs. 
 
 
 
