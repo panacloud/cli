@@ -1,4 +1,5 @@
 let upperFirst = require("lodash/upperFirst");
+let startCase = require("lodash/startCase");
 import { GraphQLFieldMap, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, isInterfaceType } from 'graphql';
 const fse = require("fs-extra");
 
@@ -50,20 +51,32 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
               },
             ];
 
+        if(responseTypeName === "Int"){
+          responseTypeName = 'number'
+        }
+
         let responseType = isArray(field.type.toString())
           // field.type.inspect().includes("[") &&
           //   field.type.inspect().includes("]")
           ? `${responseTypeName}[]`
           : `${responseTypeName}`;
 
+
         field.args.length > 0
-          ? typeStr = { "fields": { [type]: [{ arguments: `${description}${upperFirst(type)}Args`, response: responseType }] } }
-          : typeStr = { "fields": { [type]: [{ arguments: {}, response: responseType }] } }
+          ? typeStr = { "fields": { [type]: [{ arguments: `${description}${upperFirst(type)}Args`, response: upperFirst(responseType) }] } }
+          : typeStr = { "fields": { [type]: [{ arguments: {}, response: upperFirst(responseType) }] } }
 
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
             if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
-              allEnumImports.push(v.name);
+              if(v.name.includes("_")){
+                let enum_imp: string = startCase(v.name);
+                enum_imp = enum_imp.split(" ").join("_");
+                allEnumImports.push(enum_imp);
+              }
+              else{
+                allEnumImports.push(v.name);
+              }
             }
           }
         });
@@ -72,21 +85,30 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
 
         typeStrings = { ...typeStrings, [type]: typeStr };
 
+
         if (
           (responseTypeName === "String" ||
-            responseTypeName === "Int" ||
-            responseTypeName === "ID") &&
-          field.args.length !== 0
-        ) {
+            responseTypeName === "number" ||
+            responseTypeName === "ID" ||
+            responseTypeName === "Boolean") &&
+          field.args.length !== 0) {
           allImports.push(`${description}${upperFirst(type)}Args`);
         } else if (field.args.length > 0) {
-          allImports.push(...(responseTypeName.split(' | ')));
+          allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
           allImports.push(`${description}${upperFirst(type)}Args`);
         } else {
-          allImports.push(...(responseTypeName.split(' | ')));
+          if((responseTypeName !== "String" && responseTypeName !== "number" && responseTypeName !== "ID" && responseTypeName !== "Boolean")){
+            allImports.push(...(responseTypeName.split(' | ').map(v => upperFirst(v))));
+          }
         }
+            // }
+
+
       }
     });
+
+    // console.log("allImports ", allImports)
+
   };
 
   if (gqlSchema.getMutationType()) {
