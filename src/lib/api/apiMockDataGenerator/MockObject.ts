@@ -1,4 +1,4 @@
-import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType, GraphQLInterfaceType, isInterfaceType } from "graphql";
+import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType, GraphQLInterfaceType, isInterfaceType, isUnionType, GraphQLUnionType, } from "graphql";
 import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
@@ -173,6 +173,10 @@ class RootObjectResponse extends ObjectResponse {
         /* if the field type is interface*/
       } else if (isInterfaceType(this.graphQLSchema.getType(type))) {
         this.objectResponses.push(new CustomInterfaceObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
+
+        /* if the field type is union*/
+      } else if (isUnionType(this.graphQLSchema.getType(type))) {
+        this.objectResponses.push(new CustomUnionObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
 
       } else {
         this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
@@ -574,6 +578,57 @@ class CustomInterfaceObjectResponse extends ObjectResponse {
     resolvedCustomObjectTypes?.push(type);
     const interfaceTypeObject = this.graphQLSchema.getType(type) as GraphQLInterfaceType;
     const implementedObjectTypes = [...this.graphQLSchema.getImplementations(interfaceTypeObject).objects];
+
+    if (isArray) {
+      Array(3).fill(null).forEach(() => {
+        const objectType = getRandomItem(implementedObjectTypes);
+        const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+        this.objectResponses.push({
+          objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+          objectType: objectType
+        })
+      })
+    } else {
+      const objectType = getRandomItem(implementedObjectTypes);
+      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      this.objectResponses.push({
+        objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+        objectType: objectType
+      })
+    }
+
+  }
+
+  write(object: ArgAndResponseType['response']) {
+    if (this.isArray) {
+      object[this.responseField.name] = [];
+      this.objectResponses.forEach(({ objectResponse, objectType }, idx) => {
+        object[this.responseField.name].push({ __typename: objectType.name })
+        objectResponse.write(object[this.responseField.name][idx])
+      })
+
+    } else {
+      this.objectResponses.forEach(({ objectResponse, objectType }) => {
+        object[this.responseField.name] = { __typename: objectType.name };
+        objectResponse.write(object[this.responseField.name])
+      })
+    }
+
+  }
+
+}
+class CustomUnionObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<any, any> }[] = [];
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+    const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+    resolvedCustomObjectTypes?.push(type);
+    const interfaceTypeObject = this.graphQLSchema.getType(type) as GraphQLUnionType;
+    const implementedObjectTypes = [...(interfaceTypeObject as any)._types];
 
     if (isArray) {
       Array(3).fill(null).forEach(() => {
