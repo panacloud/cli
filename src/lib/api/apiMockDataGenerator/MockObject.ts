@@ -536,11 +536,14 @@ class EnumObjectResponse extends ObjectResponse {
   }
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    let enum_imp: string = startCase(this.enumType);   ////Modifying case specific to codegen
-    if(enum_imp.includes(" ")){
-      enum_imp = enum_imp.split(" ").join("_")
+    if(this.enumType.includes("_")){
+      let enum_imp: string = startCase(this.enumType);
+      enum_imp = enum_imp.split(" ").join("_");
+      return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
-    return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`; // ==> ApiSaasType.Music
+    else{
+      return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
   }
 }
 class NestedCustomObjectResponse extends ObjectResponse {
@@ -921,11 +924,14 @@ class EnumObjectRequest extends ObjectRequest {
 
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    let enum_imp: string = startCase(this.enumType);   ////Modifying case specific to codegen
-    if(enum_imp.includes(" ")){
-      enum_imp = enum_imp.split(" ").join("_")
+    if(this.enumType.includes("_")){
+      let enum_imp: string = startCase(this.enumType);
+      enum_imp = enum_imp.split(" ").join("_");
+      return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
-    return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    else{
+      return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
   }
 
 }

@@ -69,11 +69,14 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
             if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
-              let enum_imp: string = startCase(v.name);
-              if(enum_imp.includes(" ")){
-                enum_imp = enum_imp.split(" ").join("_")
+              if(v.name.includes("_")){
+                let enum_imp: string = startCase(v.name);
+                enum_imp = enum_imp.split(" ").join("_");
+                allEnumImports.push(enum_imp);
               }
-              allEnumImports.push(enum_imp);
+              else{
+                allEnumImports.push(v.name);
+              }
             }
           }
         });
