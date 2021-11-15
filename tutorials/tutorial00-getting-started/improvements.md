@@ -18,6 +18,21 @@ Maybe have a test collection configuration in the panacloudconfig.json
 
 5. Create Database connection object, request object and response object in real lambda stubs. 
 
+6. If we Update the schema and run the update command:
+updateUser (
+    # Name for the User item
+    user: User!): User!
+
+It gives the following error:
+
+ ../../.././bin/run update
+✔ Everything's fine
+⠙ Updating CDK Code...    Error: The type of Mutation.updateUser(user:) must be Input Type but got: User!.
+
+It also re-generates a lot of code.
+
+What it should do is that if there is an error, it should not re-generate code at all.
+
 
 
 

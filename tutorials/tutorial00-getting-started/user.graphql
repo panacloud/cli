@@ -12,7 +12,5 @@ type Mutation {
     # Name for the User item
     name: String!): User!
 
-  deleteUser (
-    # Name for the User item
-    name: String!): User!
+  
 }

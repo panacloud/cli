@@ -4,7 +4,6 @@ import { Construct } from "constructs";
 interface AppsyncProps {
   myUserApi_lambdaFn_userArn: string;
   myUserApi_lambdaFn_addUserArn: string;
-  myUserApi_lambdaFn_deleteUserArn: string;
 }
 
 export class AppsyncConstruct extends Construct {
@@ -46,9 +45,7 @@ type Mutation {
     # Name for the User item
     name: String!): User!
 
-  deleteUser (
-    # Name for the User item
-    name: String!): User!
+  
 }`,
       });
     const myUserApi_apiKey: appsync.CfnApiKey = new appsync.CfnApiKey(
@@ -79,16 +76,6 @@ type Mutation {
         type: "AWS_LAMBDA",
         lambdaConfig: {
           lambdaFunctionArn: props!.myUserApi_lambdaFn_addUserArn,
-        },
-        serviceRoleArn: myUserApi_serviceRole.roleArn,
-      });
-    const ds_myUserApi_deleteUser: appsync.CfnDataSource =
-      new appsync.CfnDataSource(this, "myUserApidataSourceGraphqldeleteUser", {
-        name: "myUserApi_dataSource_deleteUser",
-        apiId: myUserApi_appsync.attrApiId,
-        type: "AWS_LAMBDA",
-        lambdaConfig: {
-          lambdaFunctionArn: props!.myUserApi_lambdaFn_deleteUserArn,
         },
         serviceRoleArn: myUserApi_serviceRole.roleArn,
       });
@@ -128,19 +115,6 @@ type Mutation {
     );
     addUser_resolver.node.addDependency(myUserApi_schema);
     addUser_resolver.node.addDependency(ds_myUserApi_addUser);
-
-    const deleteUser_resolver: appsync.CfnResolver = new appsync.CfnResolver(
-      this,
-      "deleteUser_resolver",
-      {
-        apiId: myUserApi_appsync.attrApiId,
-        typeName: "Mutation",
-        fieldName: "deleteUser",
-        dataSourceName: ds_myUserApi_deleteUser.name,
-      }
-    );
-    deleteUser_resolver.node.addDependency(myUserApi_schema);
-    deleteUser_resolver.node.addDependency(ds_myUserApi_deleteUser);
 
     new CfnOutput(this, "APIGraphQlURL", {
       value: myUserApi_appsync.attrGraphQlUrl,

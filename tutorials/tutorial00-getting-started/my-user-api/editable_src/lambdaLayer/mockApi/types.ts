@@ -29,14 +29,9 @@ export interface Scalars {
 export interface Mutation {
   __typename?: "Mutation";
   addUser: User;
-  deleteUser: User;
 }
 
 export interface MutationAddUserArgs {
-  name: Scalars["String"];
-}
-
-export interface MutationDeleteUserArgs {
   name: Scalars["String"];
 }
 

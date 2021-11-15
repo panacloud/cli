@@ -57,32 +57,12 @@ export class MyUserApiStack extends Stack {
         vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       }
     );
-    const myUserApi_lambdaFn_deleteUser: lambda.Function = new lambda.Function(
-      this,
-      "myUserApiLambdadeleteUser",
-      {
-        functionName: "myUserApiLambdadeleteUser",
-        runtime: lambda.Runtime.NODEJS_12_X,
-        handler: "index.handler",
-        code: lambda.Code.fromAsset("mock_lambda/deleteUser"),
-        layers: [myUserApi_lambdaLayer],
-
-        vpc: myUserApi_neptunedb.VPCRef,
-        securityGroups: [myUserApi_neptunedb.SGRef],
-        environment: {
-          NEPTUNE_ENDPOINT: myUserApi_neptunedb.neptuneReaderEndpoint,
-        },
-        vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
-      }
-    );
     const myUserApi: AppsyncConstruct = new AppsyncConstruct(
       this,
       "myUserApiAppsyncConstruct",
       {
         myUserApi_lambdaFn_userArn: myUserApi_lambdaFn_user.functionArn,
         myUserApi_lambdaFn_addUserArn: myUserApi_lambdaFn_addUser.functionArn,
-        myUserApi_lambdaFn_deleteUserArn:
-          myUserApi_lambdaFn_deleteUser.functionArn,
       }
     );
     new AspectController(this);
