@@ -1,8 +1,7 @@
 Thing to do in the CLI:
 
-1. Remove Bug: If we give update command without changing the schema it updates the schema and tests
 
-2. Rename the lambdaLayer to mockLambdaLayer. 
+1. Rename the lambdaLayer to mockLambdaLayer. 
 There are three seprate concepts here in this context:
 a. Mock lambda layer.
 b. Test collection data types.
@@ -14,11 +13,29 @@ This means we will have a second testCollection in the editable_src, so that dev
 Note: If the developer has written and developed the real lambda may be only manually written test data should be used to run tests.
 Maybe have a test collection configuration in the panacloudconfig.json
 
-4. Make a backup copy of schema and panacloudconfig.json in the hidden .panacloud directory (just like git tool makes in .git). So that when we give panacloud update command we know what has changed and what is unchanged. This way we will be able to inform the developer. 
+2. Make a backup copy of schema and panacloudconfig.json in the hidden .panacloud directory (just like git tool makes in .git). So that when we give panacloud update command we know what has changed and what is unchanged. This way we will be able to inform the developer. 
 
-5. Create Database connection object, request object and response object in real lambda stubs. 
+We will add a command 'panacloud status' which will give the following info:
 
-6. If we Update the schema and run the update command:
+The MyUserAPI is deployed to the following URL: https://www.aws.com/api/1234
+The Token for the deployed MyUserAPI is: x5tghdhjriofnfgk
+
+or 
+
+MyUserAPI is currently not deployed, give the command panacloud deploy to deploy it.
+
+The schema and panacloudconfig.json files have been updated after the last code generation command please run the panacloud update command to update the generated code. 
+
+The following MyUserAPIs are using mock data:
+addUser Mutation
+
+The following MyUserAPIs have real implementations:
+User Query
+
+
+3. Create Database connection object, request object and response object in real lambda stubs. 
+
+4. If we Update the schema and run the update command:
 updateUser (
     # Name for the User item
     user: User!): User!
@@ -32,6 +49,11 @@ It gives the following error:
 It also re-generates a lot of code.
 
 What it should do is that if there is an error, it should not re-generate code at all.
+
+5. We should implement panacloud deploy and panacloud destroy commands ourselves so that we can agument the CDK commands by giving status information to the user. Also for example we can remove the url and token from the cdk-outputs.json file. 
+
+
+6. To immediately release the cli we need to comment out user input for all the options which are not related to GraphQL project creation. However, all the options should be present in the codegenconfig.json for future use.
 
 
 

@@ -182,10 +182,19 @@ export default class Create extends Command {
 
     stopSpinner(formatting, "Formatting Done", false);
 
+    
+
     this.log(
       chalk.greenBright(
-        "Now Start Building Yur Multi-Tenant Serverless Unicorn APIs"
+        "Now Start Building Your Multi-Tenant Serverless Unicorn APIs"
       )
     );
+
+    this.log(
+      chalk.greenBright(
+        "Your code goes inside editable_src directory"
+      )
+    );
+
   }
 }
