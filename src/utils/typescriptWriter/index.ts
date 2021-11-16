@@ -42,7 +42,7 @@ export class TypeScriptWriter {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-
+ 
   public writeImports(lib: string, components: string[], ) {
     this.code.line(`import { ${components.join(", ")} } from "${lib}";`);
   }

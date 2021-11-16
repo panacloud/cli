@@ -96,6 +96,12 @@ async function defineYourOwnApi(
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
     await mkdirRecursiveAsync(`editable_src/aspects`);
     await mkdirRecursiveAsync(`editable_src/lambda`);
+    await mkdirRecursiveAsync(`tests`);
+    await mkdirRecursiveAsync(`tests/apiTests`);
+    await mkdirRecursiveAsync(`.panacloud`);
+    await mkdirRecursiveAsync(`.panacloud/editable_src`);
+    await mkdirRecursiveAsync(`.panacloud/editable_src/graphql`);
+    await mkdirRecursiveAsync(`.panacloud/editable_src/graphql/schema`);
 
     readdirSync(templateDir).forEach(async (file: any) => {
       if (file === "lambdaLayer") {
@@ -186,6 +192,20 @@ async function defineYourOwnApi(
     writeFileSync(
       `./editable_src/graphql/schema/schema.graphql`,
       `${scalars}\n${newSchema}`
+    );
+
+    writeFileSync(
+      `./.panacloud/editable_src/graphql/schema/schema.graphql`,
+      `${scalars}\n${newSchema}`
+    );
+
+    writeFileSync(
+      "./cdk-outputs.json",
+      `{
+      "${config.api.apiName}Stack" : {
+       
+      }
+    }`
     );
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);

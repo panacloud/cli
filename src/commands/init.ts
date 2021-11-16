@@ -4,6 +4,7 @@ import { resolve, extname } from "path";
 import { writeJsonSync, readFileSync, writeFileSync } from "fs-extra";
 import { greenBright } from "chalk";
 import * as globby from "globby";
+import { execSync } from "child_process";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
@@ -37,27 +38,51 @@ export default class Create extends Command {
     const { flags } = this.parse(Create);
 
     let templateDir: string;
-
+    let config: Config;
     // Questions
-    let usrInput = await userInput();
-
-    // Config to generate code.
-    const config: Config = {
-      // entityId: usrInput.entityId,
-      // api_token: usrInput.api_token,
-      saasType: SAASTYPE.api,
-      api: {
-        template: usrInput.template,
-        nestedResolver: usrInput.nestedResolver,
-        // language: usrInput.language,
-        // cloudprovider: usrInput.cloud_provider,
-        apiName: camelCase(usrInput.api_name),
-        schemaPath: usrInput.schema_path,
-        apiType: usrInput.api_type,
-        database:
-          usrInput.database === DATABASE.none ? undefined : usrInput.database,
-      },
-    };
+    const placeholder = process.argv[1];
+    if (
+      flags.test &&
+      !(
+        placeholder.includes("node_modules") ||
+        placeholder.includes("@panacloud") ||
+        placeholder.includes("npm")
+      )
+    ) {
+      config = {
+        // entityId: usrInput.entityId,
+        // api_token: usrInput.api_token,
+        saasType: SAASTYPE.api,
+        api: {
+          template: TEMPLATE.defineApi,
+          nestedResolver: true,
+          // language: usrInput.language,
+          // cloudprovider: usrInput.cloud_provider,
+          apiName: "myApi",
+          schemaPath: "../test/test-schemas/todo.graphql",
+          apiType: APITYPE.graphql,
+          database: DATABASE.dynamoDB,
+        },
+      };
+    } else {
+      let usrInput = await userInput();
+      config = {
+        // entityId: usrInput.entityId,
+        // api_token: usrInput.api_token,
+        saasType: SAASTYPE.api,
+        api: {
+          template: usrInput.template,
+          nestedResolver: usrInput.nestedResolver,
+          // language: usrInput.language,
+          // cloudprovider: usrInput.cloud_provider,
+          apiName: camelCase(usrInput.api_name),
+          schemaPath: usrInput.schema_path,
+          apiType: usrInput.api_type,
+          database:
+            usrInput.database === DATABASE.none ? undefined : usrInput.database,
+        },
+      };
+    }
 
     // Error handling
     const validating = startSpinner("Validating Everything");
@@ -94,6 +119,19 @@ export default class Create extends Command {
       }
     }
 
+    const setUpForTest = startSpinner("Setup For Test");
+
+    try {
+      exec(
+        `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
+      );
+    } catch (error) {
+      stopSpinner(setUpForTest, `Error: ${error}`, true);
+      process.exit(1);
+    }
+
+    stopSpinner(setUpForTest, "Generating Types", false);
+
     const generatingTypes = startSpinner("Generating Types");
 
     try {
@@ -103,7 +141,7 @@ export default class Create extends Command {
       process.exit(1);
     }
 
-    stopSpinner(generatingTypes, "Generating Types", false);
+    stopSpinner(generatingTypes, "Generated Types", false);
 
     const formatting = startSpinner("Formatting Code");
     // Formatting files.
@@ -119,6 +157,7 @@ export default class Create extends Command {
         "!*.yaml",
         "!*.yml",
         "editable_src/panacloudconfig.json",
+        ".panacloud/editable_src/panacloudconfig.json",
       ],
       {
         gitignore: true,
@@ -136,7 +175,11 @@ export default class Create extends Command {
     stopSpinner(formatting, "Formatting Done", false);
 
     this.log(
-      greenBright("Now Start Building Yur Multi-Tenant Serverless Unicorn APIs")
+      greenBright(
+        "Now Start Building Your Multi-Tenant Serverless Unicorn APIs"
+      )
     );
+
+    this.log(greenBright("Your code goes inside editable_src directory"));
   }
 }

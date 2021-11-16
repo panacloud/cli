@@ -62,6 +62,7 @@ export default class Create extends Command {
     removeSync("lambdaLayer/mockApi");
     removeSync("consumer_lambda");
     removeSync("lib");
+    removeSync("tests/apiTests");
 
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api?.template === TEMPLATE.defineApi) {
@@ -70,9 +71,18 @@ export default class Create extends Command {
     }
 
     stopSpinner(updatingCode, "CDK Code Updated", false);
+    const setUpForTest = startSpinner("Setup For Test");
+    try {
+      exec(
+        `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
+      );
+    } catch (error) {
+      stopSpinner(setUpForTest, `Error: ${error}`, true);
+      process.exit(1);
+    }
+    stopSpinner(setUpForTest, "Generating Types", false);
 
     const generatingTypes = startSpinner("Generating Types");
-
     try {
       await exec(`npx graphql-codegen`);
     } catch (error) {
@@ -96,6 +106,7 @@ export default class Create extends Command {
         "!*.yaml",
         "!*.yml",
         "editable_src/panacloudconfig.json",
+        ".panacloud/editable_src/panacloudconfig.json",
       ],
       {
         gitignore: true,

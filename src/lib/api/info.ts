@@ -62,6 +62,8 @@ export const generatePanacloudConfig = async (
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
 
+  await fse.writeJson(`./.panacloud/editable_src/panacloudconfig.json`, configJson);
+
   return configJson;
 };
 
@@ -97,6 +99,8 @@ model:ApiModel, spinner:any
       }
     }
   }
+
+  
 
   const allQueries = [...mutationFields!, ...queiresFields!]
 
@@ -174,6 +178,7 @@ model:ApiModel, spinner:any
       .concat(prevMicroServicesMutLambdas.filter(val => !newMicroServicesLambdas.includes(val)));
 
 
+
     for (let diff of differenceMicroServicesLambdas) {
 
       if (newMicroServicesLambdas.includes(diff)) {
@@ -199,6 +204,9 @@ model:ApiModel, spinner:any
         panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`].asset_path = `mock_lambda/${service}/${mutLambda}_consumer/index.ts`
       }
 
+      else {
+        delete panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`];
+      }
 
     }
 
@@ -223,7 +231,6 @@ model:ApiModel, spinner:any
 
   }
 
-  //console.log(prevGeneralMutLambdas)
 
 
   let difference = generalFields!
@@ -232,6 +239,7 @@ model:ApiModel, spinner:any
 
     difference = difference.filter ((val:string)=> (val !== async_response_mutName))
 
+   
 
   for (let diff of difference) {
 
@@ -245,6 +253,7 @@ model:ApiModel, spinner:any
         panacloudConfigNew.lambdas[`${diff}_consumer`] = {} as PanacloudConfiglambdaParams
         panacloudConfigNew.lambdas[`${diff}_consumer`].asset_path = `mock_lambda/${diff}_consumer/index.ts`
       }
+     
 
     }
     else {
@@ -256,6 +265,8 @@ model:ApiModel, spinner:any
 
   }
 
+
+
   let newItems = Object.keys(panacloudConfigNew.lambdas)
 
 
@@ -266,11 +277,16 @@ model:ApiModel, spinner:any
 
     const isMutation = mutationFields?.includes(mutLambda);
 
-    if (isMutation && !panacloudConfigNew.lambdas[`${mutLambda}_consumer`]){
+    if (/*(isMutation && !panacloudConfigNew.lambdas[`${mutLambda}_consumer`]) &&*/ asyncFields?.includes(mutLambda)){
       
       panacloudConfigNew.lambdas[`${mutLambda}_consumer`] = {} as PanacloudConfiglambdaParams
       panacloudConfigNew.lambdas[`${mutLambda}_consumer`].asset_path = `mock_lambda/${mutLambda}_consumer/index.ts`
     }
+
+    else {
+      delete panacloudConfigNew.lambdas[`${mutLambda}_consumer`];
+    }
+    
 
   }
 

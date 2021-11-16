@@ -1,9 +1,11 @@
-import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType, GraphQLInterfaceType, isInterfaceType } from "graphql";
+import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType, GraphQLInterfaceType, isInterfaceType, isUnionType, GraphQLUnionType, } from "graphql";
 import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
+let startCase = require("lodash/startCase");
+let upperFirst = require("lodash/upperFirst");
 
-type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail"
+type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime" | "AWSJSON" | "AWSPhone" | "AWSIPAddress"
 export type ArgAndResponseType = { arguments?: any; response: any }
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
@@ -144,17 +146,38 @@ class RootObjectResponse extends ObjectResponse {
       } else if (type === "AWSURL") {
         this.objectResponses.push(new AWSURLObjectResponse(graphQLSchema, response, _isArray));
 
+      } else if (type === "AWSDate") {
+        this.objectResponses.push(new AWSDateObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSTime") {
+        this.objectResponses.push(new AWSTimeObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSDateTime") {
+        this.objectResponses.push(new AWSDateTimeObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSJSON") {
+        this.objectResponses.push(new AWSJsonObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSPhone") {
+        this.objectResponses.push(new AWSPhoneObjectResponse(graphQLSchema, response, _isArray));
+
+      } else if (type === "AWSIPAddress") {
+        this.objectResponses.push(new AWSIPAddressObjectResponse(graphQLSchema, response, _isArray));
+
       } else if (this.isEnum(type)) {
         this.objectResponses.push(new EnumObjectResponse(graphQLSchema, response, _isArray));
 
         /* if the field type is nested and come to resolve again */
       } else if (this.resolvedCustomObjectTypes.includes(type)) {
-        // } else if (this.resolvedCustomObjectTypes.filter(item => item === type).length > 1) {
         this.objectResponses.push(new NestedCustomObjectResponse(graphQLSchema, response, _isArray));
 
         /* if the field type is interface*/
       } else if (isInterfaceType(this.graphQLSchema.getType(type))) {
         this.objectResponses.push(new CustomInterfaceObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
+
+        /* if the field type is union*/
+      } else if (isUnionType(this.graphQLSchema.getType(type))) {
+        this.objectResponses.push(new CustomUnionObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
 
       } else {
         this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
@@ -179,13 +202,12 @@ class RootObjectRequest extends ObjectRequest {
     super(graphQLSchema);
     this.resolvedCustomObjectTypes = resolvedCustomObjectTypes || [];
     this.childNumber = childNumber + 1;
-    // console.log("childNumber", this.childNumber)
 
     fieldRequests.forEach((request: GraphQLArgument) => {
       let type = request.type.toString() as ScalarType;
       const _isArray = isArray(type);
       type = type.replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
-      // console.log(type)
+
       if (type === "String") {
         this.objectRequests.push(new StringObjectRequest(graphQLSchema, request, _isArray));
 
@@ -209,6 +231,24 @@ class RootObjectRequest extends ObjectRequest {
 
       } else if (type === "AWSURL") {
         this.objectRequests.push(new AWSURLObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSDate") {
+        this.objectRequests.push(new AWSDateObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSTime") {
+        this.objectRequests.push(new AWSTimeObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSDateTime") {
+        this.objectRequests.push(new AWSDateTimeObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSJSON") {
+        this.objectRequests.push(new AWSJsonObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSPhone") {
+        this.objectRequests.push(new AWSPhoneObjectRequest(graphQLSchema, request, _isArray));
+
+      } else if (type === "AWSIPAddress") {
+        this.objectRequests.push(new AWSIPAddressObjectRequest(graphQLSchema, request, _isArray));
 
       } else if (this.isEnum(type)) {
         this.objectRequests.push(new EnumObjectRequest(graphQLSchema, request, _isArray));
@@ -246,7 +286,7 @@ class StringObjectResponse extends ObjectResponse {
 
   write(object: ArgAndResponseType['response']): void {
     if (this.isArray) {
-      object[this.responseField.name] = [randomName.first(), randomName.last(), randomName.first()];
+      object[this.responseField.name] = [randomName.first(), randomName.last(), randomName.place()];
     } else {
       object[this.responseField.name] = randomName.first();
     }
@@ -372,6 +412,112 @@ class AWSEmailObjectResponse extends ObjectResponse {
     }
   }
 }
+class AWSDateObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [`2021-10-08`, `2021-10-09`, `2021-10-10`];
+    } else {
+      object[this.responseField.name] = `2021-10-08`; // YYYY-MM-DD
+    }
+  }
+}
+class AWSTimeObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [`01:30:59.009`, `01:30:59.009`, `01:30:59.009`];
+    } else {
+      object[this.responseField.name] = `01:30:59.009`; // hh:mm:ss.sss
+    }
+  }
+}
+class AWSDateTimeObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [new Date().toISOString(), new Date().toISOString(), new Date().toISOString()];
+    } else {
+      object[this.responseField.name] = new Date().toISOString(); // YYYY-MM-DDThh:mm:ss.sssZ
+    }
+  }
+}
+class AWSJsonObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = [
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.last(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) })
+      ];
+    } else {
+      object[this.responseField.name] = JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) });
+    }
+  }
+}
+class AWSPhoneObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = ["+92360088009", "+92360011009", "+92360228009"];
+    } else {
+      object[this.responseField.name] = "+92360088009";
+    }
+  }
+}
+class AWSIPAddressObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['response']): void {
+    if (this.isArray) {
+      object[this.responseField.name] = ["123.12.34.56", "123.45.67.89/16", "1a2b:3c4b::1234:4567"];
+    } else {
+      object[this.responseField.name] = "113.32.32.57";
+    }
+  }
+}
 class EnumObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>
   private isArray?: boolean;
@@ -395,7 +541,14 @@ class EnumObjectResponse extends ObjectResponse {
   }
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`; // ==> ApiSaasType.Music
+    if(this.enumType.includes("_")){
+      let enum_imp: string = startCase(this.enumType);
+      enum_imp = enum_imp.split(" ").join("_");
+      return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
+    else{
+      return `${upperFirst(this.enumType)}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
   }
 }
 class NestedCustomObjectResponse extends ObjectResponse {
@@ -465,6 +618,57 @@ class CustomInterfaceObjectResponse extends ObjectResponse {
   }
 
 }
+class CustomUnionObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<any, any> }[] = [];
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+    const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+    resolvedCustomObjectTypes?.push(type);
+    const interfaceTypeObject = this.graphQLSchema.getType(type) as GraphQLUnionType;
+    const implementedObjectTypes = [...(interfaceTypeObject as any)._types];
+
+    if (isArray) {
+      Array(3).fill(null).forEach(() => {
+        const objectType = getRandomItem(implementedObjectTypes);
+        const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+        this.objectResponses.push({
+          objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+          objectType: objectType
+        })
+      })
+    } else {
+      const objectType = getRandomItem(implementedObjectTypes);
+      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      this.objectResponses.push({
+        objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+        objectType: objectType
+      })
+    }
+
+  }
+
+  write(object: ArgAndResponseType['response']) {
+    if (this.isArray) {
+      object[this.responseField.name] = [];
+      this.objectResponses.forEach(({ objectResponse, objectType }, idx) => {
+        object[this.responseField.name].push({ __typename: objectType.name })
+        objectResponse.write(object[this.responseField.name][idx])
+      })
+
+    } else {
+      this.objectResponses.forEach(({ objectResponse, objectType }) => {
+        object[this.responseField.name] = { __typename: objectType.name };
+        objectResponse.write(object[this.responseField.name])
+      })
+    }
+
+  }
+
+}
 class CustomObjectResponse extends ObjectResponse {
   private responseField: GraphQLField<any, any, { [key: string]: any }>;
   private objectResponses: ObjectResponse[] = []
@@ -476,8 +680,17 @@ class CustomObjectResponse extends ObjectResponse {
     const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     resolvedCustomObjectTypes?.push(type);
     const objectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
-    const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
-    this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
+    try {
+      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
+    } catch (error: any) {
+      // console.log("error: 946", error.message);
+      if (error.message.includes("objectType.getFields is not a function")) {
+        throw Error(objectType.toString() + " type in your graphql schema is not supported in mock data generator");
+      }
+      throw error;
+    }
+
   }
 
   write(object: ArgAndResponseType['response']) {
@@ -512,7 +725,7 @@ class StringObjectRequest extends ObjectRequest {
 
   write(object: ArgAndResponseType['arguments']): void {
     if (this.isArray) {
-      object[this.requestField.name] = [randomName.first(), randomName.last(), randomName.first()];
+      object[this.requestField.name] = [randomName.first(), randomName.last(), randomName.place()];
     } else {
       object[this.requestField.name] = randomName.first();
     }
@@ -637,6 +850,112 @@ class AWSEmailStampObjectRequest extends ObjectRequest {
     }
   }
 }
+class AWSDateObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [`2021-10-08`, `2021-10-09`, `2021-10-10`];
+    } else {
+      object[this.requestField.name] = `2021-10-08`; // YYYY-MM-DD
+    }
+  }
+}
+class AWSDateTimeObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [new Date().toISOString(), new Date().toISOString(), new Date().toISOString()];
+    } else {
+      object[this.requestField.name] = new Date().toISOString(); // YYYY-MM-DDThh:mm:ss.sssZ
+    }
+  }
+}
+class AWSTimeObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [`01:30:59.009`, `01:30:59.009`, `01:30:59.009`];
+    } else {
+      object[this.requestField.name] = `01:30:59.009`; // hh:mm:ss.sss
+    }
+  }
+}
+class AWSJsonObjectRequest extends ObjectRequest {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.isArray = isArray;
+    this.requestField = requestField;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = [
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) }),
+        JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) })
+      ];
+    } else {
+      object[this.requestField.name] = JSON.stringify({ name: randomName.first(), age: Math.floor(Math.random() * 80) });
+    }
+  }
+}
+class AWSPhoneObjectRequest extends ObjectResponse {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.requestField = requestField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = ["+92360088009", "+92360011009", "+92360228009"];
+    } else {
+      object[this.requestField.name] = "+92360088009";
+    }
+  }
+}
+class AWSIPAddressObjectRequest extends ObjectResponse {
+  private requestField: GraphQLArgument
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, requestField: GraphQLArgument, isArray: boolean) {
+    super(graphQLSchema);
+    this.requestField = requestField;
+    this.isArray = isArray;
+  }
+
+  write(object: ArgAndResponseType['arguments']): void {
+    if (this.isArray) {
+      object[this.requestField.name] = ["123.12.34.56", "123.45.67.89/16", "1a2b:3c4b::1234:4567"];
+    } else {
+      object[this.requestField.name] = "113.32.32.57";
+    }
+  }
+}
 class EnumObjectRequest extends ObjectRequest {
   private requestField: GraphQLArgument
   private isArray?: boolean;
@@ -661,7 +980,14 @@ class EnumObjectRequest extends ObjectRequest {
 
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    if(this.enumType.includes("_")){
+      let enum_imp: string = startCase(this.enumType);
+      enum_imp = enum_imp.split(" ").join("_");
+      return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
+    else{
+      return `${upperFirst(this.enumType)}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
   }
 
 }
@@ -692,10 +1018,14 @@ class CustomObjectRequest extends ObjectRequest {
     const type = requestField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
     resolvedCustomObjectTypes?.push(type)
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
-    const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
-    // console.log(this.resolvedCustomeObjectType);
+    try {
+      const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
+      this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
+    } catch (error: any) {
+      console.log("error: 946", error.toString())
+      throw Error(error)
+    }
 
-    this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
   }
 
   write(object: ArgAndResponseType['arguments']) {
@@ -714,5 +1044,3 @@ class CustomObjectRequest extends ObjectRequest {
     }
   }
 }
-
-
