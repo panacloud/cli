@@ -73,7 +73,7 @@ export default class Create extends Command {
     stopSpinner(updatingCode, "CDK Code Updated", false);
     const setUpForTest = startSpinner("Setup For Test");
     try {
-      exec(
+      await exec(
         `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
       );
     } catch (error) {
@@ -118,7 +118,7 @@ export default class Create extends Command {
       const nextData = prettier.format(data, {
         parser: extname(file) === ".json" ? "json" : "typescript",
       });
-      await writeFileSync(file, nextData, "utf8");
+      writeFileSync(file, nextData, "utf8");
     });
 
     stopSpinner(formatting, "Formatting Done", false);

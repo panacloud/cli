@@ -4,7 +4,6 @@ import { resolve, extname } from "path";
 import { writeJsonSync, readFileSync, writeFileSync } from "fs-extra";
 import { greenBright } from "chalk";
 import * as globby from "globby";
-import { execSync } from "child_process";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
@@ -20,7 +19,6 @@ import {
   APITYPE,
   CLOUDPROVIDER,
   LANGUAGE,
-  ARCHITECTURE,
 } from "../utils/constants";
 
 const prettier = require("prettier");
@@ -50,14 +48,14 @@ export default class Create extends Command {
       )
     ) {
       config = {
-        // entityId: usrInput.entityId,
-        // api_token: usrInput.api_token,
+        entityId: "",
+        api_token: "",
         saasType: SAASTYPE.api,
         api: {
           template: TEMPLATE.defineApi,
           nestedResolver: true,
-          // language: usrInput.language,
-          // cloudprovider: usrInput.cloud_provider,
+          language: LANGUAGE.typescript,
+          cloudprovider: CLOUDPROVIDER.aws,
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
@@ -67,19 +65,18 @@ export default class Create extends Command {
     } else {
       let usrInput = await userInput();
       config = {
-        // entityId: usrInput.entityId,
-        // api_token: usrInput.api_token,
+        entityId: "",
+        api_token: "",
         saasType: SAASTYPE.api,
         api: {
           template: usrInput.template,
           nestedResolver: usrInput.nestedResolver,
-          // language: usrInput.language,
-          // cloudprovider: usrInput.cloud_provider,
+          language: LANGUAGE.typescript,
+          cloudprovider: CLOUDPROVIDER.aws,
           apiName: camelCase(usrInput.api_name),
           schemaPath: usrInput.schema_path,
-          apiType: usrInput.api_type,
-          database:
-            usrInput.database === DATABASE.none ? undefined : usrInput.database,
+          apiType: APITYPE.graphql,
+          database: DATABASE.neptuneDB,
         },
       };
     }
@@ -122,7 +119,7 @@ export default class Create extends Command {
     const setUpForTest = startSpinner("Setup For Test");
 
     try {
-      exec(
+      await exec(
         `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
       );
     } catch (error) {
@@ -169,7 +166,7 @@ export default class Create extends Command {
       const nextData = prettier.format(data, {
         parser: extname(file) === ".json" ? "json" : "typescript",
       });
-      await writeFileSync(file, nextData, "utf8");
+      writeFileSync(file, nextData, "utf8");
     });
 
     stopSpinner(formatting, "Formatting Done", false);
