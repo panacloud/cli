@@ -75,7 +75,7 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
                 allEnumImports.push(enum_imp);
               }
               else{
-                allEnumImports.push(v.name);
+                allEnumImports.push(upperFirst(v.name));
               }
             }
           }
