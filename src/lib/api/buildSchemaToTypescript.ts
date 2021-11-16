@@ -32,8 +32,8 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         } else if (responseTypeName === "Int") {
           res = 0;
         } else if (isInterfaceType(gqlSchema.getType(responseTypeName))) {
-          const implementedTypes = gqlSchema.getImplementations(gqlSchema.getType(responseTypeName) as GraphQLInterfaceType).objects.map(v => v.toString());
-          responseTypeName = implementedTypes.join(' | ')
+          const implementedTypes = gqlSchema.getImplementations(gqlSchema.getType(responseTypeName) as GraphQLInterfaceType).objects.map(v => upperFirst(v.toString()));
+          responseTypeName = implementedTypes.join(' | ');
         } else {
           res = {};
         }
