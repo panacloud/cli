@@ -62,6 +62,8 @@ export const generatePanacloudConfig = async (
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
 
+  await fse.writeJson(`./.panacloud/editable_src/panacloudconfig.json`, configJson);
+
   return configJson;
 };
 
