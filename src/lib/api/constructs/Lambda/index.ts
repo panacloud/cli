@@ -41,7 +41,29 @@ export class Lambda {
     let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
-    if(functionName){      
+    const checkIsMock = ():boolean=>{
+      if(microServiceName){
+        if(this.panacloudConfig.lambdas[microServiceName][`${functionName}`].is_mock === true){
+          return true
+        }
+        return false
+      }else{
+        if(nestedResolver){
+          if(this.panacloudConfig.nestedLambdas[`${functionName}`].is_mock === true){
+            return true
+          }
+          return false
+        }else{
+          if(this.panacloudConfig.lambdas[`${functionName}`].is_mock === true){
+            return true
+          }
+          return false
+        }
+      }
+      
+    }
+    if(functionName){  
+      
       const {lambdas} = this.panacloudConfig;
       if (microServiceName){
         const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
@@ -79,7 +101,7 @@ export class Lambda {
       ? `vpcSubnets: { subnetType: ${vpcSubnets} },`
       : "";
     let role = roleName ? `role: ${roleName},` : "";
-    let lambdaLayer = `layers:[${apiName}_lambdaLayer],`;
+    let lambdaLayer = `layers:[${apiName}${checkIsMock()?"_mock_":"_"}lambdaLayer],`;
 
     ts.writeVariableDeclaration(
       {
@@ -120,7 +142,22 @@ export class Lambda {
       "const"
     );
   }
-
+  public mockLambdaLayer(apiName: string, path: string) {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}_mock_lambdaLayer`,
+        typeName: "lambda.LayerVersion",
+        initializer: () => {
+          this.code
+            .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
+          code: lambda.Code.fromAsset("${path}"),
+        })`);
+        },
+      },
+      "const"
+    );
+  }
   public lambdaConstructInitializer(apiName: string, database: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(

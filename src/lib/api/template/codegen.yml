@@ -3,10 +3,10 @@ generates:
   ./editable_src/graphql/types.ts:
     plugins:
       - typescript
-  ./lambdaLayer/mockApi/types.ts:
+  ./mock_lambda_layer/mockApi/types.ts:
     plugins:
       - typescript
-  ./editable_src/lambdaLayer/mockApi/types.ts:
+  ./editable_src/testCollections/types.ts:
     plugins:
       - typescript
 config:

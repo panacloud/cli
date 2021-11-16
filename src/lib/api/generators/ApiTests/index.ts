@@ -3,6 +3,7 @@ import {
   ApiModel,
   APITYPE,
   async_response_mutName,
+  PanacloudconfigFile,
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { Imports } from "../../constructs/ConstructsImports";
@@ -68,7 +69,7 @@ class APITests {
     await code.save(this.outputDir);
   }
 
-  async TestFile() {
+  async TestFile(panacloudConfig:PanacloudconfigFile) {
     const {
       api: { apiType, mutationFields },
     } = this.config;
@@ -93,7 +94,7 @@ class APITests {
           ts.writeImports("chai", ["expect"]);
           ts.writeAllImports("supertest", "supertest");
           ts.writeImports("./AppSyncAPI", ["AppsyncAPI"]);
-          ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollections`, [
+          ts.writeImports(`../../${panacloudConfig.testCollections['asset_path'].replace(/^\/|\/$/g, '')}/${key}/testCollections`, [
             "testCollections",
           ]);
           ts.writeVariableDeclaration(
@@ -159,8 +160,8 @@ class APITests {
   }
 }
 
-export const apiTests = async (props: StackBuilderProps): Promise<void> => {
+export const apiTests = async (props: StackBuilderProps,panacloudConfig:PanacloudconfigFile): Promise<void> => {
   const builder = new APITests(props);
-  await builder.TestFile();
+  await builder.TestFile(panacloudConfig);
   await builder.AppSyncFile();
 };
