@@ -64,7 +64,7 @@ export const generator = async (
     await customLambda({ config, type });
   }
   if (config.api.apiType === APITYPE.graphql) {
-    apiTests({ config });
+    apiTests({ config},panacloudConfig);
   }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
