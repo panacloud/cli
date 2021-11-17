@@ -24,12 +24,16 @@ export default class Destroy extends Command {
 
     const spinner = startSpinner("Destroying...");
 
-    try {
-      await exec("cdk destroy");
-    } catch (error) {
-      stopSpinner(spinner, `Error: ${error}`, true);
-      process.exit(1);
-    }
+    await exec("cdk destroy --require-approval never", (err: Error, stdout: any) => {
+      if (stdout) {
+        this.log(stdout);
+      }
+
+      if (err) {
+        stopSpinner(spinner, `Error: ${err}`, true);
+        process.exit(1);
+      }
+    });
 
     removeSync("cdk.out");
     removeSync("cdk-outputs.json");

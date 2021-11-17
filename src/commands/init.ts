@@ -76,7 +76,7 @@ export default class Create extends Command {
           apiName: camelCase(usrInput.api_name),
           schemaPath: usrInput.schema_path,
           apiType: APITYPE.graphql,
-          database: DATABASE.neptuneDB,
+          database: DATABASE.dynamoDB,
         },
       };
     }

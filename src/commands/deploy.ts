@@ -15,14 +15,19 @@ export default class Deploy extends Command {
 
     const spinner = startSpinner("Deploying...");
 
-    try {
-      await exec(
-        "tsc && cdk deploy --require-approval never --outputs-file ./cdk-outputs.json"
-      );
-    } catch (error) {
-      stopSpinner(spinner, `Error: ${error}`, true);
-      process.exit(1);
-    }
+    await exec(
+      "tsc && cdk deploy --require-approval never --outputs-file ./cdk-outputs.json",
+      (err: Error, stdout: any) => {
+        if (stdout) {
+          this.log(stdout);
+        }
+
+        if (err) {
+          stopSpinner(spinner, `Error: ${err}`, true);
+          process.exit(1);
+        }
+      }
+    );
 
     stopSpinner(spinner, "Deployed", false);
   }
