@@ -45,12 +45,23 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       if (file === "gitignore") {
         fse.copy(`${templateDir}/${file}`, ".gitignore");
       } else {
-        await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
-          if (err) {
-            stopSpinner(generatingCode, `Error: ${err}`, true);
-            process.exit(1);
-          }
-        });
+        if(file === "lambdaLayer"){
+          await fse.copy(`${templateDir}/${file}`, "mock_lambda_layer", (err: string) => {
+            if (err) {
+              stopSpinner(generatingCode, `Error: ${err}`, true);
+              process.exit(1);
+            }
+          });
+        }
+          else{
+            await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
+              if (err) {
+                stopSpinner(generatingCode, `Error: ${err}`, true);
+                process.exit(1);
+              }
+            });
+        }
+
       }
     }
   });
@@ -294,7 +305,7 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   try {
     await exec(
-      `cd lambdaLayer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`
+      `cd mock_lambda_layer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`
     );
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
