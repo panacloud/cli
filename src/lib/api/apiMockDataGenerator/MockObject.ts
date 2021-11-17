@@ -3,6 +3,7 @@ import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
 let startCase = require("lodash/startCase");
+let upperFirst = require("lodash/upperFirst");
 
 type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime" | "AWSJSON" | "AWSPhone" | "AWSIPAddress"
 export type ArgAndResponseType = { arguments?: any; response: any }
@@ -546,7 +547,7 @@ class EnumObjectResponse extends ObjectResponse {
       return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
     else{
-      return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+      return `${upperFirst(this.enumType)}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
   }
 }
@@ -985,7 +986,7 @@ class EnumObjectRequest extends ObjectRequest {
       return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
     else{
-      return `${this.enumType}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+      return `${upperFirst(this.enumType)}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
   }
 
