@@ -115,24 +115,24 @@ class APITests {
             },
             "const"
           );
-          ts.writeVariableDeclaration(
-            {
-              name: "args",
-              typeName: "",
-              initializer: `testCollections.fields.${key}[0].arguments`,
-              export: false,
-            },
-            "const"
-          );
-          ts.writeVariableDeclaration(
-            {
-              name: "response",
-              typeName: "",
-              initializer: `testCollections.fields.${key}[0].response`,
-              export: false,
-            },
-            "const"
-          );
+          // ts.writeVariableDeclaration(
+          //   {
+          //     name: "args",
+          //     typeName: "",
+          //     initializer: `testCollections.fields.${key}[0].arguments`,
+          //     export: false,
+          //   },
+          //   "const"
+          // );
+          // ts.writeVariableDeclaration(
+          //   {
+          //     name: "response",
+          //     typeName: "",
+          //     initializer: `testCollections.fields.${key}[0].response`,
+          //     export: false,
+          //   },
+          //   "const"
+          // );
           ts.writeVariableDeclaration(
             {
               name: `{${key}}`,
@@ -147,7 +147,7 @@ class APITests {
             "const"
           );
 
-          tw.writeApiTests(key);
+          tw.writeApiTests(key,ts);
           code.line();
 
           code.closeFile(this.outputFile);
