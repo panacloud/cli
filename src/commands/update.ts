@@ -22,6 +22,38 @@ export default class Create extends Command {
   async run() {
     const { flags } = this.parse(Create);
     let [schemaChanged, panacloudConfigChanged] = this.isChanged();
+    
+    if(schemaChanged) {
+      this.log(
+        chalk.red(
+          "GraphQL Schema has been updated."
+        )
+      );
+    }
+    else {
+      this.log(
+        chalk.greenBright(
+          "GraphQL Schema is unchanged."
+        )
+      );
+    }
+
+    if(panacloudConfigChanged) {
+      this.log(
+        chalk.red(
+          "Panacloud Config has been updated."
+        )
+      );
+    }
+    else {
+      this.log(
+        chalk.greenBright(
+          "Panacloud Config is unchanged."
+        )
+      );
+    }
+    
+
 
     if(schemaChanged && panacloudConfigChanged){
       await this.update();
@@ -37,26 +69,53 @@ export default class Create extends Command {
 
   isChanged(): [boolean, boolean]{
     
-    let schemaChanged: boolean = this.areFilesChanged("editable_src/graphql/schema/schema.graphql", 
+    let schemaChanged: boolean = this.isFileChanged("editable_src/graphql/schema/schema.graphql", 
     ".panacloud/editable_src/graphql/schema/schema.graphql");
     
-    let panacloudConfigChanged: boolean = this.areFilesChanged("editable_src/panacloudconfig.json",
+    let panacloudConfigChanged: boolean = this.isFileChanged("editable_src/panacloudconfig.json",
     ".panacloud/editable_src/panacloudconfig.json");
+
+    this.log(
+      chalk.greenBright(
+        schemaChanged
+      )
+    );
+
+    this.log(
+      chalk.greenBright(
+        panacloudConfigChanged
+      )
+    );
+
 
     return [schemaChanged, panacloudConfigChanged]; 
    
   }
 
-  areFilesChanged(file1: string, file2: string): boolean {
+  isFileChanged(file1: string, file2: string): boolean {
     let result: boolean = false;
-    fs.readFile(file1, (err: any, data1: any) => {
+    fs.readFileSync(file1, (err: any, data1: any) => {
       if (err) throw err;
       
-      fs.readFile(file2, (err2: any, data2: any) => {
+      fs.readFileSync(file2, (err2: any, data2: any) => {
           if (err) throw err2;
           if (data1.equals(data2)) {
+              
+            this.log(
+              chalk.greenBright(
+                "Not Changed"
+              )
+            );
+            
               result = false;
           } else {
+
+            this.log(
+              chalk.greenBright(
+                "Changed"
+              )
+            );
+            
               result = true;
           }
   
