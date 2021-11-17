@@ -3,12 +3,14 @@ import { startSpinner, stopSpinner } from "../lib/spinner";
 import { updateYourOwnApi } from "../lib/api/functions";
 import { validateSchemaFile } from "../lib/api/errorHandling";
 import { TEMPLATE, SAASTYPE, Config, APITYPE } from "../utils/constants";
+import { boolean } from "@oclif/parser/lib/flags";
 const path = require("path");
 const fse = require("fs-extra");
 const fs = require("fs");
 const prettier = require("prettier");
 const globby = require("globby");
 const exec = require("await-exec");
+const chalk = require("chalk");
 
 export default class Create extends Command {
   static description = "Updates the Generated Code.";
@@ -19,7 +21,53 @@ export default class Create extends Command {
 
   async run() {
     const { flags } = this.parse(Create);
+    let [schemaChanged, panacloudConfigChanged] = this.isChanged();
 
+    if(schemaChanged && panacloudConfigChanged){
+      await this.update();
+    }
+    else {
+      this.log(
+        chalk.red(
+          "GraphQL Schema and Panacloud Config have not changed, therefore no need to Regenerate and Update Code"
+        )
+      );
+    }
+  }
+
+  isChanged(): [boolean, boolean]{
+    
+    let schemaChanged: boolean = this.areFilesChanged("editable_src/graphql/schema/schema.graphql", 
+    ".panacloud/editable_src/graphql/schema/schema.graphql");
+    
+    let panacloudConfigChanged: boolean = this.areFilesChanged("editable_src/panacloudconfig.json",
+    ".panacloud/editable_src/panacloudconfig.json");
+
+    return [schemaChanged, panacloudConfigChanged]; 
+   
+  }
+
+  areFilesChanged(file1: string, file2: string): boolean {
+    let result: boolean = false;
+    fs.readFile(file1, (err: any, data1: any) => {
+      if (err) throw err;
+      
+      fs.readFile(file2, (err2: any, data2: any) => {
+          if (err) throw err2;
+          if (data1.equals(data2)) {
+              result = false;
+          } else {
+              result = true;
+          }
+  
+      });
+      
+    });
+    return result;
+  }
+
+  async update(){
+    
     const validating = startSpinner("Validating Everything");
 
     const configCli: Config = fse.readJsonSync("codegenconfig.json");
@@ -119,5 +167,8 @@ export default class Create extends Command {
     });
 
     stopSpinner(formatting, "Formatting Done", false);
+
+
+
   }
 }
