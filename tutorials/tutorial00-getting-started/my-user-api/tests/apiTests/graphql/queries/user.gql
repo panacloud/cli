@@ -1,6 +1,0 @@
-query user($id: String){
-    user(id: $id){
-        id
-        name
-    }
-}
