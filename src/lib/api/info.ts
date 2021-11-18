@@ -114,21 +114,16 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
     "editable_src/panacloudconfig.json"
   );
   let panacloudConfigNew = configPanacloud;
-  console.log("Pnacloud Config New >>>", panacloudConfigNew);
 
   let prevItems = Object.keys(configPanacloud.lambdas);
-  console.log("Previous Items >>>", prevItems);
 
   const prevMicroServices = prevItems.filter((val: any) =>
     configPanacloud.lambdas[val].asset_path ? false : true
   );
-  console.log("prevMicroServices", prevMicroServices);
   const prevGeneralLambdas = prevItems.filter((val: any) =>
     configPanacloud.lambdas[val].asset_path ? true : false
   );
-  console.log("Previous General Lambdas", prevGeneralLambdas);
   const newMicroServices = Object.keys(microServiceFields!);
-  console.log("New MicroServices", newMicroServices);
   ///Editable_src Lambda Layer
   let oldLambdas: string[] = [];
   for (const ele of prevItems) {
@@ -141,10 +136,8 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
       }
     }
   }
-  console.log("OLD LAMBDAS", oldLambdas);
 
   const allQueries = [...mutationFields!, ...queiresFields!];
-  console.log("All Queries", allQueries);
   let differenceLambdas = allQueries
     .filter((val) => !oldLambdas.includes(val))
     .concat(oldLambdas.filter((val) => !allQueries.includes(val)));
