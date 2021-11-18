@@ -57,6 +57,10 @@ What it should do is that if there is an error, it should not re-generate code a
 
 
 
+7. Implement the multi-tanent billing and monetering constructs. Build a test Event bridge endpoint where we can post the billing events and listen to the events on the console.
+
+
+
 
 
 
