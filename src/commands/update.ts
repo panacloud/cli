@@ -234,6 +234,13 @@ export default class Create extends Command {
       });
       await fs.writeFileSync(file, nextData, "utf8");
     });
+    
+    try {
+      fse.copySync('editable_src/graphql/schema/schema.graphql', '.panacloud/editable_src/graphql/schema/schema.graphql')
+      fse.copySync('editable_src/panacloudconfig.json', '.panacloud/editable_src/panacloudconfig.json')
+    } catch (err) {
+      console.error(err)
+    }
 
     stopSpinner(formatting, "Formatting Done", false);
 
