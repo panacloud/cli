@@ -55,12 +55,21 @@ async function defineYourOwnApi(
       if (file === "gitignore") {
         copy(`${templateDir}/${file}`, ".gitignore");
       } else {
-        copy(`${templateDir}/${file}`, file, (err: Error) => {
-          if (err) {
-            stopSpinner(generatingCode, `Error: ${err}`, true);
-            process.exit(1);
-          }
-        });
+        if (file === "lambdaLayer") {
+          copy(`${templateDir}/${file}`, "mock_lambda_layer", (err: Error) => {
+            if (err) {
+              stopSpinner(generatingCode, `Error: ${err}`, true);
+              process.exit(1);
+            }
+          });
+        } else {
+          copy(`${templateDir}/${file}`, file, (err: Error) => {
+            if (err) {
+              stopSpinner(generatingCode, `Error: ${err}`, true);
+              process.exit(1);
+            }
+          });
+        }
       }
     }
   });
@@ -258,9 +267,14 @@ async function defineYourOwnApi(
   }
 
   try {
-    await exec(
-      `cd mock_lambda_layer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`
-    );
+    await exec(`cd mock_lambda_layer/nodejs && npm i`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
+  }
+
+  try {
+    await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);

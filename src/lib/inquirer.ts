@@ -85,7 +85,7 @@ export const userInput = async () => {
       type: "string",
       name: "api_name",
       message: "API Name",
-      default: "myApi",
+      default: "MyApi",
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },

@@ -76,7 +76,7 @@ export default class Create extends Command {
           apiName: camelCase(usrInput.api_name),
           schemaPath: usrInput.schema_path,
           apiType: APITYPE.graphql,
-          database: DATABASE.dynamoDB,
+          database: DATABASE.neptuneDB,
         },
       };
     }
@@ -127,7 +127,7 @@ export default class Create extends Command {
       process.exit(1);
     }
 
-    stopSpinner(setUpForTest, "Generating Types", false);
+    stopSpinner(setUpForTest, "Setup For Test", false);
 
     const generatingTypes = startSpinner("Generating Types");
 
