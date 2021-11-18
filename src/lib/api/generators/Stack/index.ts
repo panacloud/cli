@@ -108,7 +108,6 @@ export class CdkStack {
           for (let asyncField of this.config.api.asyncFields){
             lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_END_POINT"',value:`${apiName}.api_url`},apiName)
             lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_KEY"',value:`${apiName}.api_key`},apiName)
-
           }
 
           eventBridge.eventBridgeConstructInitializer(this.config.api);

@@ -6,9 +6,10 @@ generates:
   ./mock_lambda_layer/mockApi/types.ts:
     plugins:
       - typescript
-  ./editable_src/testCollections/types.ts:
+  ./editable_src/customMockLambdaLayer/mockApi/types.ts:
     plugins:
       - typescript
+
 config:
   declarationKind: 'interface'
   useImplementingTypes: true

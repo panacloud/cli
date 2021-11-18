@@ -31,7 +31,10 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
       asyncFields,
     },
   } = model;
-  let configJson: PanacloudconfigFile = { lambdas: {},testCollections:{} };
+  let configJson: PanacloudconfigFile = {
+    lambdas: {},
+    mockLambdaLayer: {},
+  };
   const microServices = Object.keys(microServiceFields!);
 
   for (let i = 0; i < microServices.length; i++) {
@@ -44,15 +47,14 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
       const lambdas = (configJson.lambdas[microService][key] =
         {} as PanacloudConfiglambdaParams);
       lambdas.asset_path = `mock_lambda/${microService}/${key}/index.ts`;
-      lambdas.is_mock = true
-      
+      lambdas.is_mock = true;
+
       if (asyncFields && asyncFields.includes(key)) {
         const consumerLambdas = (configJson.lambdas[microService][
           `${key}_consumer`
         ] = {} as PanacloudConfiglambdaParams);
         consumerLambdas.asset_path = `mock_lambda/${microService}/${key}_consumer/index.ts`;
-       consumerLambdas.is_mock = true
-
+        consumerLambdas.is_mock = true;
       }
     }
   }
@@ -62,12 +64,12 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
     const lambdas = (configJson.lambdas[key] =
       {} as PanacloudConfiglambdaParams);
     lambdas.asset_path = `mock_lambda/${key}/index.ts`;
-    lambdas.is_mock = true
+    lambdas.is_mock = true;
     if (asyncFields && asyncFields.includes(key)) {
       const consumerLambdas = (configJson.lambdas[`${key}_consumer`] =
         {} as PanacloudConfiglambdaParams);
       consumerLambdas.asset_path = `mock_lambda/${key}_consumer/index.ts`;
-      consumerLambdas.is_mock = true
+      consumerLambdas.is_mock = true;
     }
   }
 
@@ -81,11 +83,12 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
       nestedLambda[
         "asset_path"
       ] = `mock_lambda/nestedResolvers/${key}/index.ts`;
-      nestedLambda['is_mock'] = true
+      nestedLambda["is_mock"] = true;
     }
   }
 
-  configJson.testCollections['asset_path'] = `mock_lambda_layer/mockApi`; 
+ 
+  configJson.mockLambdaLayer["asset_path"] = `mock_lambda_layer`;
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
 
@@ -206,7 +209,7 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
         panacloudConfigNew.lambdas[service][
           diff
         ].asset_path = `mock_lambda/${service}/${diff}/index.ts`;
-        panacloudConfigNew.lambdas[service][diff].is_mock = true
+        panacloudConfigNew.lambdas[service][diff].is_mock = true;
       } else {
         delete panacloudConfigNew.lambdas[service][diff];
         delete panacloudConfigNew.lambdas[service][`${diff}_consumer`];
@@ -224,9 +227,8 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
         panacloudConfigNew.lambdas[service][
           `${mutLambda}_consumer`
         ].asset_path = `mock_lambda/${service}/${mutLambda}_consumer/index.ts`;
-        panacloudConfigNew.lambdas[service][
-          `${mutLambda}_consumer`
-        ].is_mock = true
+        panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`].is_mock =
+          true;
       } else {
         delete panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`];
       }
@@ -268,18 +270,14 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
       panacloudConfigNew.lambdas[
         diff
       ].asset_path = `mock_lambda/${diff}/index.ts`;
-      panacloudConfigNew.lambdas[
-        diff
-      ].is_mock = true
+      panacloudConfigNew.lambdas[diff].is_mock = true;
       if (asyncFields && asyncFields.includes(diff)) {
         panacloudConfigNew.lambdas[`${diff}_consumer`] =
           {} as PanacloudConfiglambdaParams;
         panacloudConfigNew.lambdas[
           `${diff}_consumer`
         ].asset_path = `mock_lambda/${diff}_consumer/index.ts`;
-        panacloudConfigNew.lambdas[
-          `${diff}_consumer`
-        ].is_mock = true
+        panacloudConfigNew.lambdas[`${diff}_consumer`].is_mock = true;
       }
     } else {
       delete panacloudConfigNew.lambdas[diff];
@@ -306,10 +304,7 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
       panacloudConfigNew.lambdas[
         `${mutLambda}_consumer`
       ].asset_path = `mock_lambda/${mutLambda}_consumer/index.ts`;
-      panacloudConfigNew.lambdas[
-        `${mutLambda}_consumer`
-      ].is_mock = true
-
+      panacloudConfigNew.lambdas[`${mutLambda}_consumer`].is_mock = true;
     } else {
       delete panacloudConfigNew.lambdas[`${mutLambda}_consumer`];
     }
@@ -325,16 +320,17 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
       nestedLambda[
         "asset_path"
       ] = `mock_lambda/nestedResolvers/${key}/index.ts`;
-      nestedLambda['is_mock'] = true
+      nestedLambda["is_mock"] = true;
     }
   } else {
     panacloudConfigNew.nestedLambdas && delete panacloudConfigNew.nestedLambdas;
   }
 
-  if(configPanacloud.testCollections['asset_path']) 
-  panacloudConfigNew.testCollections['asset_path'] = configPanacloud.testCollections['asset_path'];
+  if(configPanacloud.mockLambdaLayer['asset_path']) 
+  panacloudConfigNew.mockLambdaLayer['asset_path'] = configPanacloud.mockLambdaLayer['asset_path'];
 else
-  panacloudConfigNew.testCollections['asset_path'] = "mock_lambda_layer/mockApi";
+  panacloudConfigNew.mockLambdaLayer['asset_path'] = "mock_lambda_layer";
+  
   fse.removeSync("editable_src/panacloudconfig.json");
   fse.writeJson(
     `./editable_src/panacloudconfig.json`,

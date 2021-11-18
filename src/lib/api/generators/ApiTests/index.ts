@@ -94,7 +94,7 @@ class APITests {
           ts.writeImports("chai", ["expect"]);
           ts.writeAllImports("supertest", "supertest");
           ts.writeImports("./AppSyncAPI", ["AppsyncAPI"]);
-          ts.writeImports(`../../${panacloudConfig.testCollections['asset_path'].replace(/^\/|\/$/g, '')}/${key}/testCollections`, [
+          ts.writeImports(`../../${panacloudConfig.mockLambdaLayer['asset_path'].replace(/^\/|\/$/g, '')}/mockApi/${key}/testCollections`, [
             "testCollections",
           ]);
           ts.writeVariableDeclaration(

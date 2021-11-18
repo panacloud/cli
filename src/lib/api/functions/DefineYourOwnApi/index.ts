@@ -124,6 +124,16 @@ async function defineYourOwnApi(
             }
           }
         );
+        await copy(
+          `${templateDir}/${file}`,
+          "editable_src/customMockLambdaLayer",
+          (err: Error) => {
+            if (err) {
+              stopSpinner(generatingCode, `Error: ${err}`, true);
+              process.exit(1);
+            }
+          }
+        );
       }
     });
   } else {
