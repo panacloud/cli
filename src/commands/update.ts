@@ -55,7 +55,7 @@ export default class Create extends Command {
     
 
 
-    if(schemaChanged && panacloudConfigChanged){
+    if(schemaChanged || panacloudConfigChanged){
       await this.update();
     }
     else {
@@ -75,17 +75,17 @@ export default class Create extends Command {
     let panacloudConfigChanged: boolean = this.isFileChanged("editable_src/panacloudconfig.json",
     ".panacloud/editable_src/panacloudconfig.json");
 
-    this.log(
-      chalk.greenBright(
-        schemaChanged
-      )
-    );
+    // this.log(
+    //   chalk.greenBright(
+    //     schemaChanged
+    //   )
+    // );
 
-    this.log(
-      chalk.greenBright(
-        panacloudConfigChanged
-      )
-    );
+    // this.log(
+    //   chalk.greenBright(
+    //     panacloudConfigChanged
+    //   )
+    // );
 
 
     return [schemaChanged, panacloudConfigChanged]; 
@@ -94,35 +94,45 @@ export default class Create extends Command {
 
   isFileChanged(file1: string, file2: string): boolean {
     let result: boolean = false;
-    fs.readFileSync(file1, (err: any, data1: any) => {
-      if (err) throw err;
-      
-      fs.readFileSync(file2, (err2: any, data2: any) => {
-          if (err) throw err2;
-          if (data1.equals(data2)) {
-              
-            this.log(
-              chalk.greenBright(
-                "Not Changed"
-              )
-            );
-            
-              result = false;
-          } else {
 
-            this.log(
-              chalk.greenBright(
-                "Changed"
-              )
-            );
-            
-              result = true;
-          }
-  
-      });
+    const file1Data = (fs.readFileSync(file1)).toString()
+    const file2Data = (fs.readFileSync(file2)).toString()
+
+    if(file1Data === file2Data){
+      result = false
+    }else{
+      result = true
+    }
+    return result
+    // fs.readFileSync(file1, (err: any, data1: any) => {
+    //   if (err) throw err;
       
-    });
-    return result;
+    //   fs.readFileSync(file2, (err2: any, data2: any) => {
+    //       if (err) throw err2;
+    //       if (data1.equals(data2)) {
+              
+    //         this.log(
+    //           chalk.greenBright(
+    //             "Not Changed"
+    //           )
+    //         );
+            
+    //           result = false;
+    //       } else {
+
+    //         this.log(
+    //           chalk.greenBright(
+    //             "Changed"
+    //           )
+    //         );
+            
+    //           result = true;
+    //       }
+  
+    //   });
+      
+    // });
+    // return result;
   }
 
   async update(){
