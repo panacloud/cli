@@ -101,8 +101,9 @@ export default class Create extends Command {
   isFileChanged(file1: string, file2: string): boolean {
     let result: boolean = false;
 
-    const file1Data = (fs.readFileSync(file1)).toString().replace(/(\r\n|\n|\r)/gm, '').replace(/\s/g, '')
-    const file2Data = (fs.readFileSync(file2)).toString().replace(/(\r\n|\n|\r)/gm, '').replace(/\s/g, '')
+    const file1Data = (fs.readFileSync(file1)).toString()
+    const file2Data = (fs.readFileSync(file2)).toString()
+
     if(file1Data === file2Data){
       result = false
     }else{
