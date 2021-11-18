@@ -1,16 +1,22 @@
 import { Command, flags } from "@oclif/command";
+import { extname } from "path";
+import {
+  readFileSync,
+  writeFileSync,
+  removeSync,
+  readJsonSync,
+  copy
+} from "fs-extra";
+import * as globby from "globby";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { updateYourOwnApi } from "../lib/api/functions";
 import { validateSchemaFile } from "../lib/api/errorHandling";
 import { TEMPLATE, SAASTYPE, Config, APITYPE } from "../utils/constants";
-import { boolean } from "@oclif/parser/lib/flags";
-const path = require("path");
-const fse = require("fs-extra");
-const fs = require("fs");
 const prettier = require("prettier");
-const globby = require("globby");
 const exec = require("await-exec");
 const chalk = require("chalk");
+const fs = require("fs");
+
 
 export default class Create extends Command {
   static description = "Updates the Generated Code.";
@@ -139,8 +145,8 @@ export default class Create extends Command {
     
     const validating = startSpinner("Validating Everything");
 
-    const configCli: Config = fse.readJsonSync("codegenconfig.json");
-    
+    const configCli: Config = readJsonSync("codegenconfig.json");
+
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api.apiType === APITYPE.graphql) {
         if (configCli.api?.template === TEMPLATE.defineApi) {
@@ -171,11 +177,11 @@ export default class Create extends Command {
 
     const updatingCode = startSpinner("Updating CDK Code...");
 
-    fse.removeSync("mock_lambda", { recursive: true });
-    fse.removeSync("lambdaLayer/mockApi", { recursive: true });
-    fse.removeSync("consumer_lambda", { recursive: true });
-    fse.removeSync("lib", { recursive: true });
-    fse.removeSync("tests/apiTests",{recursive:true})
+    removeSync("mock_lambda");
+    removeSync("lambdaLayer/mockApi");
+    removeSync("consumer_lambda");
+    removeSync("lib");
+    removeSync("tests/apiTests");
 
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api?.template === TEMPLATE.defineApi) {
@@ -186,7 +192,7 @@ export default class Create extends Command {
     stopSpinner(updatingCode, "CDK Code Updated", false);
     const setUpForTest = startSpinner("Setup For Test");
     try {
-      exec(
+      await exec(
         `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
       );
     } catch (error) {
@@ -202,7 +208,6 @@ export default class Create extends Command {
       stopSpinner(generatingTypes, `Error: ${error}`, true);
       process.exit(1);
     }
-
 
     stopSpinner(generatingTypes, "Types generated", false);
 
@@ -228,16 +233,16 @@ export default class Create extends Command {
     );
 
     files.forEach(async (file: any) => {
-      const data = fs.readFileSync(file, "utf8");
+      const data = readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
-        parser: path.extname(file) === ".json" ? "json" : "typescript",
+        parser: extname(file) === ".json" ? "json" : "typescript",
       });
-      await fs.writeFileSync(file, nextData, "utf8");
+      writeFileSync(file, nextData, "utf8");
     });
     
     try {
-      fse.copySync('editable_src/graphql/schema/schema.graphql', '.panacloud/editable_src/graphql/schema/schema.graphql')
-      fse.copySync('editable_src/panacloudconfig.json', '.panacloud/editable_src/panacloudconfig.json')
+      copy('editable_src/graphql/schema/schema.graphql', '.panacloud/editable_src/graphql/schema/schema.graphql')
+      copy('editable_src/panacloudconfig.json', '.panacloud/editable_src/panacloudconfig.json')
     } catch (err) {
       console.error(err)
     }

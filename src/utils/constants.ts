@@ -73,7 +73,7 @@ export interface API {
   cloudprovider?: CLOUDPROVIDER;
   apiName: string;
   schemaPath: string;
-  schema?: IntrospectionQuery;
+  schema?: IntrospectionQuery | string;
   nestedResolverFieldsAndLambdas?:nestedResolverFieldsAndLambda
   createMockLambda?: string[];
   createNestedResolverLambdaOnUpdate?: string[];

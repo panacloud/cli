@@ -1,5 +1,9 @@
 import { Command, flags } from "@oclif/command";
-import { execSync } from "child_process";
+import { camelCase } from "lodash";
+import { resolve, extname } from "path";
+import { writeJsonSync, readFileSync, writeFileSync } from "fs-extra";
+import { greenBright } from "chalk";
+import * as globby from "globby";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
@@ -15,16 +19,10 @@ import {
   APITYPE,
   CLOUDPROVIDER,
   LANGUAGE,
-  ARCHITECTURE,
 } from "../utils/constants";
-const path = require("path");
-const chalk = require("chalk");
-const fs = require("fs");
-const fse = require("fs-extra");
+
 const prettier = require("prettier");
-const globby = require("globby");
 const exec = require("await-exec");
-const camelCase = require("lodash/camelCase");
 
 export default class Create extends Command {
   static description = "Generates CDK code based on the given schema";
@@ -37,7 +35,7 @@ export default class Create extends Command {
   async run() {
     const { flags } = this.parse(Create);
 
-    let templateDir;
+    let templateDir: string;
     let config: Config;
     // Questions
     const placeholder = process.argv[1];
@@ -50,36 +48,35 @@ export default class Create extends Command {
       )
     ) {
       config = {
-        // entityId: usrInput.entityId,
-        // api_token: usrInput.api_token,
+        entityId: "",
+        api_token: "",
         saasType: SAASTYPE.api,
         api: {
           template: TEMPLATE.defineApi,
           nestedResolver: true,
-          // language: usrInput.language,
-          // cloudprovider: usrInput.cloud_provider,
+          language: LANGUAGE.typescript,
+          cloudprovider: CLOUDPROVIDER.aws,
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
-          database: DATABASE.dynamoDB,
+          database: DATABASE.neptuneDB,
         },
       };
     } else {
       let usrInput = await userInput();
       config = {
-        // entityId: usrInput.entityId,
-        // api_token: usrInput.api_token,
+        entityId: "",
+        api_token: "",
         saasType: SAASTYPE.api,
         api: {
           template: usrInput.template,
           nestedResolver: usrInput.nestedResolver,
-          // language: usrInput.language,
-          // cloudprovider: usrInput.cloud_provider,
+          language: LANGUAGE.typescript,
+          cloudprovider: CLOUDPROVIDER.aws,
           apiName: camelCase(usrInput.api_name),
           schemaPath: usrInput.schema_path,
-          apiType: usrInput.api_type,
-          database:
-            usrInput.database === DATABASE.none ? undefined : usrInput.database,
+          apiType: APITYPE.graphql,
+          database: DATABASE.dynamoDB,
         },
       };
     }
@@ -88,7 +85,7 @@ export default class Create extends Command {
     const validating = startSpinner("Validating Everything");
 
     if (config!.saasType === SAASTYPE.api) {
-      templateDir = path.resolve(__dirname, "../lib/api/template");
+      templateDir = resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
       if (config!.api?.template === TEMPLATE.defineApi) {
         validateSchemaFile(
@@ -99,22 +96,13 @@ export default class Create extends Command {
       }
     }
 
-    fse.writeJson(
-      `./codegenconfig.json`,
-      {
-        ...config,
-        api: {
-          ...config.api,
-          schemaPath: "./editable_src/graphql/schema/schema.graphql",
-        },
+    writeJsonSync(`./codegenconfig.json`, {
+      ...config,
+      api: {
+        ...config.api,
+        schemaPath: "./editable_src/graphql/schema/schema.graphql",
       },
-      (err: string) => {
-        if (err) {
-          stopSpinner(validating, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      }
-    );
+    });
 
     stopSpinner(validating, "Everything's fine", false);
 
@@ -122,16 +110,16 @@ export default class Create extends Command {
       if (config?.api?.template === TEMPLATE.todoApi) {
         await todoApi(config);
       } else if (config.api?.template === TEMPLATE.defineApi) {
-        await defineYourOwnApi(config, templateDir);
+        await defineYourOwnApi(config, templateDir!);
       } else {
-        await basicApi(config, templateDir);
+        await basicApi(config, templateDir!);
       }
     }
 
     const setUpForTest = startSpinner("Setup For Test");
 
     try {
-      exec(
+      await exec(
         `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
       );
     } catch (error) {
@@ -174,28 +162,21 @@ export default class Create extends Command {
     );
 
     files.forEach(async (file: any) => {
-      const data = fs.readFileSync(file, "utf8");
+      const data = readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
-        parser: path.extname(file) === ".json" ? "json" : "typescript",
+        parser: extname(file) === ".json" ? "json" : "typescript",
       });
-      await fs.writeFileSync(file, nextData, "utf8");
+      writeFileSync(file, nextData, "utf8");
     });
 
     stopSpinner(formatting, "Formatting Done", false);
 
-    
-
     this.log(
-      chalk.greenBright(
+      greenBright(
         "Now Start Building Your Multi-Tenant Serverless Unicorn APIs"
       )
     );
 
-    this.log(
-      chalk.greenBright(
-        "Your code goes inside editable_src directory"
-      )
-    );
-
+    this.log(greenBright("Your code goes inside editable_src directory"));
   }
 }

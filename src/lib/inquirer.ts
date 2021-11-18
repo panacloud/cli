@@ -55,32 +55,32 @@ export const userInput = async () => {
     //   message: "Enter Your Panacloud Portal API Key",
     //   validate: Boolean,
     // },
-    {
-      type: "list",
-      name: "api_type",
-      message: "Select API Type?",
-      choices: [APITYPE.graphql, APITYPE.rest],
-      default: APITYPE.graphql,
-      when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi,
-      validate: Boolean,
-    },
+    // {
+    //   type: "list",
+    //   name: "api_type",
+    //   message: "Select API Type?",
+    //   choices: [APITYPE.graphql, APITYPE.rest],
+    //   default: APITYPE.graphql,
+    //   when: (answers: any) =>
+    //     answers.template === TEMPLATE.defineApi,
+    //   validate: Boolean,
+    // },
     {
       type: "string",
       name: "schema_path",
       message: "GraphQL Schema File Path",
-      when: (answers: any) =>
-        answers.api_type === APITYPE.graphql,
+      // when: (answers: any) =>
+      //   answers.api_type === APITYPE.graphql,
       validate: (val: string) => fileExistsAsync(val),
     },
-    {
-      type: "string",
-      name: "schema_path",
-      message: "REST OpenAPI Specifications File Path",
-      when: (answers: any) =>
-        answers.api_type === APITYPE.rest,
-      validate: (val: string) => fileExistsAsync(val),
-    },
+    // {
+    //   type: "string",
+    //   name: "schema_path",
+    //   message: "REST OpenAPI Specifications File Path",
+    //   when: (answers: any) =>
+    //     answers.api_type === APITYPE.rest,
+    //   validate: (val: string) => fileExistsAsync(val),
+    // },
     {
       type: "string",
       name: "api_name",
@@ -98,20 +98,20 @@ export const userInput = async () => {
         answers.template === TEMPLATE.defineApi ||
         answers.api_type === APITYPE.graphql,
     },
-    {
-      type: "list",
-      name: "database",
-      message: "Select Database?",
-      choices: [
-        DATABASE.dynamoDB,
-        DATABASE.neptuneDB,
-        DATABASE.auroraDB,
-        DATABASE.none,
-      ],
-      default: DATABASE.auroraDB,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
-      validate: Boolean,
-    },
+    // {
+    //   type: "list",
+    //   name: "database",
+    //   message: "Select Database?",
+    //   choices: [
+    //     DATABASE.dynamoDB,
+    //     DATABASE.neptuneDB,
+    //     DATABASE.auroraDB,
+    //     DATABASE.none,
+    //   ],
+    //   default: DATABASE.auroraDB,
+    //   when: (answers: any) => answers.template === TEMPLATE.defineApi,
+    //   validate: Boolean,
+    // },
   ]);
 };
 
