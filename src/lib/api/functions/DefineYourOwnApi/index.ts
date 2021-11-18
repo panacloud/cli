@@ -259,7 +259,7 @@ async function defineYourOwnApi(
 
   try {
     await exec(
-      `cd lambdaLayer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`
+      `cd mock_lambda_layer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`
     );
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);

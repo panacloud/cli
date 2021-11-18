@@ -99,10 +99,11 @@ export enum ARCHITECTURE {
 
 export type PanacloudconfigFile = {
   lambdas: any;
-  nestedLambdas?:any
-  mockData?: any
+  nestedLambdas?:any;
+  testCollections?:any
 };
 
 export type PanacloudConfiglambdaParams = {
   asset_path: string;
+  is_mock:boolean
 };
