@@ -24,7 +24,7 @@ export default class Destroy extends Command {
 
     const spinner = startSpinner("Destroying...");
 
-    await exec("cdk destroy --require-approval never", (err: Error, stdout: any) => {
+    await exec("cdk destroy --force", (err: Error, stdout: any) => {
       if (stdout) {
         this.log(stdout);
       }

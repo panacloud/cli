@@ -59,7 +59,7 @@ export default class Create extends Command {
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
-          database: DATABASE.dynamoDB,
+          database: DATABASE.neptuneDB,
         },
       };
     } else {
