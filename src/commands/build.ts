@@ -4,7 +4,6 @@ import { startSpinner, stopSpinner } from '../lib/spinner';
 const {exec} = require("child_process")
 
 export default class Build extends Command {
-  static description = 'describe the command here'
 
   static flags = {
     help: flags.help({char: 'h'}),
