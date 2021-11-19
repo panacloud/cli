@@ -150,7 +150,7 @@ export class Lambda {
         typeName: "lambda.LayerVersion",
         initializer: () => {
           this.code
-            .line(`new lambda.LayerVersion(this, "${apiName}LambdaLayer", {
+            .line(`new lambda.LayerVersion(this, "${apiName}MockLambdaLayer", {
           code: lambda.Code.fromAsset("${path}"),
         })`);
         },
