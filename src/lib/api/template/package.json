@@ -5,9 +5,7 @@
     "template": "bin/template.js"
   },
   "scripts": {
-    "build": "tsc",
     "watch": "tsc -w",
-    "test": " mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit",
     "cdk": "cdk",
     "codegen": "graphql-codegen"
   },
