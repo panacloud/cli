@@ -9,9 +9,7 @@
     "watch": "tsc -w",
     "test": " mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit",
     "cdk": "cdk",
-    "deploy": "tsc && cdk deploy --outputs-file ./cdk-outputs.json",
-    "codegen": "graphql-codegen",
-    "destroy": "cdk destroy"
+    "codegen": "graphql-codegen"
   },
   "devDependencies": {
     "@aws-cdk/assert": "^2.0.0-rc.29",
