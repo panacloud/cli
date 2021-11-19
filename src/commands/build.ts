@@ -19,6 +19,7 @@ export default class Build extends Command {
         if (err) {
           stopSpinner(spinner, ``, true);
           this.log(chalk.redBright(stdout));
+          this.log(chalk.redBright(stderr));
           process.exit(1)
         }
         stopSpinner(spinner, "Build", false);

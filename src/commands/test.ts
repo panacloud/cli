@@ -13,6 +13,7 @@ export default class Test extends Command {
     exec("./node_modules/mocha/bin/mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit --colors",(err: any, stdout: any, stderr: any) => {
       if (err) {
         stopSpinner(spinner, `${stderr}`, true);
+        this.log(stderr)
         this.log(stdout);
         process.exit(1)
       }
