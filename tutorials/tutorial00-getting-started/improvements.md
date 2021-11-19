@@ -32,8 +32,12 @@ addUser Mutation
 The following MyUserAPIs have real implementations:
 User Query
 
+Assigned to Mateen
+
 
 3. Create Database connection object, request object and response object in real lambda stubs. 
+
+Assigned to hasan.
 
 4. If we Update the schema and run the update command:
 updateUser (
@@ -50,14 +54,11 @@ It also re-generates a lot of code.
 
 What it should do is that if there is an error, it should not re-generate code at all.
 
-5. We should implement panacloud deploy and panacloud destroy commands ourselves so that we can agument the CDK commands by giving status information to the user. Also for example we can remove the url and token from the cdk-outputs.json file. 
+
+5. Add other database support: Arora Serverless and DynamoDB
 
 
-6. To immediately release the cli we need to comment out user input for all the options which are not related to GraphQL project creation. However, all the options should be present in the codegenconfig.json for future use.
-
-
-
-7. Implement the multi-tanent billing and monetering constructs. Build a test Event bridge endpoint where we can post the billing events and listen to the events on the console.
+6. Implement the multi-tanent billing and monetering constructs. Build a test Event bridge endpoint where we can post the billing events and listen to the events on the console.
 
 
 

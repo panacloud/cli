@@ -93,7 +93,7 @@ npm run build
 
 Then you have to deploy the project:
 
-npm run deploy
+panacloud deploy
 
 After deploying check out the `cdk-outputs.json` file in the project root it contains the URL and Key of the deployed APIs.
 
@@ -103,7 +103,7 @@ npm run test
 
 When you want to destroy the deployed stack just give this command:
 
-npm run destroy
+panacloud destroy
 
 
 ## Running Automated API Tests Against the Mock APIs
