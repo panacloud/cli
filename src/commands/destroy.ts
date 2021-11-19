@@ -36,8 +36,15 @@ export default class Destroy extends Command {
     });
 
     removeSync("cdk.out");
-    removeSync("cdk-outputs.json");
-
+    const apiName = JSON.parse(readFileSync("./codegenconfig.json").toString()).api.apiName
+    writeFileSync(
+      "./cdk-outputs.json",
+      `{
+      "${apiName}Stack" : {
+       
+      }
+    }`
+    );
     stopSpinner(spinner, "Destroyed", false);
   }
 }
