@@ -1,6 +1,7 @@
 import {Command, flags} from '@oclif/command'
+import chalk = require('chalk');
 import { startSpinner, stopSpinner } from '../lib/spinner';
-const exec = require("await-exec")
+const {exec} = require("child_process")
 
 export default class Build extends Command {
   static description = 'describe the command here'
@@ -13,20 +14,18 @@ export default class Build extends Command {
   async run() {
     const spinner = startSpinner("Building ...");
 
-   await exec(
+  exec(
       "tsc",
-      (err:any, stdout: any) => {
-        if (stdout) {
-          this.log(stdout);
-        }
-
+      (err: any, stdout: any, stderr: any) => {
         if (err) {
-          stopSpinner(spinner, `Error: ${err}`, true);
-          process.exit(1);
+          stopSpinner(spinner, ``, true);
+          this.log(chalk.redBright(stdout));
+          process.exit(1)
         }
+        stopSpinner(spinner, "Build", false);
+        this.log(stdout);
       }
     );
 
-    stopSpinner(spinner, "Build", false);
   }
 }
