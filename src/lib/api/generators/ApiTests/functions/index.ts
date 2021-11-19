@@ -11,7 +11,16 @@ export default class TypeScriptTestWriter {
     this.code.line(`describe ("run ${key}", ()=>{`)
     this.code.line()
     this.code.line(`it("${key} works correctly", (done) => {`)
-    this.code.openBlock(`for(let index = 0;index < 3;index++)`)
+    ts.writeVariableDeclaration(
+      {
+        name: "totalFields",
+        typeName: "",
+        initializer: `testCollections.fields.${key}.length`,
+        export: false,
+      },
+      "const"
+    );
+    this.code.openBlock(`for(let index = 0;index < totalFields;index++)`)
     ts.writeVariableDeclaration(
       {
         name: "args",
