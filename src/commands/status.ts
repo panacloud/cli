@@ -2,6 +2,7 @@ import {Command, flags} from '@oclif/command'
 import chalk = require('chalk')
 import * as validUrl from "valid-url";
 import { readFileSync } from 'fs-extra'
+import { PanacloudconfigFile } from '../utils/constants';
 const fs = require("fs")
 export default class Status extends Command {
   static description = 'describe the command here'
@@ -15,6 +16,37 @@ export default class Status extends Command {
 
    this.checkIsDeployed()
    this.checkIsFileChange()
+   this.checkIsRealLambda()
+  }
+  checkIsRealLambda() {
+    const config:PanacloudconfigFile = JSON.parse(readFileSync("./editable_src/panacloudconfig.json").toString())
+    const apiName = JSON.parse(readFileSync("./codegenconfig.json").toString()).api.apiName
+    const allLambdas = []
+    const mockLambdas = []
+    const realLambdas = []
+   config.nestedLambdas? allLambdas.push(...Object.keys(config.lambdas),...Object.keys(config.nestedLambdas)):allLambdas.push(...Object.keys(config.lambdas))
+    for(let key of allLambdas){
+      if(config.lambdas[key].is_mock ===true){
+        mockLambdas.push(key)
+      }else{
+        realLambdas.push(key)
+      }
+    }
+    this.log("\n")
+
+    if(mockLambdas.length > 0){
+      this.log(chalk.white(`Following APIs are using mock data:`))
+      for(let i of mockLambdas){
+        this.log(chalk.white(i))
+      }
+      this.log("\n")
+    }
+    if(realLambdas.length > 0){
+      this.log(chalk.white(`Following APIs have real implementations:`))
+      for(let i of realLambdas){
+        this.log(chalk.white(i))
+      }
+    }
   }
   checkIsFileChange(){
     let [schemaChanged, panacloudConfigChanged] = this.isChanged();
