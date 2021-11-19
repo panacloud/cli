@@ -25,7 +25,7 @@ export class AuroraServerless {
               maxCapacity: rds.AuroraCapacityUnit.ACU_32,
             },
             deletionProtection: false,
-            defaultDatabaseName: "${apiName}DB",
+            defaultDatabaseName: props?.prod ? props?.prod+"_${apiName}DB" : "${apiName}DB",
           });`);
         },
       },
@@ -47,7 +47,7 @@ export class AuroraServerless {
         typeName: CONSTRUCTS.auroraDB,
         initializer: () => {
           this.code.line(
-            `new ${CONSTRUCTS.auroraDB}(this,"${CONSTRUCTS.auroraDB}");`
+            `new ${CONSTRUCTS.auroraDB}(this,"${CONSTRUCTS.auroraDB}", {prod: props?.prod});`
           );
         },
       },

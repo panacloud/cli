@@ -16,7 +16,7 @@ export class DynamoDB {
         typeName: "dynamodb.Table",
         initializer: () => {
           this.code.line(` new dynamodb.Table(this, "${apiName}Table", {
-              tableName: "${apiName}",
+              tableName: props?.prod ? props?.prod+"_${apiName}" : "${apiName}",
               billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
               partitionKey:{
                 name: "id",
@@ -48,7 +48,7 @@ export class DynamoDB {
         typeName: CONSTRUCTS.dynamoDB,
         initializer: () => {
           this.code.line(
-            `new ${CONSTRUCTS.dynamoDB}(this,"${apiName}${CONSTRUCTS.dynamoDB}")`
+            `new ${CONSTRUCTS.dynamoDB}(this,"${apiName}${CONSTRUCTS.dynamoDB}", {prod : props?.prod})`
           );
         },
       },

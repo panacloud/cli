@@ -16,14 +16,22 @@ export class Cdk {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-  public initializeStack(name: string, contents: any) {
+  public initializeStack(name: string, propsName: string = "StackProps", contents: any, constructProps?: consturctProps[]) {
     const ts = new TypeScriptWriter(this.code);
+    if (constructProps) {
+      this.code.openBlock(`interface ${propsName}`);
+      constructProps.forEach(({ name, type }) => {
+        this.code.line(`${name}?: ${type}`);
+      });
+    this.code.closeBlock();
+      this.code.line();
+    }
     const classDefinition: ClassDefinition = {
       name: `${_.upperFirst(_.camelCase(name))}Stack`,
       extends: "Stack",
       export: true,
     };
-    ts.writeClassBlock(classDefinition, undefined, "StackProps", contents);
+    ts.writeClassBlock(classDefinition, undefined, propsName, contents);
   }
 
   public initializeConstruct(

@@ -15,6 +15,11 @@ type StackBuilderProps = {
   config: ApiModel;
 };
 
+interface ConstructPropsType {
+  name: string;
+  type: string;
+}
+
 export class AuroraDBConstruct {
   outputFile: string = `index.ts`;
   outputDir: string = `lib/${CONSTRUCTS.auroraDB}`;
@@ -42,11 +47,19 @@ export class AuroraDBConstruct {
     imp.importRds();
     imp.importEc2();
 
+    let ConstructProps: ConstructPropsType[] = [];
+
+    ConstructProps.push({
+      name: `prod?`,
+      type: "string",
+    })
+
+
     const auroradbProperties: Property[] = auroradbPropertiesHandler();
 
     cdk.initializeConstruct(
       CONSTRUCTS.auroraDB,
-      undefined,
+      "ArouraProps",
       () => {
         ec2.initializeVpc(apiName);
         this.code.line();
@@ -75,7 +88,7 @@ export class AuroraDBConstruct {
 
         auroradbPropertiesInitializer(apiName, this.code);
       },
-      undefined,
+      ConstructProps,
       auroradbProperties
     );
 

@@ -40,6 +40,17 @@ export class CdkAppStack {
       "const"
     );
 
+    ts.writeVariableDeclaration(
+      {
+        name: `deployEnv`,
+        typeName: "",
+        initializer: () => {
+          this.code.line(`process.env.STAGE`);
+        },
+      },
+      "const"
+    );
+
     ts.writeVariableDeclaration({
       name:"stack",
       typeName: "",
@@ -47,9 +58,11 @@ export class CdkAppStack {
         this.code.line(
           `new ${_.upperFirst(
             _.camelCase(this.config.workingDir)
-          )}Stack(app, "${_.upperFirst(
+          )}Stack(app, deployEnv ? deployEnv + "-${_.upperFirst(
             _.camelCase(this.config.workingDir)
-          )}Stack", {});`
+          )}Stack" : "${_.upperFirst(
+            _.camelCase(this.config.workingDir)
+          )}Stack", {prod: deployEnv});`
         );
     },
     },"const"
