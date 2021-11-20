@@ -65,10 +65,8 @@ USAGE
 <!-- commands -->
 * [`panacloud help [COMMAND]`](#panacloud-help-command)
 * [`panacloud init`](#panacloud-init)
-* [`panacloud deploy`](#panacloud-deploy)
 * [`panacloud update`](#panacloud-update)
 * [`panacloud status`](#panacloud-status)
-* [`panacloud destroy`](#panacloud-destroy)
 * [`panacloud merge`](#panacloud-merge)
 
 ## `panacloud help [COMMAND]`
@@ -103,6 +101,7 @@ OPTIONS
 _See code: [src/commands/init.ts](https://github.com/panacloud/cli/commands/init.ts)_
 <!-- commandsstop -->
 
+
 ## `panacloud update`
 
 Update CDK code and mock lambdas based on the updated schema. This command doesnot overwrite code in the editiable_src directory.
@@ -118,20 +117,6 @@ OPTIONS
 _See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/update.ts)_
 <!-- commandsstop -->
 
-## `panacloud deploy`
-
-Deploy the project to the cloud provider infrastructure.
-
-```
-USAGE
-  $ panacloud deploy
-
-OPTIONS
-  -h, --help  show CLI help
-```
-
-_See code: [src/commands/deploy.ts](https://github.com/panacloud/cli/src/commands/deploy.ts)_
-<!-- commandsstop -->
 
 ## `panacloud status`
 
@@ -148,20 +133,6 @@ OPTIONS
 _See code: [src/commands/status.ts](https://github.com/panacloud/cli/src/commands/status.ts)_
 <!-- commandsstop -->
 
-## `panacloud destroy`
-
-Destroy the project in the cloud provider infrastructure.
-
-```
-USAGE
-  $ panacloud destroy
-
-OPTIONS
-  -h, --help  show CLI help
-```
-
-_See code: [src/commands/destroy.ts](https://github.com/panacloud/cli/src/commands/destroy.ts)_
-<!-- commandsstop -->
 
 
 ## `panacloud merge`

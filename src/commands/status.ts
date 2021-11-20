@@ -86,14 +86,14 @@ export default class Status extends Command {
     let API_KEY;
     const apiName = JSON.parse(readFileSync("./codegenconfig.json").toString()).api.apiName
     if (!existsSync("./cdk-outputs.json")) {
-      this.log(chalk.red(`${apiName} is currently not deployed,give the command panacloud deploy to deploy it.`))
+      this.log(chalk.red(`${apiName} is currently not deployed, give the command panacloud deploy to deploy it.`))
     }else{
       let data= JSON.parse(readFileSync("./cdk-outputs.json").toString())
     const values:string[] =Object.values(
       Object.entries(data)[0][1] as any
     );
     if(values.length === 0){
-      this.log(chalk.red(`${apiName} is currently not deployed,give the command panacloud deploy to deploy it.`))
+      this.log(chalk.red(`${apiName} is currently not deployed, give the command panacloud deploy to deploy it.`))
       return 
     }else{
       values.forEach((val: string) => {
