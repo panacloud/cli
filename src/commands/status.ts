@@ -3,6 +3,7 @@ import chalk = require('chalk')
 import * as validUrl from "valid-url";
 import { readFileSync } from 'fs-extra'
 import { PanacloudconfigFile } from '../utils/constants';
+import { existsSync } from 'fs';
 const fs = require("fs")
 export default class Status extends Command {
   static description = 'describe the command here'
@@ -83,8 +84,11 @@ export default class Status extends Command {
   checkIsDeployed() {
     let API_URL;
     let API_KEY;
-    let data= JSON.parse(readFileSync("./cdk-outputs.json").toString())
     const apiName = JSON.parse(readFileSync("./codegenconfig.json").toString()).api.apiName
+    if (!existsSync("./cdk-outputs.json")) {
+      this.log(chalk.red(`${apiName} is currently not deployed,give the command panacloud deploy to deploy it.`))
+    }else{
+      let data= JSON.parse(readFileSync("./cdk-outputs.json").toString())
     const values:string[] =Object.values(
       Object.entries(data)[0][1] as any
     );
@@ -104,6 +108,9 @@ export default class Status extends Command {
       this.log(chalk.blue(`API Key : ${API_KEY}`))
 
     }
+    }    
+    
+   
     
    
   }
