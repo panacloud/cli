@@ -65,8 +65,8 @@ export default class Create extends Command {
     } else {
       let usrInput = await userInput();
       config = {
-        entityId: "",
-        api_token: "",
+        // entityId: "",
+        // api_token: "",
         saasType: SAASTYPE.api,
         api: {
           template: usrInput.template,

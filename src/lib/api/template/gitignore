@@ -7,4 +7,3 @@ node_modules
 .cdk.staging
 cdk.out
 tests/apiTests/appsyncCredentials.json
-.panacloud

@@ -100,7 +100,8 @@ export default class Create extends Command {
 
   async update(){
     
-    const validating = startSpinner("Validating Everything");
+    // const validating = startSpinner("Validating Everything");
+    const updatingCode = startSpinner("Updating CDK Code...");
 
     const configCli: Config = readJsonSync("codegenconfig.json");
 
@@ -109,12 +110,12 @@ export default class Create extends Command {
         if (configCli.api?.template === TEMPLATE.defineApi) {
           validateSchemaFile(
             configCli.api?.schemaPath,
-            validating,
+            updatingCode,
             configCli.api?.apiType
           );
         } else {
           stopSpinner(
-            validating,
+            updatingCode,
             "Update command is only supported for 'Define Your Own API'",
             true
           );
@@ -122,7 +123,7 @@ export default class Create extends Command {
         }
       } else {
         stopSpinner(
-          validating,
+          updatingCode,
           "Update command is only supported for GraphQL",
           true
         );
@@ -130,9 +131,8 @@ export default class Create extends Command {
       }
     }
 
-    stopSpinner(validating, "Everything's fine", false);
+    // stopSpinner(validating, "Everything's fine", false);
 
-    const updatingCode = startSpinner("Updating CDK Code...");
 
     removeSync("mock_lambda");
     removeSync("lambdaLayer/mockApi");
