@@ -11,6 +11,11 @@ type StackBuilderProps = {
   config: ApiModel;
 };
 
+interface ConstructPropsType {
+  name: string;
+  type: string;
+}
+
 export class NeptuneDBConstruct {
   outputFile: string = `index.ts`;
   outputDir: string = `lib/${CONSTRUCTS.neptuneDB}`;
@@ -36,6 +41,14 @@ export class NeptuneDBConstruct {
     imp.importNeptune();
     imp.importEc2();
 
+    let ConstructProps: ConstructPropsType[] = [];
+
+    ConstructProps.push({
+      name: `prod?`,
+      type: "string",
+    })
+
+
     const propertiesForNeptuneDbConstruct: Property[] = [
       {
         name: "VPCRef",
@@ -59,7 +72,7 @@ export class NeptuneDBConstruct {
 
     cdk.initializeConstruct(
       CONSTRUCTS.neptuneDB,
-      undefined,
+      "NeptuneProps",
       () => {
         ec2.initializeVpc(
           apiName,
@@ -127,7 +140,7 @@ export class NeptuneDBConstruct {
 
         neptunePropertiesInitializer(apiName, this.code);
       },
-      undefined,
+      ConstructProps,
       propertiesForNeptuneDbConstruct
     );
     this.code.closeFile(this.outputFile);

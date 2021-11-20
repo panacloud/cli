@@ -1,8 +1,9 @@
-import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType, GraphQLInterfaceType, isInterfaceType } from "graphql";
+import { GraphQLSchema, buildSchema, GraphQLObjectType, GraphQLField, GraphQLArgument, GraphQLEnumType, GraphQLInterfaceType, isInterfaceType, isUnionType, GraphQLUnionType, } from "graphql";
 import { getRandomItem, isArray } from "./helper";
 import { camelCase } from 'lodash';
 import * as randomName from 'random-name';
 let startCase = require("lodash/startCase");
+let upperFirst = require("lodash/upperFirst");
 
 type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime" | "AWSJSON" | "AWSPhone" | "AWSIPAddress"
 export type ArgAndResponseType = { arguments?: any; response: any }
@@ -173,6 +174,10 @@ class RootObjectResponse extends ObjectResponse {
         /* if the field type is interface*/
       } else if (isInterfaceType(this.graphQLSchema.getType(type))) {
         this.objectResponses.push(new CustomInterfaceObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
+
+        /* if the field type is union*/
+      } else if (isUnionType(this.graphQLSchema.getType(type))) {
+        this.objectResponses.push(new CustomUnionObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
 
       } else {
         this.objectResponses.push(new CustomObjectResponse(graphQLSchema, response, _isArray, this.childNumber, this.childNumber === 1 ? [] : this.resolvedCustomObjectTypes));
@@ -536,11 +541,14 @@ class EnumObjectResponse extends ObjectResponse {
   }
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    let enum_imp: string = startCase(this.enumType);   ////Modifying case specific to codegen
-    if(enum_imp.includes(" ")){
-      enum_imp = enum_imp.split(" ").join("_")
+    if(this.enumType.includes("_")){
+      let enum_imp: string = startCase(this.enumType);
+      enum_imp = enum_imp.split(" ").join("_");
+      return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
-    return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`; // ==> ApiSaasType.Music
+    else{
+      return `${upperFirst(this.enumType)}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
   }
 }
 class NestedCustomObjectResponse extends ObjectResponse {
@@ -571,6 +579,57 @@ class CustomInterfaceObjectResponse extends ObjectResponse {
     resolvedCustomObjectTypes?.push(type);
     const interfaceTypeObject = this.graphQLSchema.getType(type) as GraphQLInterfaceType;
     const implementedObjectTypes = [...this.graphQLSchema.getImplementations(interfaceTypeObject).objects];
+
+    if (isArray) {
+      Array(3).fill(null).forEach(() => {
+        const objectType = getRandomItem(implementedObjectTypes);
+        const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+        this.objectResponses.push({
+          objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+          objectType: objectType
+        })
+      })
+    } else {
+      const objectType = getRandomItem(implementedObjectTypes);
+      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      this.objectResponses.push({
+        objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
+        objectType: objectType
+      })
+    }
+
+  }
+
+  write(object: ArgAndResponseType['response']) {
+    if (this.isArray) {
+      object[this.responseField.name] = [];
+      this.objectResponses.forEach(({ objectResponse, objectType }, idx) => {
+        object[this.responseField.name].push({ __typename: objectType.name })
+        objectResponse.write(object[this.responseField.name][idx])
+      })
+
+    } else {
+      this.objectResponses.forEach(({ objectResponse, objectType }) => {
+        object[this.responseField.name] = { __typename: objectType.name };
+        objectResponse.write(object[this.responseField.name])
+      })
+    }
+
+  }
+
+}
+class CustomUnionObjectResponse extends ObjectResponse {
+  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<any, any> }[] = [];
+  private isArray?: boolean;
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+    super(graphQLSchema);
+    this.responseField = responseField;
+    this.isArray = isArray;
+    const type = responseField.type.toString().replace(/[\[|\]!]/g, '') as ScalarType; //removing braces and "!" eg: [String!]! ==> String
+    resolvedCustomObjectTypes?.push(type);
+    const interfaceTypeObject = this.graphQLSchema.getType(type) as GraphQLUnionType;
+    const implementedObjectTypes = [...(interfaceTypeObject as any)._types];
 
     if (isArray) {
       Array(3).fill(null).forEach(() => {
@@ -921,11 +980,14 @@ class EnumObjectRequest extends ObjectRequest {
 
   getRandomEnum() {
     const enumValue = getRandomItem(this.enumList);
-    let enum_imp: string = startCase(this.enumType);   ////Modifying case specific to codegen
-    if(enum_imp.includes(" ")){
-      enum_imp = enum_imp.split(" ").join("_")
+    if(this.enumType.includes("_")){
+      let enum_imp: string = startCase(this.enumType);
+      enum_imp = enum_imp.split(" ").join("_");
+      return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
     }
-    return `${enum_imp}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    else{
+      return `${upperFirst(this.enumType)}.${enumValue[0].toUpperCase()}${camelCase(enumValue).slice(1)}`;
+    }
   }
 
 }

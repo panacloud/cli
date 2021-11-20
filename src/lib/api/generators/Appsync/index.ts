@@ -51,14 +51,10 @@ class AppsyncConstruct {
     mutationsAndQueries.forEach((key: string) => {
 
     if (key !== async_response_mutName){
-
       ConstructProps.push({
         name: `${apiName}_lambdaFn_${key}Arn`,
         type: "string",
-
-
       })
-
     }
     });
 
@@ -70,6 +66,11 @@ class AppsyncConstruct {
         })
       });
     }
+
+    ConstructProps.push({
+      name: `prod?`,
+      type: "string",
+    })
 
     cdk.initializeConstruct(
       `${CONSTRUCTS.appsync}`,

@@ -32,8 +32,8 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         } else if (responseTypeName === "Int") {
           res = 0;
         } else if (isInterfaceType(gqlSchema.getType(responseTypeName))) {
-          const implementedTypes = gqlSchema.getImplementations(gqlSchema.getType(responseTypeName) as GraphQLInterfaceType).objects.map(v => v.toString());
-          responseTypeName = implementedTypes.join(' | ')
+          const implementedTypes = gqlSchema.getImplementations(gqlSchema.getType(responseTypeName) as GraphQLInterfaceType).objects.map(v => upperFirst(v.toString()));
+          responseTypeName = implementedTypes.join(' | ');
         } else {
           res = {};
         }
@@ -69,11 +69,14 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
             if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
-              let enum_imp: string = startCase(v.name);
-              if(enum_imp.includes(" ")){
-                enum_imp = enum_imp.split(" ").join("_")
+              if(v.name.includes("_")){
+                let enum_imp: string = startCase(v.name);
+                enum_imp = enum_imp.split(" ").join("_");
+                allEnumImports.push(enum_imp);
               }
-              allEnumImports.push(enum_imp);
+              else{
+                allEnumImports.push(upperFirst(v.name));
+              }
             }
           }
         });

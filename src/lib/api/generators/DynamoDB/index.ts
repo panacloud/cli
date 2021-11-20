@@ -9,6 +9,11 @@ type StackBuilderProps = {
   config: ApiModel;
 };
 
+interface ConstructPropsType {
+  name: string;
+  type: string;
+}
+
 export class DyanmoDBConstruct {
   outputFile: string = `index.ts`;
   outputDir: string = `lib/${CONSTRUCTS.dynamoDB}`;
@@ -39,16 +44,23 @@ export class DyanmoDBConstruct {
       },
     ];
 
+    let ConstructProps: ConstructPropsType[] = [];
+
+    ConstructProps.push({
+      name: `prod?`,
+      type: "string",
+    })
+
     cdk.initializeConstruct(
       CONSTRUCTS.dynamoDB,
-      undefined,
+      "DynamoDBProps",
       () => {
         dynamoDB.initializeDynamodb(apiName); // construct initializer for dynamoDb constructs
         this.code.line();
         this.code.line(`this.table = ${apiName}_table`); // properties initializer for dynamoDb constructs
         this.code.line();
       },
-      undefined,
+      ConstructProps,
       properties
     );
 
