@@ -54,22 +54,30 @@ async function defineYourOwnApi(
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         copy(`${templateDir}/${file}`, ".gitignore");
+      } else if (file === "lambdaLayer") {
+        copy(`${templateDir}/${file}`, "mock_lambda_layer", (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
+        copy(
+          `${templateDir}/${file}`,
+          "editable_src/customMockLambdaLayer",
+          (err: Error) => {
+            if (err) {
+              stopSpinner(generatingCode, `Error: ${err}`, true);
+              process.exit(1);
+            }
+          }
+        );
       } else {
-        if (file === "lambdaLayer") {
-          copy(`${templateDir}/${file}`, "mock_lambda_layer", (err: Error) => {
-            if (err) {
-              stopSpinner(generatingCode, `Error: ${err}`, true);
-              process.exit(1);
-            }
-          });
-        } else {
-          copy(`${templateDir}/${file}`, file, (err: Error) => {
-            if (err) {
-              stopSpinner(generatingCode, `Error: ${err}`, true);
-              process.exit(1);
-            }
-          });
-        }
+        copy(`${templateDir}/${file}`, file, (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
       }
     }
   });
@@ -111,31 +119,6 @@ async function defineYourOwnApi(
     await mkdirRecursiveAsync(`.panacloud/editable_src`);
     await mkdirRecursiveAsync(`.panacloud/editable_src/graphql`);
     await mkdirRecursiveAsync(`.panacloud/editable_src/graphql/schema`);
-
-    readdirSync(templateDir).forEach(async (file: any) => {
-      if (file === "lambdaLayer") {
-        await copy(
-          `${templateDir}/${file}`,
-          "editable_src/lambdaLayer",
-          (err: Error) => {
-            if (err) {
-              stopSpinner(generatingCode, `Error: ${err}`, true);
-              process.exit(1);
-            }
-          }
-        );
-        await copy(
-          `${templateDir}/${file}`,
-          "editable_src/customMockLambdaLayer",
-          (err: Error) => {
-            if (err) {
-              stopSpinner(generatingCode, `Error: ${err}`, true);
-              process.exit(1);
-            }
-          }
-        );
-      }
-    });
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
@@ -222,7 +205,7 @@ async function defineYourOwnApi(
     //   "./cdk-outputs.json",
     //   `{
     //   "${config.api.apiName}Stack" : {
-       
+
     //   }
     // }`
     // );
@@ -284,7 +267,9 @@ async function defineYourOwnApi(
   }
 
   try {
-    await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
+    await exec(
+      `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
+    );
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);

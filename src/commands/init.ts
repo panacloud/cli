@@ -77,6 +77,7 @@ export default class Create extends Command {
           schemaPath: usrInput.schema_path,
           apiType: APITYPE.graphql,
           database: DATABASE.neptuneDB,
+          neptuneQueryLanguage: usrInput.neptuneQueryLanguage
         },
       };
     }

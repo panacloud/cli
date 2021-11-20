@@ -7,6 +7,10 @@ export enum APITYPE {
   rest = "REST OpenAPI",
 }
 
+export enum NEPTUNEQUERYLANGUAGE  { 
+  gremlin = "Gremlin"
+}
+
 export enum DATABASE {
   dynamoDB = "DynamoDB (NoSQL)",
   neptuneDB = "Neptune (Graph)",
@@ -89,7 +93,8 @@ export interface API {
     [k: string]: any[];
 };
   generalFields?: string[],
-  asyncFields?:string[]
+  asyncFields?:string[],
+  neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE,
 }
 
 export enum ARCHITECTURE {

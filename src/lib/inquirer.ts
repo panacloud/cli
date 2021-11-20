@@ -5,6 +5,7 @@ import {
   CLOUDPROVIDER,
   LANGUAGE,
   SAASTYPE,
+  NEPTUNEQUERYLANGUAGE,
 } from "../utils/constants";
 import { fileExistsAsync } from "./fs";
 const inquirer = require("inquirer");
@@ -112,6 +113,15 @@ export const userInput = async () => {
     //   when: (answers: any) => answers.template === TEMPLATE.defineApi,
     //   validate: Boolean,
     // },
+    {
+      type: "list",
+      name: "neptuneQueryLanguage",
+      message: "Select Query Language",
+      choices: [NEPTUNEQUERYLANGUAGE.gremlin],
+      default: NEPTUNEQUERYLANGUAGE.gremlin,
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      validate: Boolean,
+    },
   ]);
 };
 

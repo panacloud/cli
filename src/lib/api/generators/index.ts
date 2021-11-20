@@ -19,6 +19,7 @@ import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
 import { apiTests } from "./ApiTests";
+import { GremlinSetup } from "./Neptune/gremlinSetup";
 const fs = require("fs");
 export const generator = async (
   config: ApiModel,
@@ -47,6 +48,7 @@ export const generator = async (
   }
   if (config.api.database === DATABASE.neptuneDB) {
     await neptuneDBConstruct({ config });
+    await GremlinSetup({ config });
     // neptuneDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.dynamoDB) {
@@ -64,7 +66,7 @@ export const generator = async (
     await customLambda({ config, type });
   }
   if (config.api.apiType === APITYPE.graphql) {
-    apiTests({ config},panacloudConfig);
+    apiTests({ config }, panacloudConfig);
   }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {

@@ -1,5 +1,10 @@
 import { CodeMaker } from "codemaker";
-import { APITYPE, ARCHITECTURE } from "../../../../utils/constants";
+import {
+  APITYPE,
+  ARCHITECTURE,
+  DATABASE,
+  NEPTUNEQUERYLANGUAGE,
+} from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class LambdaFunction {
@@ -13,19 +18,23 @@ export class LambdaFunction {
     content?: any,
     fieldName?: string,
     nestedResolver?: boolean,
-    asyncField?:Boolean
+    asyncField?: Boolean
   ) {
     if (apiType === APITYPE.graphql) {
       const ts = new TypeScriptWriter(this.code);
-      ts.writeAllImports("aws-sdk", "* as AWS")
-      ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
+      ts.writeAllImports("aws-sdk", "* as AWS");
+      ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
       // this.code.line(`var AWS = require('aws-sdk');`);
       if (asyncField) {
-        this.code.line(`var eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`);
+        this.code.line(
+          `var eventBridge = new AWS.EventBridge({ region: process.env.AWS_REGION });`
+        );
       }
       this.code.line(`var isEqual = require('lodash.isequal');`);
       this.code.line();
-      this.code.line(`exports.handler = async (event: AppSyncResolverEvent<any>) => {`);
+      this.code.line(
+        `exports.handler = async (event: AppSyncResolverEvent<any>) => {`
+      );
       if (nestedResolver) {
         this.code.line(`console.log(event)`);
       } else {
@@ -94,31 +103,94 @@ export class LambdaFunction {
     }
   }
 
-  public helloWorldFunction(name: string) {
+  public helloWorldFunction(
+    name: string,
+    database: DATABASE,
+    neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE
+  ) {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeAllImports("aws-sdk", "* as AWS")
-    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
+    ts.writeAllImports("aws-sdk", "* as AWS");
+    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      ts.writeVariableDeclaration(
+        {
+          name: "initGremlin",
+          typeName: "",
+          initializer: () => {
+            this.code.line(`require("/opt/utils/gremlin_init")`);
+          },
+        },
+        "const"
+      );
+    }
     this.code.line(`
     export const ${name} = async(events:AppSyncResolverEvent<any>) => {
+    `);
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      this.code.line(`
+      const { g, conn } = initGremlin.initializeGremlinClient(
+        process.env.NEPTUNE_ENDPOINT!
+      );
+      `);
+    }
+    this.code.line(`
       // write your code here
       console.log(JSON.stringify(events, null, 2));
-    }
-    `);
+      `);
+    this.code.line("}");
   }
 
-  public emptyLambdaFunction(nestedResolver?:boolean) {
+  public emptyLambdaFunction(
+    database: DATABASE,
+    neptuneQueryLanguage: NEPTUNEQUERYLANGUAGE,
+    nestedResolver?: boolean
+  ) {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeAllImports("aws-sdk", "* as AWS")
-    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"])
+    ts.writeAllImports("aws-sdk", "* as AWS");
+    ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      ts.writeVariableDeclaration(
+        {
+          name: "initGremlin",
+          typeName: "",
+          initializer: () => {
+            this.code.line(`require("/opt/utils/gremlin_init")`);
+          },
+        },
+        "const"
+      );
+    }
     // this.code.line(`var AWS = require('aws-sdk');`);
     this.code.line();
-    this.code.line(`exports.handler = async (event: AppSyncResolverEvent<any>) => {`);
+    this.code.line(
+      `exports.handler = async (event: AppSyncResolverEvent<any>) => {`
+    );
+
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      this.code.line(`
+      const { g, conn } = initGremlin.initializeGremlinClient(
+        process.env.NEPTUNE_ENDPOINT!
+      );
+      `);
+    }
     // this.code.line(
     //   `const data = await axios.post('http://sandbox:8080', event)`
     // );
-    this.code.line(`console.log(JSON.stringify(event,null,2))`)
-    if(nestedResolver){
-      this.code.line(`return event.source![event.info.fieldName]`)
+    this.code.line(`console.log(JSON.stringify(event,null,2))`);
+    if (nestedResolver) {
+      this.code.line(`return event.source![event.info.fieldName]`);
     }
     this.code.line();
     this.code.line(`}`);
@@ -126,9 +198,9 @@ export class LambdaFunction {
 
   public appsyncMutationInvokeFunction() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeAllImports("axios", "axios")
-    ts.writeAllImports("aws-sdk", "* as AWS")
-    ts.writeImports("aws-lambda", ["EventBridgeEvent"])
+    ts.writeAllImports("axios", "axios");
+    ts.writeAllImports("aws-sdk", "* as AWS");
+    ts.writeImports("aws-lambda", ["EventBridgeEvent"]);
 
     this.code.line(`
     export const handler = async(events: EventBridgeEvent<string, any>) => {
