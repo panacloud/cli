@@ -25,14 +25,28 @@ class APITests {
     this.outputFile = `AppSyncAPI.ts`;
 
     code.openFile(this.outputFile);
+    ts.writeImports("fs-extra", ["existsSync", "readFileSync"]);
     ts.writeAllImports("valid-url", "validUrl");
-    ts.writeAllImports("../../cdk-outputs.json", "appsyncCredentials");
+    code.openBlock(`if(!existsSync("./cdk-outputs.json"))`);
+    code.line(`console.log("cdk-outputs.json file not found.It seems your stack is not deployed.")`);
+    code.line(`process.exit(1)`);
+    code.closeBlock();
+    ts.writeVariableDeclaration(
+      {
+        name: "appsyncCredentials",
+        initializer: `JSON.parse(readFileSync('./cdk-outputs.json').toString())`,
+        typeName: "",
+        export: false,
+      },
+      "const"
+    );
 
     ts.writeVariableDeclaration(
       {
         name: "values",
         typeName: "string[]",
-        initializer: "Object.values(Object.entries(appsyncCredentials)[0][1])",
+        initializer:
+          "Object.values(Object.entries(appsyncCredentials)[0][1] as any) ",
         export: false,
       },
       "const"
@@ -69,7 +83,7 @@ class APITests {
     await code.save(this.outputDir);
   }
 
-  async TestFile(panacloudConfig:PanacloudconfigFile) {
+  async TestFile(panacloudConfig: PanacloudconfigFile) {
     const {
       api: { apiType, mutationFields },
     } = this.config;
@@ -94,9 +108,13 @@ class APITests {
           ts.writeImports("chai", ["expect"]);
           ts.writeAllImports("supertest", "supertest");
           ts.writeImports("./AppSyncAPI", ["AppsyncAPI"]);
-          ts.writeImports(`../../${panacloudConfig.mockLambdaLayer['asset_path'].replace(/^\/|\/$/g, '')}/mockApi/${key}/testCollections`, [
-            "testCollections",
-          ]);
+          ts.writeImports(
+            `../../${panacloudConfig.mockLambdaLayer["asset_path"].replace(
+              /^\/|\/$/g,
+              ""
+            )}/mockApi/${key}/testCollections`,
+            ["testCollections"]
+          );
           ts.writeVariableDeclaration(
             {
               name: "{API_KEY,API_URL}",
@@ -147,7 +165,7 @@ class APITests {
             "const"
           );
 
-          tw.writeApiTests(key,ts);
+          tw.writeApiTests(key, ts);
           code.line();
 
           code.closeFile(this.outputFile);
@@ -160,7 +178,10 @@ class APITests {
   }
 }
 
-export const apiTests = async (props: StackBuilderProps,panacloudConfig:PanacloudconfigFile): Promise<void> => {
+export const apiTests = async (
+  props: StackBuilderProps,
+  panacloudConfig: PanacloudconfigFile
+): Promise<void> => {
   const builder = new APITests(props);
   await builder.TestFile(panacloudConfig);
   await builder.AppSyncFile();

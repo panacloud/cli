@@ -218,14 +218,14 @@ async function defineYourOwnApi(
       `${scalars}\n${newSchema}`
     );
 
-    writeFileSync(
-      "./cdk-outputs.json",
-      `{
-      "${config.api.apiName}Stack" : {
+    // writeFileSync(
+    //   "./cdk-outputs.json",
+    //   `{
+    //   "${config.api.apiName}Stack" : {
        
-      }
-    }`
-    );
+    //   }
+    // }`
+    // );
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
     model.api.mockApiData = mockApiCollection;
