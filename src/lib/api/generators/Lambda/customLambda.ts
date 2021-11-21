@@ -49,12 +49,12 @@ class CustomLambda {
       const microServices = Object.keys(microServiceFields!);
 
       let microservice_files: any = {};
-      fs.readdirSync(`${process.cwd()}/editable_src/lambda`).forEach(
+      fs.readdirSync(`${process.cwd()}/editable_src/lambda_stubs`).forEach(
         (file: string) => {
           if (microServices.includes(file)) {
             const micro_sub_files: string[] = [];
             fs.readdirSync(
-              `${process.cwd()}/editable_src/lambda/${file}`
+              `${process.cwd()}/editable_src/lambda_stubs/${file}`
             ).forEach((inner: string) => {
               micro_sub_files.push(inner);
             });
@@ -75,8 +75,8 @@ class CustomLambda {
         .concat(microServices.filter((val) => !newMicroServices.includes(val)));
 
       for (const ele of differenceMicroserviceLambdas) {
-        if (!fs.existsSync(`${process.cwd()}/editable_src/lambda/${ele}`)) {
-          await mkdirRecursiveAsync(`editable_src/lambda/${ele}`);
+        if (!fs.existsSync(`${process.cwd()}/editable_src/lambda_stubs/${ele}`)) {
+          await mkdirRecursiveAsync(`editable_src/lambda_stubs/${ele}`);
         }
       }
 
@@ -115,12 +115,12 @@ class CustomLambda {
           lambda.emptyLambdaFunction(database, neptuneQueryLanguage!);
 
           code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/${service}/${diff}`;
+          this.outputDir = `editable_src/lambda_stubs/${service}/${diff}`;
           await code.save(this.outputDir);
 
           if (asyncFields && asyncFields.includes(diff)) {
             fs.readdirSync(
-              `${process.cwd()}/editable_src/lambda/${service}`
+              `${process.cwd()}/editable_src/lambda_stubs/${service}`
             ).forEach(async (file: string) => {
               if (file !== `${diff}_consumer`) {
                 const code = new CodeMaker();
@@ -135,7 +135,7 @@ class CustomLambda {
                 lambda.appsyncMutationInvokeFunction();
 
                 code.closeFile(this.outputFile);
-                this.outputDir = `editable_src/lambda/${service}/${diff}_consumer`;
+                this.outputDir = `editable_src/lambda_stubs/${service}/${diff}_consumer`;
                 await code.save(this.outputDir);
               }
             });
@@ -144,7 +144,7 @@ class CustomLambda {
       }
 
       const general_files: string[] = [];
-      fs.readdirSync(`${process.cwd()}/editable_src/lambda`).forEach(
+      fs.readdirSync(`${process.cwd()}/editable_src/lambda_stubs`).forEach(
         (file: string) => {
           if (file !== "nestedResolvers") {
             if (!microServices.includes(file)) {
@@ -185,7 +185,7 @@ class CustomLambda {
           lambda.emptyLambdaFunction(database, neptuneQueryLanguage!);
 
           code.closeFile(this.outputFile);
-          this.outputDir = `editable_src/lambda/${key}`;
+          this.outputDir = `editable_src/lambda_stubs/${key}`;
           await code.save(this.outputDir);
         }
       }
@@ -194,15 +194,15 @@ class CustomLambda {
         if (this.type === "update") {
           if (
             !fs.existsSync(
-              `${process.cwd()}/editable_src/lambda/nestedResolvers`
+              `${process.cwd()}/editable_src/lambda_stubs/nestedResolvers`
             )
           ) {
-            await mkdirRecursiveAsync(`editable_src/lambda/nestedResolvers`);
+            await mkdirRecursiveAsync(`editable_src/lambda_stubs/nestedResolvers`);
           }
 
           const files: string[] = [];
           fs.readdirSync(
-            `${process.cwd()}/editable_src/lambda/nestedResolvers`
+            `${process.cwd()}/editable_src/lambda_stubs/nestedResolvers`
           ).forEach((file: string) => {
             files.push(file);
           });
@@ -227,7 +227,7 @@ class CustomLambda {
             code.line();
             lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!);
             code.closeFile(this.outputFile);
-            this.outputDir = `editable_src/lambda/nestedResolvers/${ele}`;
+            this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${ele}`;
             await code.save(this.outputDir);
           }
         } else {
@@ -244,7 +244,7 @@ class CustomLambda {
             code.line();
             lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!);
             code.closeFile(this.outputFile);
-            this.outputDir = `editable_src/lambda/nestedResolvers/${key}`;
+            this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${key}`;
             await code.save(this.outputDir);
           }
         }

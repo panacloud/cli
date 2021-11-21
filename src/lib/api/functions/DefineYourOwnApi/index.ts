@@ -112,7 +112,7 @@ async function defineYourOwnApi(
     await mkdirRecursiveAsync(`editable_src/graphql`);
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
     await mkdirRecursiveAsync(`editable_src/aspects`);
-    await mkdirRecursiveAsync(`editable_src/lambda`);
+    await mkdirRecursiveAsync(`editable_src/lambda_stubs`);
     await mkdirRecursiveAsync(`tests`);
     await mkdirRecursiveAsync(`tests/apiTests`);
     await mkdirRecursiveAsync(`.panacloud`);
