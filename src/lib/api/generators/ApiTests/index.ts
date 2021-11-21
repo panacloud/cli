@@ -112,7 +112,7 @@ class APITests {
             `../../${panacloudConfig.mockLambdaLayer["asset_path"].replace(
               /^\/|\/$/g,
               ""
-            )}/mockApi/${key}/testCollections`,
+            )}/mockData/${key}/testCollections`,
             ["testCollections"]
           );
           ts.writeVariableDeclaration(

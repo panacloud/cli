@@ -57,7 +57,7 @@ class EditableMockApiTestCollectionsFile {
         `);
   
         code.closeFile("testCollectionsTypes.ts");
-        await code.save(`editable_src/customMockLambdaLayer/mockApi/${key}`);
+        await code.save(`editable_src/customMockLambdaLayer/mockData/${key}`);
   
         ///TestCollections.ts
   
@@ -90,7 +90,7 @@ class EditableMockApiTestCollectionsFile {
         `);
   
         code1.closeFile("testCollections.ts");
-        this.outputDir = `editable_src/customMockLambdaLayer/mockApi/${key}`;
+        this.outputDir = `editable_src/customMockLambdaLayer/mockData/${key}`;
         await code1.save(this.outputDir);
   
       }
@@ -126,7 +126,7 @@ class EditableMockApiTestCollectionsFile {
         `);
   
         code.closeFile("testCollectionsTypes.ts");
-        await code.save(`editable_src/customMockLambdaLayer/mockApi/${key}`);
+        await code.save(`editable_src/customMockLambdaLayer/mockData/${key}`);
   
         ///TestCollections.ts
   
@@ -159,7 +159,7 @@ class EditableMockApiTestCollectionsFile {
         `);
   
         code1.closeFile("testCollections.ts");
-        this.outputDir = `editable_src/customMockLambdaLayer/mockApi/${key}`;
+        this.outputDir = `editable_src/customMockLambdaLayer/mockData/${key}`;
         await code1.save(this.outputDir);
   
       }

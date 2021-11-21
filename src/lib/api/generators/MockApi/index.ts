@@ -49,7 +49,7 @@ class MockApiTestCollectionsFile {
       `);
 
       code.closeFile("testCollectionsTypes.ts");
-      await code.save(`mock_lambda_layer/mockApi/${key}`);
+      await code.save(`mock_lambda_layer/mockData/${key}`);
 
       ///TestCollections.ts
 
@@ -83,7 +83,7 @@ class MockApiTestCollectionsFile {
       `);
 
       code1.closeFile("testCollections.ts");
-      this.outputDir = `mock_lambda_layer/mockApi/${key}`;
+      this.outputDir = `mock_lambda_layer/mockData/${key}`;
       await code1.save(this.outputDir);
 
     }

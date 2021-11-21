@@ -38,10 +38,10 @@ class MultipleLambda {
             this.outputFile = `index.ts`;
             code.openFile(this.outputFile);
 
-            ts.writeImports(`../../../mock_lambda_layer/mockApi/${key}/testCollectionsTypes`, [
+            ts.writeImports(`../../../mock_lambda_layer/mockData/${key}/testCollectionsTypes`, [
               "TestCollection",
             ]);
-            code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
+            code.line(`var data = require("/opt/mockData/${key}/testCollections") as {
             testCollections: TestCollection;
           };`);
             code.line();
@@ -91,10 +91,10 @@ class MultipleLambda {
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
 
-          ts.writeImports(`../../mock_lambda_layer/mockApi/${key}/testCollectionsTypes`, [
+          ts.writeImports(`../../mock_lambda_layer/mockData/${key}/testCollectionsTypes`, [
             "TestCollection",
           ]);
-          code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
+          code.line(`var data = require("/opt/mockData/${key}/testCollections") as {
           testCollections: TestCollection;
         };`);
           code.line();
