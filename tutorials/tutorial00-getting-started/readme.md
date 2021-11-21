@@ -1,6 +1,14 @@
 # Build a GraphQL Serverless API for a Simple Schema using Panacloud CLI and Deploy it on AWS
 
-Before getting started you need to install the following packages and libraries:
+
+In the last few years, the way we build and architect APIs has fundamentally altered and grown. To save money, become more agile, and drive innovation, businesses are [migrating from on-premises to public cloud deployment](https://www2.deloitte.com/xe/en/insights/industry/technology/technology-media-and-telecom-predictions/2021/cloud-migration-trends-and-forecast.html). They are switching from a [monolithic architecture to a microservices architecture](https://blog.dreamfactory.com/api-trends-from-monolithic-to-microservices/). [Serverless microservices](https://docs.aws.amazon.com/whitepapers/latest/microservices-on-aws/serverless-microservices.html) have evolved from traditional microservices. Rather than message-driven systems, [event-driven systems](https://developer.lightbend.com/docs/akka-platform-guide/concepts/message-driven-event-driven.html) are being developed. Infrastructure as Code (IaC) has emerged as one of the most essential DevOps approaches for delivering software in a continuous manner, predictably and repeatedly. It is the process of managing and supplying infrastructure using code rather than human operations. IaC has evolved into IaC with AWS CDK where you write your infrastructure setup and provisioning like you would your application source code.
+
+[API-First Approach](https://blog.stoplight.io/api-first-api-design-first-or-code-first-which-should-you-choose) to App Development is becoming increasingly popular and when combined with API Design-First helps the developers build very high quality APIs. API specifications in the form of OpenAPI description or GraphQL schemas have been more and more of an obvious choice for companies wanting to build serious APIs using the Design-First approach. 
+
+Panacloud API development workflow combines API Design-First approach with multi-tenant serverless APIs, event-driven architecture, and IaC to deliver very quality API with the least cost. The Panacloud CLI automates the Panacloud API development workflows. 
+
+
+Before getting started with the Panacloud CLI you need to install the following packages and libraries:
 
 1. Install [Node.js](https://nodejs.org/en/)
 2. Install [AWS CLI Version 2.x](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
@@ -11,11 +19,7 @@ Now Globally Install Panacloud CLI:
 
 npm install @panacloud/cli -g 
 
-Panacloud recommends using API-First and API Design-First approach in developing APIs.
-
-Please read these articles to understand the approach:
-
-[API-First, API Design-First, or Code-First: Which Should You](https://blog.stoplight.io/api-first-api-design-first-or-code-first-which-should-you-choose)
+Panacloud workflows uses API-First and API Design-First approach in developing GraphQL APIs. Please read these articles to understand the approach:
 
 [Schema-First GraphQL: The Road Less Travelled](https://blog.mirumee.com/schema-first-graphql-the-road-less-travelled-cf0e50d5ccff)
 
