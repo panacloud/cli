@@ -1,5 +1,4 @@
 import {
-  TEMPLATE,
   APITYPE,
   DATABASE,
   CLOUDPROVIDER,
@@ -36,14 +35,6 @@ export const userInput = async () => {
     //   default: SAASTYPE.api,
     //   validate: Boolean,
     // },
-    {
-      type: "list",
-      name: "template",
-      message: "Which Kind of Mutli-Tenant Serverless API?",
-      choices: [TEMPLATE.basicApi, TEMPLATE.todoApi, TEMPLATE.defineApi],
-      default: TEMPLATE.basicApi,
-      validate: Boolean,
-    },
     // {
     //   type: "string",
     //   name: "entityId",
@@ -87,7 +78,6 @@ export const userInput = async () => {
       name: "api_name",
       message: "API Name",
       default: "MyApi",
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
     {
@@ -95,9 +85,7 @@ export const userInput = async () => {
       name: "nestedResolver",
       message: "Nested Resolver",
       validate: Boolean,
-      when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi ||
-        answers.api_type === APITYPE.graphql,
+      when: (answers: any) => answers.api_type === APITYPE.graphql,
     },
     // {
     //   type: "list",
@@ -119,7 +107,6 @@ export const userInput = async () => {
       message: "Select Query Language",
       choices: [NEPTUNEQUERYLANGUAGE.gremlin, NEPTUNEQUERYLANGUAGE.cypher],
       default: NEPTUNEQUERYLANGUAGE.gremlin,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,
     },
   ]);

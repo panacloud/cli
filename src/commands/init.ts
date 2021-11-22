@@ -5,14 +5,13 @@ import { writeJsonSync, readFileSync, writeFileSync } from "fs-extra";
 import { greenBright } from "chalk";
 import * as globby from "globby";
 import { startSpinner, stopSpinner } from "../lib/spinner";
-import { basicApi, todoApi, defineYourOwnApi } from "../lib/api/functions";
+import { defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
 import {
   checkEmptyDirectoy,
   validateSchemaFile,
 } from "../lib/api/errorHandling";
 import {
-  TEMPLATE,
   SAASTYPE,
   Config,
   DATABASE,
@@ -52,7 +51,6 @@ export default class Create extends Command {
         api_token: "",
         saasType: SAASTYPE.api,
         api: {
-          template: TEMPLATE.defineApi,
           nestedResolver: true,
           language: LANGUAGE.typescript,
           cloudprovider: CLOUDPROVIDER.aws,
@@ -69,7 +67,6 @@ export default class Create extends Command {
         // api_token: "",
         saasType: SAASTYPE.api,
         api: {
-          template: usrInput.template,
           nestedResolver: usrInput.nestedResolver,
           language: LANGUAGE.typescript,
           cloudprovider: CLOUDPROVIDER.aws,
@@ -77,7 +74,7 @@ export default class Create extends Command {
           schemaPath: usrInput.schema_path,
           apiType: APITYPE.graphql,
           database: DATABASE.neptuneDB,
-          neptuneQueryLanguage: usrInput.neptuneQueryLanguage
+          neptuneQueryLanguage: usrInput.neptuneQueryLanguage,
         },
       };
     }
@@ -88,13 +85,11 @@ export default class Create extends Command {
     if (config!.saasType === SAASTYPE.api) {
       templateDir = resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      if (config!.api?.template === TEMPLATE.defineApi) {
-        validateSchemaFile(
-          config!.api?.schemaPath,
-          validating,
-          config!.api?.apiType
-        );
-      }
+      validateSchemaFile(
+        config!.api?.schemaPath,
+        validating,
+        config!.api?.apiType
+      );
     }
 
     writeJsonSync(`./codegenconfig.json`, {
@@ -108,13 +103,7 @@ export default class Create extends Command {
     stopSpinner(validating, "Everything's fine", false);
 
     if (config.saasType === SAASTYPE.api) {
-      if (config?.api?.template === TEMPLATE.todoApi) {
-        await todoApi(config);
-      } else if (config.api?.template === TEMPLATE.defineApi) {
-        await defineYourOwnApi(config, templateDir!);
-      } else {
-        await basicApi(config, templateDir!);
-      }
+      await defineYourOwnApi(config, templateDir!);
     }
 
     const setUpForTest = startSpinner("Setup For Test");

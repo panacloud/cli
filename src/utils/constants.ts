@@ -35,11 +35,11 @@ export enum CONSTRUCTS {
   eventBridge = "EventBridgeConstruct",
 }
 
-export enum TEMPLATE {
-  basicApi = "Basic Multi-Tenant Serverless API Scaffolding",
-  todoApi = "Todo CRUD Multi-Tenant Serverless API",
-  defineApi = "Generate Multi-Tenant Serverless API Scaffolding from Schema",
-}
+// export enum TEMPLATE {
+//   basicApi = "Basic Multi-Tenant Serverless API Scaffolding",
+//   todoApi = "Todo CRUD Multi-Tenant Serverless API",
+//   defineApi = "Generate Multi-Tenant Serverless API Scaffolding from Schema",
+// }
 
 export enum CLOUDPROVIDER {
   aws = "AWS",
@@ -73,7 +73,6 @@ export type nestedResolverFieldsAndLambda = {
   nestedResolverLambdas: string[]
 }
 export interface API {
-  template: TEMPLATE;
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
   apiName: string;
