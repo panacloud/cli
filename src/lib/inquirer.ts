@@ -117,7 +117,7 @@ export const userInput = async () => {
       type: "list",
       name: "neptuneQueryLanguage",
       message: "Select Query Language",
-      choices: [NEPTUNEQUERYLANGUAGE.gremlin],
+      choices: [NEPTUNEQUERYLANGUAGE.gremlin, NEPTUNEQUERYLANGUAGE.cypher],
       default: NEPTUNEQUERYLANGUAGE.gremlin,
       when: (answers: any) => answers.template === TEMPLATE.defineApi,
       validate: Boolean,

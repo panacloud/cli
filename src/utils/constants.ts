@@ -8,7 +8,8 @@ export enum APITYPE {
 }
 
 export enum NEPTUNEQUERYLANGUAGE  { 
-  gremlin = "Gremlin"
+  gremlin = "Gremlin",
+  cypher = "Cypher"
 }
 
 export enum DATABASE {

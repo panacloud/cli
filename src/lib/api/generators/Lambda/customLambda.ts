@@ -75,7 +75,9 @@ class CustomLambda {
         .concat(microServices.filter((val) => !newMicroServices.includes(val)));
 
       for (const ele of differenceMicroserviceLambdas) {
-        if (!fs.existsSync(`${process.cwd()}/editable_src/lambda_stubs/${ele}`)) {
+        if (
+          !fs.existsSync(`${process.cwd()}/editable_src/lambda_stubs/${ele}`)
+        ) {
           await mkdirRecursiveAsync(`editable_src/lambda_stubs/${ele}`);
         }
       }
@@ -197,7 +199,9 @@ class CustomLambda {
               `${process.cwd()}/editable_src/lambda_stubs/nestedResolvers`
             )
           ) {
-            await mkdirRecursiveAsync(`editable_src/lambda_stubs/nestedResolvers`);
+            await mkdirRecursiveAsync(
+              `editable_src/lambda_stubs/nestedResolvers`
+            );
           }
 
           const files: string[] = [];
@@ -222,9 +226,11 @@ class CustomLambda {
           for (const ele of differenceNestedLambdas!) {
             const code = new CodeMaker();
             const lambda = new LambdaFunction(code);
+            const imp = new Imports(code);
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
             code.line();
+            imp.importAxios();
             lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!);
             code.closeFile(this.outputFile);
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${ele}`;
@@ -238,10 +244,12 @@ class CustomLambda {
           for (let index = 0; index < nestedResolverLambdas.length; index++) {
             const key = nestedResolverLambdas[index];
             const code = new CodeMaker();
+            const imp = new Imports(code);
             const lambda = new LambdaFunction(code);
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
             code.line();
+            imp.importAxios();
             lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!);
             code.closeFile(this.outputFile);
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${key}`;

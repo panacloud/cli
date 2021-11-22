@@ -129,15 +129,18 @@ export class LambdaFunction {
     this.code.line(`
     export const ${name} = async(events:AppSyncResolverEvent<any>) => {
     `);
-    if (
-      database === DATABASE.neptuneDB &&
-      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
-    ) {
-      this.code.line(`
-      const { g, conn } = initGremlin.initializeGremlinClient(
-        process.env.NEPTUNE_ENDPOINT!
-      );
-      `);
+    if (database === DATABASE.neptuneDB) {
+      if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
+        this.code.line(
+          `const url = 'https://' + process.env.NEPTUNE_ENDPOINT + ':8182/openCypher';`
+        );
+      } else {
+        this.code.line(`
+        const { g, conn } = initGremlin.initializeGremlinClient(
+          process.env.NEPTUNE_ENDPOINT!
+        );
+        `);
+      }
     }
     this.code.line(`
       // write your code here
@@ -175,15 +178,18 @@ export class LambdaFunction {
       `exports.handler = async (event: AppSyncResolverEvent<any>) => {`
     );
 
-    if (
-      database === DATABASE.neptuneDB &&
-      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
-    ) {
-      this.code.line(`
-      const { g, conn } = initGremlin.initializeGremlinClient(
-        process.env.NEPTUNE_ENDPOINT!
-      );
-      `);
+    if (database === DATABASE.neptuneDB) {
+      if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
+        this.code.line(
+          `const url = 'https://' + process.env.NEPTUNE_ENDPOINT + ':8182/openCypher';`
+        );
+      } else {
+        this.code.line(`
+        const { g, conn } = initGremlin.initializeGremlinClient(
+          process.env.NEPTUNE_ENDPOINT!
+        );
+        `);
+      }
     }
     // this.code.line(
     //   `const data = await axios.post('http://sandbox:8080', event)`
