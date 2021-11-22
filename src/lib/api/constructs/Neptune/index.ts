@@ -20,7 +20,7 @@ export class Neptune {
         initializer: () => {
           this.code.line(` new neptune.CfnDBCluster(this, "${apiName}Cluster", {
             dbSubnetGroupName: ${neptuneSubnetName}.dbSubnetGroupName,
-            dbClusterIdentifier: "${apiName}Cluster",
+            dbClusterIdentifier: props?.prod ? props?.prod+"-${apiName}Cluster" : "${apiName}Cluster",
             vpcSecurityGroupIds: [${securityGroupName}.securityGroupId],
           });`);
         },
@@ -37,8 +37,10 @@ export class Neptune {
         typeName: CONSTRUCTS.neptuneDB,
         initializer: () => {
           this.code.line(
-            `new ${CONSTRUCTS.neptuneDB}(this,"${apiName}${CONSTRUCTS.neptuneDB}")`
+            `new ${CONSTRUCTS.neptuneDB}(this,"${apiName}${CONSTRUCTS.neptuneDB}",{`
           );
+          code.line(`prod : props?.prod,`);
+          this.code.line("})");
         },
       },
       "const"
@@ -56,9 +58,9 @@ export class Neptune {
             this,
             "${lowerCase(apiName)}-neptune-subnet-group",
             {
-              dbSubnetGroupDescription: "${apiName} Subnet",
+              dbSubnetGroupDescription: "${lowerCase(apiName)} Subnet",
               subnetIds: ${vpcName}.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_ISOLATED }).subnetIds,
-              dbSubnetGroupName: "${lowerCase(apiName)}-neptune-subnet-group",
+              dbSubnetGroupName: props?.prod ? props?.prod+"-${lowerCase(apiName)}-neptune-subnet-group" : "${lowerCase(apiName)}-neptune-subnet-group",
             }
           );`);
         },

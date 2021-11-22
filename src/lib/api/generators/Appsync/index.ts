@@ -89,6 +89,11 @@ class AppsyncConstruct {
       );
     }
 
+    ConstructProps.push({
+      name: `prod?`,
+      type: "string",
+    });
+
     cdk.initializeConstruct(
       `${CONSTRUCTS.appsync}`,
       "AppsyncProps",
@@ -109,7 +114,6 @@ class AppsyncConstruct {
         appsyncResolverhandler(this.config, this.code);
         this.code.line();
         appsyncPropertiesInitializer(apiName, this.code);
-        this.code.line();
       },
       ConstructProps,
       appsyncProperties

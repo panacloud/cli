@@ -109,7 +109,7 @@ export class Lambda {
         typeName: "lambda.Function",
         initializer: () => {
           this.code.line(`new lambda.Function(this, "${funcName}", {
-        functionName: "${funcName}",
+        functionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
         code: lambda.Code.fromAsset("${handlerAsset}"),
@@ -252,7 +252,7 @@ export class Lambda {
     handlerName: string
   ) {
     this.code.line(`expect(stack).toHaveResource("AWS::Lambda::Function", {
-      FunctionName: "${funcName}",
+      FunctionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
       Handler: "${handlerName}.handler",
       Runtime: "nodejs12.x",
       Environment: {
@@ -273,7 +273,7 @@ export class Lambda {
     handlerName: string
   ) {
     this.code.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
-    FunctionName: '${funcName}',
+    FunctionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
     Handler: '${handlerName}.handler',
     Runtime: 'nodejs12.x',
     Environment: {
@@ -313,7 +313,7 @@ export class Lambda {
     handlerName: string
   ) {
     this.code.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
-    FunctionName: '${funcName}',
+    FunctionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
     Handler: '${handlerName}.handler',
     Runtime: 'nodejs12.x',
     Environment: {
