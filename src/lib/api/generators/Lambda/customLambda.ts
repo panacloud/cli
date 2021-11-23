@@ -109,7 +109,7 @@ class CustomLambda {
           const code = new CodeMaker();
           const lambda = new LambdaFunction(code);
           const imp = new Imports(code);
-
+          const isMutation = mutationFields?.includes(diff);
           code.openFile(this.outputFile);
 
           imp.importAxios();
@@ -118,7 +118,8 @@ class CustomLambda {
           lambda.emptyLambdaFunction(
             undefined,
             database,
-            neptuneQueryLanguage!
+            neptuneQueryLanguage!,
+            isMutation
           );
 
           code.closeFile(this.outputFile);
@@ -198,7 +199,8 @@ class CustomLambda {
           lambda.emptyLambdaFunction(
             undefined,
             database,
-            neptuneQueryLanguage!
+            neptuneQueryLanguage!,
+            isMutation
           );
 
           code.closeFile(this.outputFile);

@@ -152,7 +152,8 @@ export class LambdaFunction {
   public emptyLambdaFunction(
     nestedResolver?: boolean,
     database?: DATABASE,
-    neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE
+    neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE,
+    isMutation?: boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS");
@@ -190,7 +191,76 @@ export class LambdaFunction {
         );
         `);
       }
+      this.code.line();
+      this.code.line("// Example Schema: ");
+      this.code.line(`
+        // type User {
+        //   id: ID!
+        //   name: String!
+        //   age: Int!
+        // }
+        
+        // input userInput {
+        //   name: String!
+        //   age: Int!
+        // }
+
+        // type Query {
+        //   listUsers: [User!]
+        // }
+        
+        // type Mutation {
+        //   createUser(user: userInput!): String
+        // }
+        `);
+
+      this.code.line(`// Example Code: `);
+      if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
+        if (!isMutation) {
+          this.code.line("// let query = `MATCH (n:user) RETURN n`;");
+          this.code.line("// try {");
+          this.code.line(
+            "// const fetch = await axios.post(url, `query=${query}`);"
+          );
+          this.code.line(`
+            //   const result = JSON.stringify(fetch.data.results);
+            //   const data = JSON.parse(result);
+            
+            //   let modifiedData = Array();
+            //   for (const [i, v] of data.entries()) {
+            //     //for each vertex
+            //     let obj = {
+            //       id: data[i].n["~id"],
+            //       ...data[i].n["~properties"],
+            //     };
+            
+            //     modifiedData.push(obj);
+            //   }
+            
+            //   return modifiedData;
+            `);
+          this.code.line("// }");
+          this.code.line(`// catch (err) {
+              //   console.log("ERROR", err);
+              //   return null;
+              // }`);
+        } else {
+          this.code.line(
+            "// let query = `CREATE (:user {id: '01', name: '${user.name}', age: ${user.age}})`;"
+          );
+          this.code.line("// try {");
+          this.code.line("// await axios.post(url, `query=${query}`);");
+          this.code.line("// return user.name;");
+          this.code.line("// }");
+          this.code.line(`  
+          // catch (err) {
+          //   console.log("ERROR", err);
+          //   return null;
+          // }`);
+        }
+      }
     }
+
     // this.code.line(
     //   `const data = await axios.post('http://sandbox:8080', event)`
     // );
