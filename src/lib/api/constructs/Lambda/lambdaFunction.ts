@@ -258,6 +258,34 @@ export class LambdaFunction {
           //   return null;
           // }`);
         }
+      } else {
+        if (!isMutation) {
+          this.code.line(` 
+          // try {
+          //   let data = await g.V().hasLabel('user').toList()
+          //   let users = Array()
+      
+          //   for (const v of data) {
+          //     const _properties = await g.V(v.id).properties().toList()
+          //     let user = _properties.reduce((acc, next) => {
+          //       acc[next.label] = next.value
+          //       return acc
+          //     }, {})
+          //     user.id = v.id
+          //     users.push(post)
+          //   }
+          //   return users
+          // } catch (err) {
+          //     console.log('ERROR', err)
+          //     return null
+          // }
+          `);
+        } else {
+          this.code.line(`
+            //  await g.addV('user').property('name', 'John').property('age', 20)
+          `)
+          this.code.line(`// return user.name;`)
+        }
       }
     }
 
