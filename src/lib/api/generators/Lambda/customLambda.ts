@@ -9,6 +9,7 @@ import {
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
 import { Imports } from "../../constructs/ConstructsImports";
 const fs = require("fs");
+const exec = require("await-exec");
 const fse = require("fs-extra");
 const path = require("path");
 import { mkdirRecursiveAsync } from "../../../fs";
@@ -114,11 +115,21 @@ class CustomLambda {
           imp.importAxios();
           code.line();
 
-          lambda.emptyLambdaFunction(database, neptuneQueryLanguage!);
+          lambda.emptyLambdaFunction(
+            undefined,
+            database,
+            neptuneQueryLanguage!
+          );
 
           code.closeFile(this.outputFile);
+
           this.outputDir = `editable_src/lambda_stubs/${service}/${diff}`;
+
           await code.save(this.outputDir);
+
+          await exec(
+            `cd ${process.cwd()}/editable_src/lambda_stubs/${service}/${diff} &&  npm init -y`
+          );
 
           if (asyncFields && asyncFields.includes(diff)) {
             fs.readdirSync(
@@ -184,11 +195,21 @@ class CustomLambda {
           imp.importAxios();
           code.line();
 
-          lambda.emptyLambdaFunction(database, neptuneQueryLanguage!);
+          lambda.emptyLambdaFunction(
+            undefined,
+            database,
+            neptuneQueryLanguage!
+          );
 
           code.closeFile(this.outputFile);
+
           this.outputDir = `editable_src/lambda_stubs/${key}`;
+
           await code.save(this.outputDir);
+
+          await exec(
+            `cd ${process.cwd()}/editable_src/lambda_stubs/${key} &&  npm init -y`
+          );
         }
       }
 
@@ -252,8 +273,14 @@ class CustomLambda {
             imp.importAxios();
             lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!);
             code.closeFile(this.outputFile);
+
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${key}`;
+
             await code.save(this.outputDir);
+
+            await exec(
+              `cd ${process.cwd()}/editable_src/lambda_stubs/nestedResolvers/${key} &&  npm init -y`
+            );
           }
         }
       }

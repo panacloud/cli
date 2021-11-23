@@ -150,9 +150,9 @@ export class LambdaFunction {
   }
 
   public emptyLambdaFunction(
-    database: DATABASE,
-    neptuneQueryLanguage: NEPTUNEQUERYLANGUAGE,
-    nestedResolver?: boolean
+    nestedResolver?: boolean,
+    database?: DATABASE,
+    neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE
   ) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS");
