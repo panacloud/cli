@@ -85,7 +85,7 @@ export const userInput = async () => {
       name: "nestedResolver",
       message: "Nested Resolver",
       validate: Boolean,
-      when: (answers: any) => answers.api_type === APITYPE.graphql,
+      // when: (answers: any) => answers.api_type === APITYPE.graphql,
     },
     // {
     //   type: "list",

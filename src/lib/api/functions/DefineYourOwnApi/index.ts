@@ -11,7 +11,13 @@ import {
 import { startSpinner, stopSpinner } from "../../../spinner";
 import { mkdirRecursiveAsync } from "../../../fs";
 import { generatePanacloudConfig } from "../../info";
-import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
+import {
+  Config,
+  APITYPE,
+  ApiModel,
+  DATABASE,
+  NEPTUNEQUERYLANGUAGE,
+} from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
@@ -34,7 +40,13 @@ async function defineYourOwnApi(
   // const { api_token, entityId } = config;
 
   const {
-    api: { schemaPath, apiType, nestedResolver },
+    api: {
+      schemaPath,
+      apiType,
+      nestedResolver,
+      database,
+      neptuneQueryLanguage,
+    },
   } = config;
 
   const dummyData: TestCollectionType = { fields: {} };
@@ -253,7 +265,14 @@ async function defineYourOwnApi(
   const installingModules = startSpinner("Installing Modules");
 
   try {
-    await exec(`npm install`);
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      await exec(`npm i && npm i gremlin @types/gremlin`);
+    } else {
+      await exec(`npm install`);
+    }
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);
@@ -267,9 +286,16 @@ async function defineYourOwnApi(
   }
 
   try {
-    await exec(
-      `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
-    );
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      await exec(
+        `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
+      );
+    } else {
+      await exec(`cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i`);
+    }
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);
