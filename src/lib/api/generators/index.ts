@@ -2,6 +2,7 @@ import {
   ApiModel,
   APITYPE,
   DATABASE,
+  NEPTUNEQUERYLANGUAGE,
   PanacloudconfigFile,
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
@@ -48,7 +49,9 @@ export const generator = async (
   }
   if (config.api.database === DATABASE.neptuneDB) {
     await neptuneDBConstruct({ config });
-    await GremlinSetup({ config });
+    if (config.api.neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin) {
+      await GremlinSetup({ config });
+    }
     // neptuneDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.dynamoDB) {
