@@ -75,6 +75,16 @@ async function defineYourOwnApi(
         });
         copy(
           `${templateDir}/${file}`,
+          "editable_src/lambdaLayer",
+          (err: Error) => {
+            if (err) {
+              stopSpinner(generatingCode, `Error: ${err}`, true);
+              process.exit(1);
+            }
+          }
+        );
+        copy(
+          `${templateDir}/${file}`,
           "editable_src/customMockLambdaLayer",
           (err: Error) => {
             if (err) {
@@ -290,10 +300,12 @@ async function defineYourOwnApi(
       database === DATABASE.neptuneDB &&
       neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
     ) {
+      await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(
         `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
       );
     } else {
+      await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(`cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i`);
     }
   } catch (error) {
