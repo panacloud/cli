@@ -66,7 +66,8 @@ async function defineYourOwnApi(
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         copy(`${templateDir}/${file}`, ".gitignore");
-      } else if (file === "lambdaLayer") {
+      } 
+      else if (file === "lambdaLayer") {
         copy(`${templateDir}/${file}`, "mock_lambda_layer", (err: Error) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
@@ -93,7 +94,15 @@ async function defineYourOwnApi(
             }
           }
         );
-      } else {
+      } 
+      else if(apiType === APITYPE.graphql&& file === "graphqlClient"){
+        copy(`${templateDir}/${file}`, file, (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
+      }else {
         copy(`${templateDir}/${file}`, file, (err: Error) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
