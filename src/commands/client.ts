@@ -8,6 +8,7 @@ import {
 import { startSpinner} from "../lib/spinner";
 import * as validUrl from "valid-url";
 import { API, APITYPE } from "../utils/constants";
+import open = require("open");
 const express = require("express");
 
 
@@ -45,13 +46,18 @@ export default class Open extends Command {
           );
           return;
         } else {
+          let urlPresent = false
           values.forEach((val: string) => {
             if (validUrl.isUri(val)) {
+              urlPresent = true
               API_URL = val;
             } else {
               API_KEY = val;
             }
           });
+          if(urlPresent === false){
+            this.log(chalk.red("Correct url is not provided!!"))
+          }
           if (API_URL && API_KEY) {
             writeJsonSync(`./graphqlClient/data.json`, {
               API_URL,
@@ -70,8 +76,10 @@ export default class Open extends Command {
     app.use(express.static(process.cwd() + "/graphqlClient/"));
     let port = 8080;
     app.listen(port);
+    open(`http://localhost:${port}`)
     graphqlSpinner.stopAndPersist({
       text: `Graphql client is running on http://localhost:${port} 🚀`,
     });
+
   }
 }
