@@ -29,7 +29,7 @@ export default class Open extends Command {
       if (!existsSync("./cdk-outputs.json")) {
         this.log(
           chalk.red(
-            `${apiName} is currently not deployed, give the command panacloud deploy to deploy it.`
+            `${apiName} is currently not deployed client cannot connect to API, give the command npm run deploy to deploy it.`
           )
         );
       } else {
@@ -40,7 +40,7 @@ export default class Open extends Command {
         if (values.length === 0) {
           this.log(
             chalk.red(
-              `${apiName} is currently not deployed, give the command panacloud deploy to deploy it.`
+              `${apiName} is currently not deployed client cannot connect to API, give the npm run deploy to deploy it.`
             )
           );
           return;
