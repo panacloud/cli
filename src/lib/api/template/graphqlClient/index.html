@@ -44,13 +44,18 @@
   <body>
     <div id="graphiql"></div>
     <script>
+      window.onload = function () {
+        for (const a of document.querySelectorAll("a")) {
+          if (a.textContent.includes("Explorer")) {
+            a.click();
+          }
+        }
+      };
       async function graphQLFetcher(graphQLParams) {
-        const { API_URL, API_KEY } =  await (
-            await fetch("./data.json")
-          ).json();
+        const { API_URL, API_KEY } = await (await fetch("./data.json")).json();
         var headers = {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+          Accept: "application/json",
+          "Content-Type": "application/json",
         };
 
         return fetch(API_URL, {
@@ -63,10 +68,10 @@
           body: JSON.stringify(graphQLParams),
           credentials: "omit",
         })
-          .then(function(response) {
+          .then(function (response) {
             return response.text();
           })
-          .then(function(responseBody) {
+          .then(function (responseBody) {
             try {
               return JSON.parse(responseBody);
             } catch (error) {
@@ -77,9 +82,8 @@
       ReactDOM.render(
         React.createElement(GraphiQLWithExtensions.GraphiQLWithExtensions, {
           fetcher: graphQLFetcher,
-          
         }),
-        document.getElementById('graphiql'),
+        document.getElementById("graphiql")
       );
     </script>
   </body>
