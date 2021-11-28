@@ -124,6 +124,7 @@ export class Lambda {
       },
       "const"
     );
+    this.code.line(`${apiName}_auroradb.db_cluster.grantDataApiAccess(${lambdaVariable})`)
   }
 
   public lambdaLayer(apiName: string, path: string) {

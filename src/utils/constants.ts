@@ -7,6 +7,11 @@ export enum APITYPE {
   rest = "REST OpenAPI",
 }
 
+export enum RDBMSENGINE{
+  postgresql = "PostgreSQL",
+  mysql = "MySQL"
+}
+
 export enum NEPTUNEQUERYLANGUAGE  { 
   gremlin = "Gremlin",
   cypher = "Cypher"
@@ -94,6 +99,7 @@ export interface API {
 };
   generalFields?: string[],
   asyncFields?:string[],
+  rdbmsEngine?:RDBMSENGINE,
   neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE,
 }
 

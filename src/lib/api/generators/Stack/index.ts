@@ -101,7 +101,7 @@ export class CdkStack {
         LambdaConstructFile(this.config, this.panacloudConfig, this.code)
 
         database === DATABASE.dynamoDB && LambdaAccessHandler(this.code,this.config.api);
-
+     
         if (apiType === APITYPE.graphql) {
           appsync.appsyncConstructInitializer(
             this.config.api

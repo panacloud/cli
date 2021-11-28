@@ -158,6 +158,22 @@ export class LambdaFunction {
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
+    if(database === DATABASE.auroraDB){
+      ts.writeVariableDeclaration(
+        {
+          name: "db",
+          typeName: "",
+          initializer: () => {
+            this.code.line(`require("data-api-client")({
+              secretArn: process.env.SECRET_ARN,
+              resourceArn: process.env.CLUSTER_ARN,
+              database: process.env.DB_NAME,
+            })`);
+          },
+        },
+        "const"
+      )
+    }
     if (
       database === DATABASE.neptuneDB &&
       neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
@@ -178,7 +194,48 @@ export class LambdaFunction {
     this.code.line(
       `exports.handler = async (event: AppSyncResolverEvent<any>) => {`
     );
+    if(database === DATABASE.auroraDB){
+      this.code.line();
+      this.code.line("// Example Schema: ");
+      this.code.line(`
+        // type User {
+        //   id: ID!
+        //   name: String!
+        //   age: Int!
+        // }
+        
+        // input userInput {
+        //   name: String!
+        //   age: Int!
+        // }
 
+        // type Query {
+        //   listUsers: [User!]
+        // }
+        
+        // type Mutation {
+        //   createUser(user: userInput!): String
+        // }
+        `);
+        this.code.line(`// Example Code: `);
+        this.code.line();
+        this.code.line("// try{")
+        if(!isMutation){
+          this.code.line("// const query = `SELECT * FROM users`;")
+          this.code.line("// const data = await db.query(query)")
+          this.code.line("// return data")
+
+        }else{
+          this.code.line("// const query = `INSERT INTO users (name,age) VALUES(:name,:age)`;")
+          this.code.line("// await db.query(query, { name:'John', age:20 })")
+          this.code.line(" //return user.name")
+        }
+        this.code.line("// }")
+        this.code.openBlock("// catch (err) {")
+        this.code.line("// console.log('ERROR', err)")
+        this.code.line("// return null")
+        this.code.line("// }")
+    }
     if (database === DATABASE.neptuneDB) {
       if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
         this.code.line(
@@ -215,6 +272,7 @@ export class LambdaFunction {
         `);
 
       this.code.line(`// Example Code: `);
+      
       if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
         if (!isMutation) {
           this.code.line("// let query = `MATCH (n:user) RETURN n`;");

@@ -32,7 +32,10 @@ export const lambdaInitializerForNestedResolvers = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ] 
   }
 
   for (let i = 0; i < nestedResolverLambdas.length; i++) {
@@ -72,7 +75,10 @@ export const lambdaInitializerForMicroServices = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ] 
   }
 
   for (let i = 0; i < microServices.length; i++) {
@@ -132,8 +138,10 @@ export const lambdaInitializerForGeneralFields = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
-  }
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ]   }
 
   for (let i = 0; i < general_Fields.length; i++) {
     const key = general_Fields[i];
@@ -176,8 +184,10 @@ export const lambdaInitializerForEventDriven = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
-  }
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ]   }
 
   lambda.initializeLambda(apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");
   code.line();
@@ -288,6 +298,7 @@ export const lambdaHandlerForAuroradb = (
   } else {
     if (microServiceFields) {
       lambdaInitializerForMicroServices(model.api,panacloudConfig,code)
+      
     }
 
     if (generalFields) {

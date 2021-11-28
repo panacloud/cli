@@ -5,6 +5,7 @@ import {
   LANGUAGE,
   SAASTYPE,
   NEPTUNEQUERYLANGUAGE,
+  RDBMSENGINE,
 } from "../utils/constants";
 import { fileExistsAsync } from "./fs";
 const inquirer = require("inquirer");
@@ -87,26 +88,34 @@ export const userInput = async () => {
       validate: Boolean,
       // when: (answers: any) => answers.api_type === APITYPE.graphql,
     },
-    // {
-    //   type: "list",
-    //   name: "database",
-    //   message: "Select Database?",
-    //   choices: [
-    //     DATABASE.dynamoDB,
-    //     DATABASE.neptuneDB,
-    //     DATABASE.auroraDB,
-    //     DATABASE.none,
-    //   ],
-    //   default: DATABASE.auroraDB,
-    //   when: (answers: any) => answers.template === TEMPLATE.defineApi,
-    //   validate: Boolean,
-    // },
+    {
+      type: "list",
+      name: "database",
+      message: "Select Database?",
+      choices: [
+        DATABASE.neptuneDB,
+        DATABASE.auroraDB,
+        // DATABASE.none,
+      ],
+      default: DATABASE.auroraDB,
+      validate: Boolean,
+    },
+    {
+      type: "list",
+      name: "rdbmsEngine",
+      message: "Select Database Engine",
+      choices: [RDBMSENGINE.postgresql,RDBMSENGINE.mysql],
+      default: RDBMSENGINE.postgresql,
+   when: (answers: any) => answers.database === DATABASE.auroraDB,
+      validate: Boolean,
+    },
     {
       type: "list",
       name: "neptuneQueryLanguage",
       message: "Select Query Language",
       choices: [NEPTUNEQUERYLANGUAGE.gremlin, NEPTUNEQUERYLANGUAGE.cypher],
       default: NEPTUNEQUERYLANGUAGE.gremlin,
+   when: (answers: any) => answers.database === DATABASE.neptuneDB,
       validate: Boolean,
     },
   ]);

@@ -62,6 +62,7 @@ export default class Create extends Command {
       };
     } else {
       let usrInput = await userInput();
+      console.log(userInput)
       config = {
         // entityId: "",
         // api_token: "",
@@ -73,7 +74,8 @@ export default class Create extends Command {
           apiName: camelCase(usrInput.api_name),
           schemaPath: usrInput.schema_path,
           apiType: APITYPE.graphql,
-          database: DATABASE.neptuneDB,
+          database: usrInput.database,
+          rdbmsEngine:usrInput.rdbmsEngine,
           neptuneQueryLanguage: usrInput.neptuneQueryLanguage,
         },
       };

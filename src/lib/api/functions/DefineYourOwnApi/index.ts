@@ -289,6 +289,9 @@ async function defineYourOwnApi(
       neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
     ) {
       await exec(`npm i && npm i gremlin @types/gremlin`);
+    }else if(database===DATABASE.auroraDB){
+      await exec(`npm i && npm i data-api-client`);
+
     } else {
       await exec(`npm install`);
     }
@@ -313,7 +316,12 @@ async function defineYourOwnApi(
       await exec(
         `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
       );
-    } else {
+    } else if(database === DATABASE.neptuneDB){
+      await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
+      await exec(
+        `cd ./editable_src/lambdaLayer/nodejs/ && npm i && npm i data-api-client`
+      );
+    }else{
       await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(`cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i`);
     }
