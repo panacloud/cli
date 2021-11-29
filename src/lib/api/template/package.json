@@ -9,9 +9,11 @@
     "watch": "tsc -w",
     "test": " mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit",
     "cdk": "cdk",
-    "deploy": "tsc && cdk deploy --outputs-file ./cdk-outputs.json",
+    "deploy-dev": "tsc && STAGE=dev cdk deploy --outputs-file ./cdk-dev-outputs.json",
+    "deploy-prd": "tsc && STAGE=prd cdk deploy --outputs-file ./cdk-prd-outputs.json",
     "codegen": "graphql-codegen",
-    "destroy": "cdk destroy && del-cli --force ./cdk-outputs.json"
+    "destroy-dev": "STAGE=dev cdk destroy && del-cli --force ./cdk-dev-outputs.json",
+    "destroy-prd": "STAGE=prd cdk destroy && del-cli --force ./cdk-prd-outputs.json"
   },
   "devDependencies": {
     "@aws-cdk/assert": "^2.0.0-rc.29",
