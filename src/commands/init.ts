@@ -62,7 +62,6 @@ export default class Create extends Command {
       };
     } else {
       let usrInput = await userInput();
-      console.log(userInput)
       config = {
         // entityId: "",
         // api_token: "",
