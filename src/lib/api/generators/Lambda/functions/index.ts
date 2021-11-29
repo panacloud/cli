@@ -43,7 +43,7 @@ export const lambdaInitializerForNestedResolvers = (
     if (asyncFields && asyncFields.includes(key)) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
     }
-    lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,undefined,true);
+    lambda.initializeLambda(database,apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,undefined,true);
     code.line();
     code.line();
   }
@@ -97,6 +97,7 @@ export const lambdaInitializerForMicroServices = (
         );     
       }
       lambda.initializeLambda(
+        database,
         apiName,
         key,
         vpcRef,
@@ -151,7 +152,7 @@ export const lambdaInitializerForGeneralFields = (
     if (asyncFields && asyncFields.includes(key)) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
     }
-    lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole);
+    lambda.initializeLambda(database,apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole);
     code.line();
     code.line();
 
@@ -189,7 +190,7 @@ export const lambdaInitializerForEventDriven = (
     {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
   ]   }
 
-  lambda.initializeLambda(apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");
+  lambda.initializeLambda(database,apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");
   code.line();
   code.line();
 };
@@ -281,6 +282,7 @@ export const lambdaHandlerForAuroradb = (
   lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
+      "",
       apiName,
       undefined,
       `${apiName}_auroradb.vpcRef`,
@@ -330,6 +332,7 @@ export const lambdaHandlerForNeptunedb = (
   lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
+      "",
       apiName,
       undefined,
       `${apiName}_neptunedb.VPCRef`,
@@ -451,7 +454,7 @@ export const lambdaHandlerForDynamodb = (
   lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
 
   if (apiType === APITYPE.rest) {
-    lambda.initializeLambda(apiName, undefined, undefined, undefined, [
+    lambda.initializeLambda("",apiName, undefined, undefined, undefined, [
       { name: "TableName", value: `${apiName}_table.tableName` },
     ]);
     code.line();

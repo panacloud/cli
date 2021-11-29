@@ -25,6 +25,7 @@ export class Lambda {
   }
 
   public initializeLambda(
+    database:string,
     apiName: string,
     functionName?: string,
     vpcName?: string,
@@ -33,7 +34,7 @@ export class Lambda {
     vpcSubnets?: string,
     roleName?: string,
     microServiceName?:string,
-    nestedResolver?:boolean
+    nestedResolver?:boolean,
   ) {
     const ts = new TypeScriptWriter(this.code);
     let handlerName: string
@@ -124,7 +125,9 @@ export class Lambda {
       },
       "const"
     );
-    this.code.line(`${apiName}_auroradb.db_cluster.grantDataApiAccess(${lambdaVariable})`)
+    if(database === DATABASE.auroraDB){
+      this.code.line(`${apiName}_auroradb.db_cluster.grantDataApiAccess(${lambdaVariable})`)
+    }
   }
 
   public lambdaLayer(apiName: string, path: string) {
