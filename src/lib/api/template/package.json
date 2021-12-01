@@ -17,7 +17,7 @@
     "@graphql-codegen/typescript": "^2.2.2",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^27.0.1",
-    "@types/node": "16.7.5",
+    "@types/node": "16.11.11",
     "aws-cdk": "^2.0.0-rc.19",
     "aws-lambda": "^1.0.6",
     "@types/aws-lambda": "^8.10.84",
