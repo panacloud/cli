@@ -9,7 +9,7 @@ export const auroradbPropertiesInitializer = (
   code.line(`this.vpcRef = ${apiName}_vpc;`);
   code.line(`this.SECRET_ARN = ${apiName}_secret`);
   code.line(`this.CLUSTER_ARN = ${apiName}_db.clusterArn`);
-  code.line(`this.DB_NAME =  props?.prod ? props?.prod+"_${apiName}DB" : "${apiName}DB"`);
+  code.line(`this.DB_NAME =  props?.prod ? props?.prod+"${apiName}DB" : "${apiName}DB"`);
   code.line(`this.db_cluster = ${apiName}_db`)
 };
 
