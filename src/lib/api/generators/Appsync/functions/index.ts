@@ -125,16 +125,16 @@ export const appsyncPropertiesInitializer = (
   code.line(`this.api_url = ${apiName}_appsync.attrGraphQlUrl;`);
   code.line(`this.api_key = ${apiName}_apiKey.attrApiKey;`);
 
-  code.line(`new CfnOutput(this, "APIGraphQlURL", {
+  code.line(`new CfnOutput(this, props?.prod?props.prod+"APIGraphQlURL":"APIGraphQlURL", {
     value: ${apiName}_appsync.attrGraphQlUrl,
     description: 'The URL of the GraphQl API',
-    exportName: 'graphQlAPIURL',
+    exportName: props?.prod?props.prod+'graphQlAPIURL':'graphQlAPIURL',
 
   });`);
-  code.line(`new CfnOutput(this, "GraphQLAPIKey", {
+  code.line(`new CfnOutput(this, props?.prod?props.prod+"GraphQLAPIKey":"GraphQLAPIKey", {
     value: ${apiName}_apiKey.attrApiKey || '',
     description: 'The API Key of the GraphQl API',
-    exportName: 'graphQlAPIKey',
+    exportName: props?.prod?props.prod+'graphQlAPIKey':'graphQlAPIKey',
   });`);
 };
 
