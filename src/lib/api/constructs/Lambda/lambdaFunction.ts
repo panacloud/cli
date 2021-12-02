@@ -231,7 +231,7 @@ export class LambdaFunction {
           this.code.line(" //return user.name")
         }
         this.code.line("// }")
-        this.code.openBlock("// catch (err) {")
+        this.code.openBlock("// catch (err) ")
         this.code.line("// console.log('ERROR', err)")
         this.code.line("// return null")
         this.code.line("// }")

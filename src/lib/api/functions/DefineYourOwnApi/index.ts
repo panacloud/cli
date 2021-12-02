@@ -316,7 +316,7 @@ async function defineYourOwnApi(
       await exec(
         `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
       );
-    } else if(database === DATABASE.neptuneDB){
+    } else if(database === DATABASE.auroraDB){
       await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(
         `cd ./editable_src/lambdaLayer/nodejs/ && npm i && npm i data-api-client`
