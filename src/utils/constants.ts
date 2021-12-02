@@ -112,6 +112,7 @@ export type PanacloudconfigFile = {
   lambdas: any;
   nestedLambdas?:any;
   mockLambdaLayer?:any
+  stages: string[]
 };
 
 export type PanacloudConfiglambdaParams = {

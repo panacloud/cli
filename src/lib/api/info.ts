@@ -34,6 +34,7 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
   let configJson: PanacloudconfigFile = {
     lambdas: {},
     mockLambdaLayer: {},
+    stages: ["prd", "dev"]
   };
   const microServices = Object.keys(microServiceFields!);
 
