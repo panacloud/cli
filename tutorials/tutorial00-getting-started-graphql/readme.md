@@ -1,5 +1,6 @@
 # Build a GraphQL Serverless API for a Simple Schema using Panacloud CLI and Deploy it on AWS
 
+## Prerequisites
 Before getting started you need to install the following packages and libraries:
 
 1. Install [Node.js](https://nodejs.org/en/)
@@ -7,9 +8,14 @@ Before getting started you need to install the following packages and libraries:
 3. Install [AWS CDK Version 2](https://docs.aws.amazon.com/cdk/latest/guide/work-with-cdk-v2.html)
 4. Install Globally [TypeScript](https://www.typescriptlang.org/download)
 
-Now Globally Install Panacloud CLI:
+## Getting Started
+Once you've prepared your environment with the prerequisites, go ahead and globally install the Panacloud CLI:
 
-npm install @panacloud/cli -g 
+     npm install @panacloud/cli -g 
+
+To check the installed version and confirm the successful installation of the Panacloud CLI:
+
+     panacloud version
 
 Panacloud recommends using API-First and API Design-First approach in developing APIs.
 
