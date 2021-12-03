@@ -66,6 +66,7 @@ USAGE
 * [`panacloud help [COMMAND]`](#panacloud-help-command)
 * [`panacloud init`](#panacloud-init)
 * [`panacloud update`](#panacloud-update)
+* [`panacloud config`](#panacloud-config)
 * [`panacloud status`](#panacloud-status)
 * [`panacloud merge`](#panacloud-merge)
 
@@ -115,6 +116,23 @@ OPTIONS
 ```
 
 _See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/update.ts)_
+<!-- commandsstop -->
+
+
+## `panacloud config`
+
+Add deploy and destroy staging commands in the package.json file. Two stages dev and prd are configured by default.
+You may add more stages by adding them to the panacloudconfig.json file and running this command.
+
+```
+USAGE
+  $ panacloud config
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/config.ts)_
 <!-- commandsstop -->
 
 
@@ -186,6 +204,27 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
  5. Monitor APIs and do multi-tenant billing and clearing on the Ethereum blockchain using smart contracts. 
  6. Issue tokens to API early adopters and users to incentivize them to subscribe and use the APIs and become a participant in the [Owership Economy](https://variant.fund/writing/the-ownership-economy-crypto-and-consumer-software).
  8. Allow the stakeholders to cash out whenever they require liquidity by selling API tokens.
+
+
+ ## The Panacloud CLI Roadmap
+
+### First Public Release
+
+Expected Date: December 14, 2021
+
+Functionality: Auto-Generation of GraphQL API for AWS, Single Tenant, Mock API, Serverless Stubs, Database Support: Relational & Graph, API Testing, Staging, init, update, config, deploy, destroy, and client commands
+ 
+### Second Release
+
+Expected Date: January 1, 2022
+
+Functionality: Multi-Tenant monetering and billing data live streamed to Amazon Timestream Database deployed in Panacloud AWS Account. 
+
+### Third Release
+
+Expected Date: January 15, 2022
+
+Functionality: Basic OpenAPI speficication support. 
 
 
 
