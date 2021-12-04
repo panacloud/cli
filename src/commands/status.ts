@@ -4,6 +4,7 @@ import * as validUrl from "valid-url";
 import { readFileSync } from 'fs-extra'
 import { PanacloudconfigFile } from '../utils/constants';
 import { existsSync } from 'fs';
+import inquirer = require('inquirer');
 const fs = require("fs")
 export default class Status extends Command {
   static description = 'describe the command here'
@@ -14,14 +15,25 @@ export default class Status extends Command {
 
   async run() {
     const {args, flags} = this.parse(Status)
-
-   this.checkIsDeployed()
+    const {stages} = JSON.parse(
+      readFileSync("./editable_src/panacloudConfig.json").toString()
+    )
+    const {stage} =  await inquirer.prompt([
+      {
+        type: "list",
+        name: "stage",
+        message: "Select Stage",
+        choices: [...stages],
+        default: stages[0],
+        validate: Boolean,
+      },
+    ])
+   this.checkIsDeployed(stage)
    this.checkIsFileChange()
    this.checkIsRealLambda()
   }
   checkIsRealLambda() {
     const config:PanacloudconfigFile = JSON.parse(readFileSync("./editable_src/panacloudconfig.json").toString())
-    const apiName = JSON.parse(readFileSync("./codegenconfig.json").toString()).api.apiName
     const allLambdas = []
     const mockLambdas = []
     const realLambdas = []
@@ -81,19 +93,19 @@ export default class Status extends Command {
       );
     }
   }
-  checkIsDeployed() {
+  checkIsDeployed(stage:string) {
     let API_URL;
     let API_KEY;
     const apiName = JSON.parse(readFileSync("./codegenconfig.json").toString()).api.apiName
-    if (!existsSync("./cdk-outputs.json")) {
-      this.log(chalk.red(`${apiName} is currently not deployed, give the command panacloud deploy to deploy it.`))
+    if (!existsSync(`./cdk-${stage}-outputs.json`)) {
+      this.log(chalk.red(`${apiName}'s ${stage} stage is currently not deployed, give the command npm run deploy-${stage} to deploy it.`))
     }else{
-      let data= JSON.parse(readFileSync("./cdk-outputs.json").toString())
+      let data= JSON.parse(readFileSync(`./cdk-${stage}-outputs.json`).toString())
     const values:string[] =Object.values(
       Object.entries(data)[0][1] as any
     );
     if(values.length === 0){
-      this.log(chalk.red(`${apiName} is currently not deployed, give the command panacloud deploy to deploy it.`))
+      this.log(chalk.red(`${apiName}'s ${stage} stage is currently not deployed, give the command npm run deploy-${stage} to deploy it.`))
       return 
     }else{
       values.forEach((val: string) => {
@@ -103,7 +115,7 @@ export default class Status extends Command {
           API_KEY = val;
         }
       });
-      this.log(chalk.blue(`${apiName} is Deployed!`))
+      this.log(chalk.blue(`${apiName}'s ${stage} stage is Deployed!`))
       this.log(chalk.blue(`API URL : ${API_URL}`))
       this.log(chalk.blue(`API Key : ${API_KEY}`))
 
