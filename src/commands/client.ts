@@ -25,7 +25,6 @@ export default class Open extends Command {
     const {stages} = JSON.parse(
       readFileSync("./editable_src/panacloudConfig.json").toString()
     )
-    console.log(stages)
     const userInput =  await inquirer.prompt([
       {
         type: "list",
@@ -45,7 +44,7 @@ export default class Open extends Command {
       if (!existsSync(`./cdk-${userInput.stage}-outputs.json`)) {
         this.log(
           chalk.red(
-            `${apiName}'s ${userInput.stage} stage is currently not deployed client cannot connect to API, give the command npm run deploy to deploy it.`
+            `${apiName}'s ${userInput.stage} stage is currently not deployed client cannot connect to API, give the command npm run deploy-${userInput.stage} to deploy it.`
           )
         );
       } else {
@@ -56,7 +55,7 @@ export default class Open extends Command {
         if (values.length === 0) {
           this.log(
             chalk.red(
-              `${apiName}'s ${userInput.stage} stage is currently not deployed client cannot connect to API, give the npm run deploy to deploy it.`
+              `${apiName}'s ${userInput.stage} stage is currently not deployed client cannot connect to API, give the npm run deploy-${userInput.stage} to deploy it.`
             )
           );
           return;
