@@ -9,6 +9,7 @@ import { startSpinner} from "../lib/spinner";
 import * as validUrl from "valid-url";
 import { API, APITYPE } from "../utils/constants";
 import open = require("open");
+import inquirer = require("inquirer");
 const express = require("express");
 
 
@@ -21,27 +22,41 @@ export default class Open extends Command {
 
   static args = [{ name: "file" }];
   async run() {
+    const {stages} = JSON.parse(
+      readFileSync("./editable_src/panacloudConfig.json").toString()
+    )
+    console.log(stages)
+    const userInput =  await inquirer.prompt([
+      {
+        type: "list",
+        name: "stage",
+        message: "Select Stage",
+        choices: [...stages],
+        default: stages[0],
+        validate: Boolean,
+      },
+    ])
     const { apiType, apiName }: API = JSON.parse(
       readFileSync("./codegenconfig.json").toString()
     ).api;
     if (apiType === APITYPE.graphql) {
       let API_URL;
       let API_KEY;
-      if (!existsSync("./cdk-outputs.json")) {
+      if (!existsSync(`./cdk-${userInput.stage}-outputs.json`)) {
         this.log(
           chalk.red(
-            `${apiName} is currently not deployed client cannot connect to API, give the command npm run deploy to deploy it.`
+            `${apiName}'s ${userInput.stage} stage is currently not deployed client cannot connect to API, give the command npm run deploy to deploy it.`
           )
         );
       } else {
-        let data = JSON.parse(readFileSync("./cdk-outputs.json").toString());
+        let data = JSON.parse(readFileSync(`./cdk-${userInput.stage}-outputs.json`).toString());
         const values: string[] = Object.values(
           Object.entries(data)[0][1] as any
         );
         if (values.length === 0) {
           this.log(
             chalk.red(
-              `${apiName} is currently not deployed client cannot connect to API, give the npm run deploy to deploy it.`
+              `${apiName}'s ${userInput.stage} stage is currently not deployed client cannot connect to API, give the npm run deploy to deploy it.`
             )
           );
           return;
