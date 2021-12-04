@@ -27,14 +27,23 @@ class APITests {
     code.openFile(this.outputFile);
     ts.writeImports("fs-extra", ["existsSync", "readFileSync"]);
     ts.writeAllImports("valid-url", "validUrl");
-    code.openBlock(`if(!existsSync("./cdk-outputs.json"))`);
-    code.line(`console.log("cdk-outputs.json file not found.It seems your stack is not deployed.")`);
+    ts.writeVariableDeclaration(
+      {
+        name: "stage",
+        initializer: `process.argv[process.argv.length-1]`,
+        typeName: "",
+        export: false,
+      },
+      "const"
+    );
+    code.openBlock("if(!existsSync(`./cdk-${stage}-outputs.json`))");
+    code.line("console.log(`cdk-${stage}-outputs.json file not found.It seems your stack is not deployed.`)");
     code.line(`process.exit(1)`);
     code.closeBlock();
     ts.writeVariableDeclaration(
       {
         name: "appsyncCredentials",
-        initializer: `JSON.parse(readFileSync('./cdk-outputs.json').toString())`,
+        initializer: "JSON.parse(readFileSync(`./cdk-${stage}-outputs.json`).toString())",
         typeName: "",
         export: false,
       },

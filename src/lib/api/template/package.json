@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": " mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit",
+    "test-dev": "mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit dev",
+    "test-prd": "mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit prd",
     "cdk": "cdk",
     "deploy-dev": "tsc && STAGE=dev cdk deploy --outputs-file ./cdk-dev-outputs.json",
     "deploy-prd": "tsc && STAGE=prd cdk deploy --outputs-file ./cdk-prd-outputs.json",
@@ -22,6 +23,8 @@
     "@types/aws-lambda": "^8.10.84",
     "@types/aws-sdk": "^2.7.0",
     "@types/jest": "^27.0.1",
+    "@types/chai": "^4.2.22",
+    "@types/fs-extra": "^9.0.13",
     "@types/node": "16.7.5",
     "@types/supertest": "^2.0.11",
     "aws-cdk": "^2.0.0-rc.29",
