@@ -109,7 +109,7 @@ export default class Create extends Command {
     }
 
     removeSync("mock_lambda");
-    removeSync("lambdaLayer/mockApi");
+    removeSync("mock_lambda_layer/mockData");
     removeSync("consumer_lambda");
     removeSync("lib");
     removeSync("tests/apiTests");
