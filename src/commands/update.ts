@@ -6,16 +6,23 @@ import {
   removeSync,
   readJsonSync,
   copy,
+  writeJsonSync,
 } from "fs-extra";
 import * as globby from "globby";
+import { isEqual } from "lodash";
+import { error, success, info } from "log-symbols";
+import { greenBright, red, yellowBright } from "chalk";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { updateYourOwnApi } from "../lib/api/functions";
 import { validateSchemaFile } from "../lib/api/errorHandling";
-import { SAASTYPE, Config, APITYPE } from "../utils/constants";
+import {
+  SAASTYPE,
+  Config,
+  APITYPE,
+  PanacloudconfigFile,
+} from "../utils/constants";
 const prettier = require("prettier");
 const exec = require("await-exec");
-const chalk = require("chalk");
-const fs = require("fs");
 
 export default class Create extends Command {
   static description = "Updates the Generated Code.";
@@ -24,60 +31,77 @@ export default class Create extends Command {
     help: flags.help({ char: "h" }),
   };
 
-  async run() {
-    const { flags } = this.parse(Create);
-    let [schemaChanged, panacloudConfigChanged] = this.isChanged();
+  isPanacloudConfigChanged(
+    fileOneJson: PanacloudconfigFile,
+    fileTwoJson: PanacloudconfigFile
+  ): [boolean, boolean, boolean] {
+    // [PanacloudConfigChanged, ExceptStages, newStages]
+    let newStagesAdded = false;
+    let panacloudConfigChanged = false;
+    let panacloudConfigChangedExceptStages = false;
 
-    if (schemaChanged) {
-      this.log(chalk.red("GraphQL Schema has been updated."));
-    } else {
-      this.log(chalk.greenBright("GraphQL Schema is unchanged."));
+    if (
+      !isEqual(fileOneJson.lambdas, fileTwoJson.lambdas) ||
+      !isEqual(fileOneJson.mockLambdaLayer, fileTwoJson.mockLambdaLayer) ||
+      !isEqual(fileOneJson.nestedLambdas, fileTwoJson.nestedLambdas) ||
+      !isEqual(fileOneJson.stages, fileTwoJson.stages)
+    ) {
+      panacloudConfigChanged = true;
     }
 
-    if (panacloudConfigChanged) {
-      this.log(chalk.red("Panacloud Config has been updated."));
-    } else {
-      this.log(chalk.greenBright("Panacloud Config is unchanged."));
+    if (
+      !isEqual(fileOneJson.lambdas, fileTwoJson.lambdas) ||
+      !isEqual(fileOneJson.mockLambdaLayer, fileTwoJson.mockLambdaLayer) ||
+      !isEqual(fileOneJson.nestedLambdas, fileTwoJson.nestedLambdas)
+    ) {
+      panacloudConfigChangedExceptStages = true;
     }
 
-    if (schemaChanged || panacloudConfigChanged) {
-      await this.update();
-    } else {
-      this.log(
-        chalk.red(
-          "GraphQL Schema and Panacloud Config have not changed, therefore no need to Regenerate and Update Code"
-        )
-      );
+    if (!isEqual(fileOneJson.stages, fileTwoJson.stages)) {
+      newStagesAdded = true;
     }
+
+    return [
+      panacloudConfigChanged,
+      panacloudConfigChangedExceptStages,
+      newStagesAdded,
+    ];
   }
 
-  isChanged(): [boolean, boolean] {
-    let schemaChanged: boolean = this.isFileChanged(
-      "editable_src/graphql/schema/schema.graphql",
-      ".panacloud/editable_src/graphql/schema/schema.graphql"
-    );
+  isNewStageAdded(
+    fileOnestages: string[], // User
+    fileTwoStage: string[] // hidder folder
+  ): string[] {
+    let newStages: string[] = [];
 
-    let panacloudConfigChanged: boolean = this.isFileChanged(
-      "editable_src/panacloudconfig.json",
-      ".panacloud/editable_src/panacloudconfig.json"
-    );
-    return [schemaChanged, panacloudConfigChanged];
+    let compare = fileOnestages.filter(function (v) {
+      return !fileTwoStage.includes(v);
+    });
+    newStages = [...compare];
+
+    return newStages;
   }
 
-  isFileChanged(file1: string, file2: string): boolean {
+  isSchemaFileChanged(): boolean {
     let result: boolean = false;
 
-    const file1Data = fs
-      .readFileSync(file1)
+    const schemaFile = readFileSync(
+      "editable_src/graphql/schema/schema.graphql",
+      "utf8"
+    )
       .toString()
       .replace(/(\r\n|\n|\r)/gm, "")
       .replace(/\s/g, "");
-    const file2Data = fs
-      .readFileSync(file2)
+
+    const hiddenSchemaFile = readFileSync(
+      ".panacloud/editable_src/graphql/schema/schema.graphql",
+      "utf8"
+    )
       .toString()
       .replace(/(\r\n|\n|\r)/gm, "")
       .replace(/\s/g, "");
-    if (file1Data === file2Data) {
+
+    if (schemaFile === hiddenSchemaFile) {
       result = false;
     } else {
       result = true;
@@ -85,8 +109,28 @@ export default class Create extends Command {
     return result;
   }
 
+  updatePackageJson(stages: string[]) {
+    const stackPackageJson = readJsonSync(`package.json`);
+    stages?.forEach((v) => {
+      stackPackageJson.scripts[
+        `deploy-${v}`
+      ] = `tsc && STAGE=${v} cdk deploy --outputs-file ./cdk-${v}-outputs.json`;
+      stackPackageJson.scripts[
+        `destroy-${v}`
+      ] = `STAGE=${v} cdk destroy && del-cli --force ./cdk-${v}-outputs.json`;
+    });
+
+    writeJsonSync(`./package.json`, stackPackageJson);
+
+    const data = readFileSync("package.json", "utf8");
+    const nextData = prettier.format(data, {
+      parser: "json",
+    });
+    writeFileSync("package.json", nextData, "utf8");
+    this.log(`${success} ${greenBright("New Stages are added.")}`);
+  }
+
   async update() {
-    // const validating = startSpinner("Validating Everything");
     const updatingCode = startSpinner("Updating CDK Code...");
 
     const configCli: Config = readJsonSync("codegenconfig.json");
@@ -128,7 +172,7 @@ export default class Create extends Command {
       stopSpinner(setUpForTest, `Error: ${error}`, true);
       process.exit(1);
     }
-    stopSpinner(setUpForTest, "Generating Types", false);
+    stopSpinner(setUpForTest, "Test Setup", false);
 
     const generatingTypes = startSpinner("Generating Types");
     try {
@@ -141,7 +185,7 @@ export default class Create extends Command {
     stopSpinner(generatingTypes, "Types generated", false);
 
     const formatting = startSpinner("Formatting Code");
-    // // Formatting files.
+    // Formatting files.
     const files = await globby(
       [
         "*",
@@ -169,6 +213,52 @@ export default class Create extends Command {
       writeFileSync(file, nextData, "utf8");
     });
 
+    stopSpinner(formatting, "Formatting Done", false);
+  }
+
+  async run() {
+    const { flags } = this.parse(Create);
+
+    const pancloudConfigJson: PanacloudconfigFile = readJsonSync(
+      "editable_src/panacloudconfig.json"
+    );
+    const hiddenPanacloudConfig: PanacloudconfigFile = readJsonSync(
+      ".panacloud/editable_src/panacloudconfig.json"
+    );
+
+    const [isConfigChanged, isConfigChangedExceptStages, isNewStageAdded] =
+      this.isPanacloudConfigChanged(pancloudConfigJson, hiddenPanacloudConfig);
+
+    const isSchemaChanged = this.isSchemaFileChanged();
+
+    if (isSchemaChanged) {
+      this.log(`${info} ${yellowBright("GraphQL Schema has been updated.")}`);
+    } else {
+      this.log(`${error} ${red("GraphQL Schema is unchanged.")}`);
+    }
+
+    if (isConfigChanged) {
+      this.log(`${info} ${yellowBright("Panacloud Config has been updated.")}`);
+    } else {
+      this.log(`${error} ${red("Panacloud Config is unchanged.")}`);
+    }
+
+    if (!isNewStageAdded && isConfigChanged) {
+      this.log(`${error} ${red("No New Stage is added.")}`);
+    }
+
+    if (isNewStageAdded) {
+      const isStagesAdded = this.isNewStageAdded(
+        pancloudConfigJson?.stages,
+        hiddenPanacloudConfig?.stages
+      );
+      this.updatePackageJson(isStagesAdded);
+    }
+
+    if (isConfigChangedExceptStages || isSchemaChanged) {
+      await this.update();
+    }
+
     try {
       copy(
         "editable_src/graphql/schema/schema.graphql",
@@ -181,7 +271,5 @@ export default class Create extends Command {
     } catch (err) {
       console.error(err);
     }
-
-    stopSpinner(formatting, "Formatting Done", false);
   }
 }

@@ -1,20 +1,20 @@
 import { IntrospectionQuery } from "graphql";
 
-export const async_response_mutName = 'async_response'
+export const async_response_mutName = "async_response";
 
 export enum APITYPE {
   graphql = "GraphQL",
   rest = "REST OpenAPI",
 }
 
-export enum RDBMSENGINE{
+export enum RDBMSENGINE {
   postgresql = "PostgreSQL",
-  mysql = "MySQL"
+  mysql = "MySQL",
 }
 
-export enum NEPTUNEQUERYLANGUAGE  { 
+export enum NEPTUNEQUERYLANGUAGE {
   gremlin = "Gremlin",
-  cypher = "Cypher"
+  cypher = "Cypher",
 }
 
 export enum DATABASE {
@@ -74,16 +74,18 @@ export interface mockApiData {
 }
 
 export type nestedResolverFieldsAndLambda = {
-  nestedResolverFields: {[key: string]: {fieldName:string,lambda:string}[] },
-  nestedResolverLambdas: string[]
-}
+  nestedResolverFields: {
+    [key: string]: { fieldName: string; lambda: string }[];
+  };
+  nestedResolverLambdas: string[];
+};
 export interface API {
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
   apiName: string;
   schemaPath: string;
   schema?: IntrospectionQuery | string;
-  nestedResolverFieldsAndLambdas?:nestedResolverFieldsAndLambda
+  nestedResolverFieldsAndLambdas?: nestedResolverFieldsAndLambda;
   createMockLambda?: string[];
   createNestedResolverLambdaOnUpdate?: string[];
   // nestedResolverLambdas?:string[]
@@ -94,13 +96,13 @@ export interface API {
   database: DATABASE;
   nestedResolver?: boolean;
   mockApiData?: mockApiData;
-  microServiceFields?:{
+  microServiceFields?: {
     [k: string]: any[];
-};
-  generalFields?: string[],
-  asyncFields?:string[],
-  rdbmsEngine?:RDBMSENGINE,
-  neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE,
+  };
+  generalFields?: string[];
+  asyncFields?: string[];
+  rdbmsEngine?: RDBMSENGINE;
+  neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE;
 }
 
 export enum ARCHITECTURE {
@@ -110,12 +112,12 @@ export enum ARCHITECTURE {
 
 export type PanacloudconfigFile = {
   lambdas: any;
-  nestedLambdas?:any;
-  mockLambdaLayer?:any
-  stages: string[]
+  nestedLambdas?: any;
+  mockLambdaLayer?: any;
+  stages: string[];
 };
 
 export type PanacloudConfiglambdaParams = {
   asset_path: string;
-  is_mock:boolean
+  is_mock: boolean;
 };
