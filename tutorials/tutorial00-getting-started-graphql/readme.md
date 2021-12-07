@@ -31,11 +31,11 @@ You can learn how to develop GraphQL schemas from [the schema official documenta
 
 Now we will generate an AWS CDK project using the panacloud cli.
 
-mkdir my_user_api
+     mkdir my_user_api
 
-cd my_user_api
+     cd my_user_api
 
-panacloud init
+     panacloud init
 
 On the command promt answer the question:
 
@@ -92,40 +92,51 @@ Before we proceed to deploy the project lets first understand what it contains.
 
 If you have already not done so, you need to [bootstrap](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html) the cdk by using this command:
 
-cdk bootstrap
+     cdk bootstrap
 
 Once we are done with bootstrapping we want to deploy the Mock Serverless APIs. 
 
 The project is already generated for you, you just have to compile it:
 
-npm run build
+     npm run build
 
 You may now deploy the project for development stage:
 
-npm run deploy-dev
-
-You may now deploy the project for production stage:
-
-npm run deploy-prd
+     npm run deploy-dev
 
 After deploying check out the `cdk-dev-outputs.json` file in the project root it contains the URL and Key of the deployed APIs.
 
-When you want to destroy the deployed development stack just give this command:
+You may now deploy the project for production stage:
 
-npm run destroy-dev
+     npm run deploy-prd
 
-When you want to destroy the deployed production stack just give this command:
+After deploying check out the `cdk-prd-outputs.json` file in the project root it contains the URL and Key of the deployed APIs.
 
-npm run destroy-dev
+After a deployment of dev stage is successuful you can run the automated tests on the deployed API:
+
+     npm run test-dev
+
+After a deployment of production stage is successuful you can run the automated tests on the deployed API:
+
+     npm run test-prd
 
 
-## Running Automated API Tests Against the Mock APIs
+You can call the APIs by using this command which will open an client for your API:
 
-## Developing and Writing Business and Data Logic in the Stubs and Deploying in the AWS Cloud
+     panacloud client
 
-## Running Automated API Tests Against the Real APIs
+Note: Right now you are running mock APIs therefore it will only give you responses to mock queries with fixed data.
+For example, the mock data for the user query is in the `mock_lambda_layer/mockData/user` file of your generated project. Therefore, only those queries will be successful which will use this mock data.
 
-## Adding CDK Code in the Project
+
+Now you may destroy the deployed development stage just give this command:
+
+     npm run destroy-dev
+
+Now you may destroy the deployed production stage just give this command:
+
+     npm run destroy-dev
+
 
  
 
