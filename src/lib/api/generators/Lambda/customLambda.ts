@@ -43,6 +43,7 @@ class CustomLambda {
         asyncFields,
         database,
         neptuneQueryLanguage,
+        mockApiData,
       },
     } = this.config;
 
@@ -119,7 +120,10 @@ class CustomLambda {
             undefined,
             database,
             neptuneQueryLanguage!,
-            isMutation
+            isMutation,
+            mockApiData,
+            diff,
+            true
           );
 
           code.closeFile(this.outputFile);
@@ -200,7 +204,10 @@ class CustomLambda {
             undefined,
             database,
             neptuneQueryLanguage!,
-            isMutation
+            isMutation,
+            mockApiData,
+            key,
+            false
           );
 
           code.closeFile(this.outputFile);
@@ -273,7 +280,7 @@ class CustomLambda {
             code.openFile(this.outputFile);
             code.line();
             imp.importAxios();
-            lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!);
+            lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!, mockApiData, key);
             code.closeFile(this.outputFile);
 
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${key}`;
