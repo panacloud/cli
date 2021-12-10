@@ -115,14 +115,13 @@ export class LambdaFunction {
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
+    
     if (mockData?.imports) {
       ts.writeImports("../../../customMockLambdaLayer/mockData/types", [
         ...mockData?.imports.filter(
           (val: string) =>
-            val !==
-            `Mutation${async_response_mutName
-              .charAt(0)
-              .toUpperCase()}${async_response_mutName.slice(1)}Args`
+            val ===
+            `${queryName?.charAt(0).toUpperCase()}${queryName?.slice(1)}`
         ),
       ]);
     }
@@ -184,12 +183,10 @@ export class LambdaFunction {
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
     if (mockData?.imports) {
       ts.writeImports(path, [
-        ...mockData?.imports.filter(
-          (val: string) =>
-            val !==
-            `Mutation${async_response_mutName
-              .charAt(0)
-              .toUpperCase()}${async_response_mutName.slice(1)}Args`
+        ...mockData.imports.filter((v) =>
+          v.includes(
+            `${queryName?.charAt(0).toUpperCase()}${queryName?.slice(1)}`
+          )
         ),
       ]);
     }
