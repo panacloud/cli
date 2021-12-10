@@ -51,6 +51,7 @@ export default class Create extends Command {
         api_token: "",
         saasType: SAASTYPE.api,
         api: {
+          multitenancy: false,
           nestedResolver: true,
           language: LANGUAGE.typescript,
           cloudprovider: CLOUDPROVIDER.aws,

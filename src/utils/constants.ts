@@ -80,6 +80,7 @@ export type nestedResolverFieldsAndLambda = {
   nestedResolverLambdas: string[];
 };
 export interface API {
+  multitenancy?: boolean;
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
   apiName: string;
