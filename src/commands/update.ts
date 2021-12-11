@@ -113,6 +113,9 @@ export default class Create extends Command {
     const stackPackageJson = readJsonSync(`package.json`);
     stages?.forEach((v) => {
       stackPackageJson.scripts[
+        `test-${v}`
+      ]= `mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit ${v}`
+      stackPackageJson.scripts[
         `deploy-${v}`
       ] = `tsc && STAGE=${v} cdk deploy --outputs-file ./cdk-${v}-outputs.json`;
       stackPackageJson.scripts[
