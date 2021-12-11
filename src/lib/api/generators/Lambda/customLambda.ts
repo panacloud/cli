@@ -261,7 +261,13 @@ class CustomLambda {
             code.openFile(this.outputFile);
             code.line();
             imp.importAxios();
-            lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!);
+            lambda.helloWorldFunction(
+              apiName,
+              database,
+              neptuneQueryLanguage!,
+              mockApiData,
+              ele
+            );
             code.closeFile(this.outputFile);
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${ele}`;
             await code.save(this.outputDir);
@@ -280,7 +286,13 @@ class CustomLambda {
             code.openFile(this.outputFile);
             code.line();
             imp.importAxios();
-            lambda.helloWorldFunction(apiName, database, neptuneQueryLanguage!, mockApiData, key);
+            lambda.helloWorldFunction(
+              apiName,
+              database,
+              neptuneQueryLanguage!,
+              mockApiData,
+              key
+            );
             code.closeFile(this.outputFile);
 
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${key}`;

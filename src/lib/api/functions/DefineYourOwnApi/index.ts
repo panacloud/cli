@@ -66,8 +66,7 @@ async function defineYourOwnApi(
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         copy(`${templateDir}/${file}`, ".gitignore");
-      } 
-      else if (file === "lambdaLayer") {
+      } else if (file === "lambdaLayer") {
         copy(`${templateDir}/${file}`, "mock_lambda_layer", (err: Error) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
@@ -94,15 +93,14 @@ async function defineYourOwnApi(
             }
           }
         );
-      } 
-      else if(apiType === APITYPE.graphql&& file === "graphqlClient"){
+      } else if (apiType === APITYPE.graphql && file === "graphqlClient") {
         copy(`${templateDir}/${file}`, file, (err: Error) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
             process.exit(1);
           }
         });
-      }else {
+      } else {
         copy(`${templateDir}/${file}`, file, (err: Error) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
@@ -289,9 +287,8 @@ async function defineYourOwnApi(
       neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
     ) {
       await exec(`npm i && npm i gremlin @types/gremlin`);
-    }else if(database===DATABASE.auroraDB){
+    } else if (database === DATABASE.auroraDB) {
       await exec(`npm i && npm i data-api-client`);
-
     } else {
       await exec(`npm install`);
     }
@@ -316,12 +313,12 @@ async function defineYourOwnApi(
       await exec(
         `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
       );
-    } else if(database === DATABASE.auroraDB){
+    } else if (database === DATABASE.auroraDB) {
       await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(
         `cd ./editable_src/lambdaLayer/nodejs/ && npm i && npm i data-api-client`
       );
-    }else{
+    } else {
       await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(`cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i`);
     }
