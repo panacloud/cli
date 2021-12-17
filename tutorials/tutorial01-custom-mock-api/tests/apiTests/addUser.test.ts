@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import supertest from "supertest";
 import { AppsyncAPI } from "./AppSyncAPI";
-import { testCollections } from "../../mock_lambda_layer/mockData/addUser/testCollections";
+import { testCollections } from "../../editable_src/customMockLambdaLayer/mockData/addUser/testCollections";
 const { API_KEY, API_URL } = AppsyncAPI.getInstance();
 const request = supertest(API_URL);
 const { addUser } = require("./graphql/mutations");

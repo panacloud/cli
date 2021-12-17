@@ -32,7 +32,7 @@ export class Tutorial01CustomMockApiStack extends Stack {
       this,
       "myApiMockLambdaLayer",
       {
-        code: lambda.Code.fromAsset("mock_lambda_layer"),
+        code: lambda.Code.fromAsset("editable_src/customMockLambdaLayer"),
       }
     );
     const myApi_lambdaFn_user: lambda.Function = new lambda.Function(
