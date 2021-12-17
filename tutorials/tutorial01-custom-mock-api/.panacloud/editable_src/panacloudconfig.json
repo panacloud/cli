@@ -1,0 +1,8 @@
+{
+  "lambdas": {
+    "user": { "asset_path": "mock_lambda/user/index.ts", "is_mock": true },
+    "addUser": { "asset_path": "mock_lambda/addUser/index.ts", "is_mock": true }
+  },
+  "mockLambdaLayer": { "asset_path": "mock_lambda_layer" },
+  "stages": ["prd", "dev"]
+}
