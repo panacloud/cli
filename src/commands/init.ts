@@ -68,7 +68,7 @@ export default class Create extends Command {
         saasType: SAASTYPE.api,
         api: {
           multitenancy: false,
-          nestedResolver: usrInput.nestedResolver,
+          nestedResolver: false,
           language: LANGUAGE.typescript,
           cloudprovider: CLOUDPROVIDER.aws,
           apiName: camelCase(usrInput.api_name),

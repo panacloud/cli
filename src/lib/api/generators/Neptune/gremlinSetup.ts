@@ -64,15 +64,11 @@ export class GremlinSetupFile {
     `);
 
     this.code.closeFile("gremlin_init.ts");
-    await this.code.save(
-      "editable_src/customMockLambdaLayer/utils/gremlin_init.ts "
-    );
+    await this.code.save("editable_src/customMockLambdaLayer/utils");
   }
 }
 
-export const GremlinSetup = async (
-  props: StackBuilderProps
-): Promise<void> => {
+export const GremlinSetup = async (props: StackBuilderProps): Promise<void> => {
   const builder = new GremlinSetupFile(props);
   await builder.gremlinSetup();
 };

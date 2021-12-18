@@ -81,13 +81,13 @@ export const userInput = async () => {
       default: "MyApi",
       validate: Boolean,
     },
-    {
-      type: "confirm",
-      name: "nestedResolver",
-      message: "Nested Resolver",
-      validate: Boolean,
-      // when: (answers: any) => answers.api_type === APITYPE.graphql,
-    },
+    // {
+    //   type: "confirm",
+    //   name: "nestedResolver",
+    //   message: "Nested Resolver",
+    //   validate: Boolean,
+    //   // when: (answers: any) => answers.api_type === APITYPE.graphql,
+    // },
     {
       type: "list",
       name: "database",
