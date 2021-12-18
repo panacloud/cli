@@ -1,4 +1,4 @@
-import { IntrospectionQuery } from "graphql";
+import { GraphQLSchema, IntrospectionQuery } from "graphql";
 
 export const async_response_mutName = "async_response";
 
@@ -83,6 +83,7 @@ export interface API {
   multitenancy?: boolean;
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
+  mySchema?:GraphQLSchema;
   apiName: string;
   schemaPath: string;
   schema?: IntrospectionQuery | string;

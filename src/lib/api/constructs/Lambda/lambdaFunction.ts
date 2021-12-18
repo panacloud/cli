@@ -1,4 +1,7 @@
 import { CodeMaker } from "codemaker";
+import { readFileSync, write, writeFileSync } from "fs";
+import { buildSchema, GraphQLSchema } from "graphql";
+import { resolve } from "path";
 import {
   APITYPE,
   ARCHITECTURE,
@@ -8,6 +11,7 @@ import {
   NEPTUNEQUERYLANGUAGE,
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
+import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
 
 export class LambdaFunction {
   code: CodeMaker;
@@ -110,22 +114,37 @@ export class LambdaFunction {
     database: DATABASE,
     neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE,
     mockData?: mockApiData,
-    queryName?: string
+    queryName?: string,
   ) {
+    writeFileSync("./data.json",JSON.stringify(mockData))
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
-    
-    if (mockData?.imports) {
-      ts.writeImports("../../../customMockLambdaLayer/mockData/types", [
-        ...mockData?.imports.filter(
-          (val: string) =>
-            val ===
-            `${queryName?.charAt(0).toUpperCase()}${queryName?.slice(1)}`
-        ),
-      ]);
-    }
+    // if (mockData?.enumImports.length !== 0) {
+    //   ts.writeImports("../types", [
+    //     ...mockData?.enumImports!,
+    //   ]);
+    // }
+    // if (mockData?.imports) {
+    //   ts.writeImports("../../../customMockLambdaLayer/mockData/types", [ `${queryName?.charAt(0).toUpperCase()}${queryName?.slice(1)}`]);
+    // }
     this.code.line();
+    if (database === DATABASE.auroraDB) {
+      ts.writeVariableDeclaration(
+        {
+          name: "db",
+          typeName: "",
+          initializer: () => {
+            this.code.line(`require("data-api-client")({
+              secretArn: process.env.SECRET_ARN,
+              resourceArn: process.env.CLUSTER_ARN,
+              database: process.env.DB_NAME,
+            })`);
+          },
+        },
+        "const"
+      );
+    }
     if (
       database === DATABASE.neptuneDB &&
       neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
@@ -141,9 +160,9 @@ export class LambdaFunction {
         "const"
       );
     }
-    ts.writeInterfaceBlock("args", [{ name: "input", type: queryName! }]);
+    // ts.writeInterfaceBlock("args", [{ name: "input", type: queryName!.charAt(0).toUpperCase() }]);
     this.code.line(`
-    export const ${name} = async(events:AppSyncResolverEvent<args>) => {
+    exports.handler = async(events:AppSyncResolverEvent<any>) => {
     `);
     if (database === DATABASE.neptuneDB) {
       if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
@@ -172,27 +191,111 @@ export class LambdaFunction {
     isMutation?: boolean,
     mockData?: mockApiData,
     queryName?: string,
-    isService?: boolean
+    isService?: boolean,
+    gqlSchema?:GraphQLSchema
   ) {
+    
+    let returnType = "";
+    const mockObject = new RootMockObject(gqlSchema!);
+    const dummyData: TestCollectionType = { fields: {} };
+    mockObject.write(dummyData);
+    const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
+    let mockDataStr = ""
+    if(dummyData &&dummyData.fields[queryName!]&& dummyData.fields[queryName!].length > 0){
+      mockDataStr = `${JSON.stringify(dummyData.fields[queryName!][0].response)}`;
+    const matchEnums = mockDataStr.match(enumPattern);
+
+    matchEnums?.forEach(enumStr => {
+      mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+    })
+    }
     const ts = new TypeScriptWriter(this.code);
     const path = isService
       ? "../../../customMockLambdaLayer/mockData/types"
       : "../../customMockLambdaLayer/mockData/types";
-  
+
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
-  
-  
-
-
-    if (mockData?.imports) {
+    if (mockData && mockData?.enumImports && mockData?.enumImports.length !== 0) {
       ts.writeImports(path, [
-        ...mockData.imports.filter((v) =>
-          v.includes(
-            `${queryName?.charAt(0).toUpperCase()}${queryName?.slice(1)}`
-          )
-        ),
+        ...mockData?.enumImports!,
       ]);
+    }
+      if (mockData?.imports) {
+        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments === "string"){
+          ts.writeImports(path,[mockData?.types[queryName!].fields[queryName!][0].arguments] );
+        }
+      }
+      
+    
+   
+    switch (mockData?.types[queryName!].fields[queryName!][0].response) {
+      case "ID":
+        returnType = `Scalars["ID"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "String":
+        returnType = `Scalars["String"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "Boolean":
+        returnType = `Scalars["Boolean"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "Int":
+        returnType = `Scalars["Int"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "Float":
+        returnType = `Scalars["Float"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSDate":
+        returnType = `Scalars["AWSDate"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSDateTime":
+        returnType = `Scalars["AWSDateTime"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSEmail":
+        returnType = `Scalars["AWSEmail"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSIPAddress":
+        returnType = `Scalars["AWSIPAddress"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSJSON":
+        returnType = `Scalars["AWSJSON"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSPhone":
+        returnType = `Scalars["AWSPhone"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSTime":
+        returnType = `Scalars["AWSTime"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSTimestamp":
+        returnType = `Scalars["AWSTimestamp"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      case "AWSURL":
+        returnType = `Scalars["AWSURL"]`;
+        ts.writeImports(path, ["Scalars"]);
+        break;
+      default:
+        returnType = `${
+          mockData?.types[queryName!].fields[queryName!][0].response
+        }`;
+        ts.writeImports(path, [
+          `${mockData?.types[queryName!].fields[
+            queryName!
+          ][0].response.replace(/[\[\]']+/g, "").replace("|",",")}`,
+        ]);
+        break;
     }
     if (database === DATABASE.auroraDB) {
       ts.writeVariableDeclaration(
@@ -227,72 +330,21 @@ export class LambdaFunction {
       );
     }
 
-    // this.code.line(`var AWS = require('aws-sdk');`);
     this.code.line();
     this.code.line(
       `exports.handler = async (event: AppSyncResolverEvent<${
-        mockData?.types[queryName!].fields[queryName!][0].arguments
+       typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"?mockData?.types[queryName!].fields[queryName!][0].arguments:"null"
       }>) => {`
     );
-  
-    if (database === DATABASE.auroraDB) {
-      this.code.line();
-      this.code.line("// Example Schema: ");
-      this.code.line(`
-        // type User {
-        //   id: ID!
-        //   name: String!
-        //   age: Int!
-        // }
-        
-        // input userInput {
-        //   name: String!
-        //   age: Int!
-        // }
 
-        // type Query {
-        //   listUsers: [User!]
-        // }
-        
-        // type Mutation {
-        //   createUser(user: userInput!): String
-        // }
-        `);
-      this.code.line(`// Example Code: `);
-      this.code.line();
-      this.code.line("// try{");
-      if (!isMutation) {
-        this.code.line("// const query = `SELECT * FROM users`;");
-        this.code.line("// const data = await db.query(query)");
-        this.code.line("// return data");
-      } else {
-        this.code.line(
-          "// const query = `INSERT INTO users (name,age) VALUES(:name,:age)`;"
-        );
-        this.code.line("// await db.query(query, { name:'John', age:20 })");
-        this.code.line(" //return user.name");
+    if (database === DATABASE.auroraDB) {
+      if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"){
+        this.code.line(`const result = await ${queryName}(event.arguments);`);
+      }else{
+        this.code.line(`const result = await ${queryName}();`);
       }
-      this.code.line("// }");
-      this.code.openBlock("// catch (err) ");
-      this.code.line("// console.log('ERROR', err)");
-      this.code.line("// return null");
-      this.code.line("// }");
-    }
-    if (database === DATABASE.neptuneDB) {
-      if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
-        this.code.line(
-          `const url = 'https://' + process.env.NEPTUNE_ENDPOINT + ':8182/openCypher';`
-        );
-        this.code.line(`const result = ${queryName}(event.arguments,url);`)
-      } else {
-        this.code.line(`
-        const { g, conn } = initGremlin.initializeGremlinClient(
-          process.env.NEPTUNE_ENDPOINT!
-        );
-        `);
-        this.code.line(`const result = await ${queryName}(event.arguments,g);`)
-      }
-      this.code.line("return result")
+      
+      this.code.line("return result");
       // this.code.line();
       // this.code.line("// Example Schema: ");
       // this.code.line(`
@@ -301,7 +353,7 @@ export class LambdaFunction {
       //   //   name: String!
       //   //   age: Int!
       //   // }
-        
+
       //   // input userInput {
       //   //   name: String!
       //   //   age: Int!
@@ -310,7 +362,69 @@ export class LambdaFunction {
       //   // type Query {
       //   //   listUsers: [User!]
       //   // }
+
+      //   // type Mutation {
+      //   //   createUser(user: userInput!): String
+      //   // }
+      //   `);
+      // this.code.line(`// Example Code: `);
+      // this.code.line();
+      // this.code.line("// try{");
+      // if (!isMutation) {
+      //   this.code.line("// const query = `SELECT * FROM users`;");
+      //   this.code.line("// const data = await db.query(query)");
+      //   this.code.line("// return data");
+      // } else {
+      //   this.code.line(
+      //     "// const query = `INSERT INTO users (name,age) VALUES(:name,:age)`;"
+      //   );
+      //   this.code.line("// await db.query(query, { name:'John', age:20 })");
+      //   this.code.line(" //return user.name");
+      // }
+      // this.code.line("// }");
+      // this.code.openBlock("// catch (err) ");
+      // this.code.line("// console.log('ERROR', err)");
+      // this.code.line("// return null");
+      // this.code.line("// }");
+    }
+    if (database === DATABASE.neptuneDB) {
+      if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.cypher) {
+        this.code.line(
+          `const url = 'https://' + process.env.NEPTUNE_ENDPOINT + ':8182/openCypher';`
+        );
+        this.code.line(`const result = ${queryName}(event.arguments,url);`);
+      } else {
+        this.code.line(`
+        const { g, conn } = initGremlin.initializeGremlinClient(
+          process.env.NEPTUNE_ENDPOINT!
+        );
+        `);
+        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"){
+          this.code.line(`const result = await ${queryName}(event.arguments,g);`);
+        }else{
+          this.code.line(`const result = await ${queryName}(g);`);
+        }
         
+      }
+      this.code.line("return result");
+      // this.code.line();
+      // this.code.line("// Example Schema: ");
+      // this.code.line(`
+      //   // type User {
+      //   //   id: ID!
+      //   //   name: String!
+      //   //   age: Int!
+      //   // }
+
+      //   // input userInput {
+      //   //   name: String!
+      //   //   age: Int!
+      //   // }
+
+      //   // type Query {
+      //   //   listUsers: [User!]
+      //   // }
+
       //   // type Mutation {
       //   //   createUser(user: userInput!): String
       //   // }
@@ -328,7 +442,7 @@ export class LambdaFunction {
       //     this.code.line(`
       //       //   const result = JSON.stringify(fetch.data.results);
       //       //   const data = JSON.parse(result);
-            
+
       //       //   let modifiedData = Array();
       //       //   for (const [i, v] of data.entries()) {
       //       //     //for each vertex
@@ -336,10 +450,10 @@ export class LambdaFunction {
       //       //       id: data[i].n["~id"],
       //       //       ...data[i].n["~properties"],
       //       //     };
-            
+
       //       //     modifiedData.push(obj);
       //       //   }
-            
+
       //       //   return modifiedData;
       //       `);
       //     this.code.line("// }");
@@ -355,7 +469,7 @@ export class LambdaFunction {
       //     this.code.line("// await axios.post(url, `query=${query}`);");
       //     this.code.line("// return user.name;");
       //     this.code.line("// }");
-      //     this.code.line(`  
+      //     this.code.line(`
       //     // catch (err) {
       //     //   console.log("ERROR", err);
       //     //   return null;
@@ -363,11 +477,11 @@ export class LambdaFunction {
       //   }
       // } else {
       //   if (!isMutation) {
-      //     this.code.line(` 
+      //     this.code.line(`
       //     // try {
       //     //   let data = await g.V().hasLabel('user').toList()
       //     //   let users = Array()
-      
+
       //     //   for (const v of data) {
       //     //     const _properties = await g.V(v.id).properties().toList()
       //     //     let user = _properties.reduce((acc, next) => {
@@ -395,19 +509,33 @@ export class LambdaFunction {
     // this.code.line(
     //   `const data = await axios.post('http://sandbox:8080', event)`
     // );
-    this.code.line(`console.log(JSON.stringify(event,null,2))`);
-    if (nestedResolver) {
-      this.code.line(`return event.source![event.info.fieldName]`);
-    }
+    // this.code.line(`console.log(JSON.stringify(event,null,2))`);
+    // if (nestedResolver) {
+    //   this.code.line(`return event.source![event.info.fieldName]`);
+    // }
     this.code.line();
     this.code.line(`}`);
-    this.code.line()
-   if(database === DATABASE.neptuneDB){
-     if(neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin){
-      this.code.line(`async function ${queryName}(evenet:${mockData?.types[queryName!].fields[queryName!][0].arguments},g:gprocess.GraphTraversalSource){`)
-      this.code.line()
-      this.code.line("// Example Schema: ");
-      this.code.line(`
+    this.code.line();
+    if (database === DATABASE.neptuneDB) {
+      if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin) {
+        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"
+          ){
+            this.code.line(
+              `async function ${queryName}(args:${
+                mockData?.types[queryName!].fields[queryName!][0].arguments
+              },g:gprocess.GraphTraversalSource):Promise<${returnType}>
+              {`
+            );
+        }else{
+          this.code.line(
+            `async function ${queryName}(g:gprocess.GraphTraversalSource):Promise<${returnType}>
+            {`
+          );
+        }
+        
+        this.code.line();
+        this.code.line("// Example Schema: ");
+        this.code.line(`
         // type User {
         //   id: ID!
         //   name: String!
@@ -428,11 +556,10 @@ export class LambdaFunction {
         // }
         `);
 
-      this.code.line(`// Example Code: `);
-      
+        this.code.line(`// Example Code: `);
 
-      if (!isMutation) {
-        this.code.line(` 
+        if (!isMutation) {
+          this.code.line(` 
         // try {
         //   let data = await g.V().hasLabel('user').toList()
         //   let users = Array()
@@ -452,19 +579,34 @@ export class LambdaFunction {
         //     return null
         // }
         `);
-      } else {
-        this.code.line(`
+        } else {
+          this.code.line(`
           //  await g.addV('user').property('name', 'John').property('age', 20)
         `);
-        this.code.line(`// return user.name;`);
-      }
-
-      this.code.line("}")
-     }else{
-      this.code.line(`async function ${queryName}(evenet:${mockData?.types[queryName!].fields[queryName!][0].arguments},url:string){`)
-      this.code.line()
-      this.code.line("// Example Schema: ");
-      this.code.line(`
+          this.code.line(`// return user.name;`);
+        }
+        this.code.line(
+          `return ${mockDataStr}`
+        );
+        this.code.line("}");
+      } else {
+        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments === "string"){
+          this.code.line(
+            `async function ${queryName}(args:${
+              mockData?.types[queryName!].fields[queryName!][0].arguments
+            },url:string):Promise<${returnType}>
+            {`
+          );
+        }else{
+          this.code.line(
+            `async function ${queryName}(url:string):Promise<${returnType}>
+            {`
+          );
+        }
+        
+        this.code.line();
+        this.code.line("// Example Schema: ");
+        this.code.line(`
         // type User {
         //   id: ID!
         //   name: String!
@@ -484,7 +626,7 @@ export class LambdaFunction {
         //   createUser(user: userInput!): String
         // }
         `);
-        this.code.line()
+        this.code.line();
         if (!isMutation) {
           this.code.line("// let query = `MATCH (n:user) RETURN n`;");
           this.code.line("// try {");
@@ -527,12 +669,28 @@ export class LambdaFunction {
           //   return null;
           // }`);
         }
-      this.code.line(`// Example Code: `);
-      this.code.line("}")
-     }
-   }else if(database === DATABASE.auroraDB){
-    this.code.line(`async function ${queryName}(evenet:${mockData?.types[queryName!].fields[queryName!][0].arguments}){`)
-    this.code.line();
+        this.code.line(`// Example Code: `);
+        this.code.line(
+          `return ${mockDataStr}`
+        );
+        this.code.line("}");
+      }
+    } else if (database === DATABASE.auroraDB) {
+      if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments === "string"){
+        this.code.line(
+          `async function ${queryName}(args:${
+            mockData?.types[queryName!].fields[queryName!][0].arguments
+          }):Promise<${returnType}>
+          {`
+        );
+      }else{
+        this.code.line(
+          `async function ${queryName}():Promise<${returnType}>
+          {`
+        );
+      }
+      
+      this.code.line();
       this.code.line("// Example Schema: ");
       this.code.line(`
         // type User {
@@ -574,8 +732,13 @@ export class LambdaFunction {
       this.code.line("// console.log('ERROR', err)");
       this.code.line("// return null");
       this.code.line("// }");
-    this.code.line("}")
-   }
+
+      this.code.line(
+        `return ${mockDataStr}`
+      );
+
+      this.code.line("}");
+    }
   }
 
   public appsyncMutationInvokeFunction() {
