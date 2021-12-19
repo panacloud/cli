@@ -1,7 +1,6 @@
 import { CodeMaker } from "codemaker";
 import { readFileSync, write, writeFileSync } from "fs";
 import { buildSchema, GraphQLSchema } from "graphql";
-import { resolve } from "path";
 import {
   APITYPE,
   ARCHITECTURE,
@@ -211,8 +210,8 @@ export class LambdaFunction {
     }
     const ts = new TypeScriptWriter(this.code);
     const path = isService
-      ? "../../../customMockLambdaLayer/mockData/types"
-      : "../../customMockLambdaLayer/mockData/types";
+      ? "../../../../types"
+      : "../../../types";
 
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);

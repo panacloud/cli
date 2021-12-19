@@ -44,7 +44,7 @@ class EditableMockApiTestCollectionsFile {
         code.openFile("testCollectionsTypes.ts");
   
         if (new_config.api.mockApiData?.imports) {
-          ts.writeImports("../types", [
+          ts.writeImports("../../../../types", [
             ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`),
           ]);
         }
@@ -68,7 +68,7 @@ class EditableMockApiTestCollectionsFile {
   
         ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
         if (new_config.api.mockApiData?.enumImports.length !== 0) {
-          ts1.writeImports("../types", [
+          ts1.writeImports("../../../../types", [
             ...new_config.api.mockApiData?.enumImports!,
           ]);
         }
@@ -113,7 +113,7 @@ class EditableMockApiTestCollectionsFile {
         code.openFile("testCollectionsTypes.ts");
   
         if (new_config.api.mockApiData?.imports) {
-          ts.writeImports("../types", [
+          ts.writeImports("../../../../types", [
             ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`),
           ]);
         }
@@ -137,7 +137,7 @@ class EditableMockApiTestCollectionsFile {
   
         ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
         if (new_config.api.mockApiData?.enumImports.length !== 0) {
-          ts1.writeImports("../types", [
+          ts1.writeImports("../../../../types", [
             ...new_config.api.mockApiData?.enumImports!,
           ]);
         }
