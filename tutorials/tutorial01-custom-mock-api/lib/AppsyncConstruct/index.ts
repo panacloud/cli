@@ -40,6 +40,8 @@ scalar AWSIPAddress
 type User {
   id: String!
   name: String
+  age: Int!
+  nationality: String!
 }
 
 type Query {
@@ -50,8 +52,6 @@ type Mutation {
   addUser (
     # Name for the User item
     name: String!): User!
-
-  
 }`,
       }
     );
