@@ -11,6 +11,4 @@ type Mutation {
   addUser (
     # Name for the User item
     name: String!): User!
-
-  
 }
