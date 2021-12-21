@@ -9,7 +9,7 @@ import { defineYourOwnApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
 import {
   checkEmptyDirectoy,
-  validateSchemaFile,
+  validateGraphqlSchemaFile,
 } from "../lib/api/errorHandling";
 import {
   SAASTYPE,
@@ -75,7 +75,7 @@ export default class Create extends Command {
           schemaPath: usrInput.schema_path,
           apiType: APITYPE.graphql,
           database: usrInput.database,
-          rdbmsEngine:usrInput.rdbmsEngine,
+          rdbmsEngine: usrInput.rdbmsEngine,
           neptuneQueryLanguage: usrInput.neptuneQueryLanguage,
         },
       };
@@ -87,11 +87,7 @@ export default class Create extends Command {
     if (config!.saasType === SAASTYPE.api) {
       templateDir = resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      validateSchemaFile(
-        config!.api?.schemaPath,
-        validating,
-        config!.api?.apiType
-      );
+      validateGraphqlSchemaFile(config!.api?.schemaPath, validating);
     }
 
     writeJsonSync(`./codegenconfig.json`, {
