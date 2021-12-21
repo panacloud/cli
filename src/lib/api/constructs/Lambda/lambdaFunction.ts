@@ -113,9 +113,9 @@ export class LambdaFunction {
     database: DATABASE,
     neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE,
     mockData?: mockApiData,
-    queryName?: string,
+    queryName?: string
   ) {
-    writeFileSync("./data.json",JSON.stringify(mockData))
+    writeFileSync("./data.json", JSON.stringify(mockData));
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
@@ -191,43 +191,51 @@ export class LambdaFunction {
     mockData?: mockApiData,
     queryName?: string,
     isService?: boolean,
-    gqlSchema?:GraphQLSchema
+    gqlSchema?: GraphQLSchema
   ) {
-    
     let returnType = "";
     const mockObject = new RootMockObject(gqlSchema!);
     const dummyData: TestCollectionType = { fields: {} };
     mockObject.write(dummyData);
     const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
-    let mockDataStr = ""
-    if(dummyData &&dummyData.fields[queryName!]&& dummyData.fields[queryName!].length > 0){
-      mockDataStr = `${JSON.stringify(dummyData.fields[queryName!][0].response)}`;
-    const matchEnums = mockDataStr.match(enumPattern);
+    let mockDataStr = "";
+    if (
+      dummyData &&
+      dummyData.fields[queryName!] &&
+      dummyData.fields[queryName!].length > 0
+    ) {
+      mockDataStr = `${JSON.stringify(
+        dummyData.fields[queryName!][0].response
+      )}`;
+      const matchEnums = mockDataStr.match(enumPattern);
 
-    matchEnums?.forEach(enumStr => {
-      mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
-    })
+      matchEnums?.forEach((enumStr) => {
+        mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+      });
     }
     const ts = new TypeScriptWriter(this.code);
-    const path = isService
-      ? "../../../../types"
-      : "../../../types";
+    const path = isService ? "../../../../types" : "../../../types";
 
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
-    if (mockData && mockData?.enumImports && mockData?.enumImports.length !== 0) {
-      ts.writeImports(path, [
-        ...mockData?.enumImports!,
-      ]);
+    if (
+      mockData &&
+      mockData?.enumImports &&
+      mockData?.enumImports.length !== 0
+    ) {
+      ts.writeImports(path, [...mockData?.enumImports!]);
     }
-      if (mockData?.imports) {
-        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments === "string"){
-          ts.writeImports(path,[mockData?.types[queryName!].fields[queryName!][0].arguments] );
-        }
+    if (mockData?.imports) {
+      if (
+        typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+        "string"
+      ) {
+        ts.writeImports(path, [
+          mockData?.types[queryName!].fields[queryName!][0].arguments,
+        ]);
       }
-      
-    
-   
+    }
+
     switch (mockData?.types[queryName!].fields[queryName!][0].response) {
       case "ID":
         returnType = `Scalars["ID"]`;
@@ -290,9 +298,9 @@ export class LambdaFunction {
           mockData?.types[queryName!].fields[queryName!][0].response
         }`;
         ts.writeImports(path, [
-          `${mockData?.types[queryName!].fields[
-            queryName!
-          ][0].response.replace(/[\[\]']+/g, "").replace("|",",")}`,
+          `${mockData?.types[queryName!].fields[queryName!][0].response
+            .replace(/[\[\]']+/g, "")
+            .replace("|", ",")}`,
         ]);
         break;
     }
@@ -332,17 +340,23 @@ export class LambdaFunction {
     this.code.line();
     this.code.line(
       `exports.handler = async (event: AppSyncResolverEvent<${
-       typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"?mockData?.types[queryName!].fields[queryName!][0].arguments:"null"
+        typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+        "string"
+          ? mockData?.types[queryName!].fields[queryName!][0].arguments
+          : "null"
       }>) => {`
     );
 
     if (database === DATABASE.auroraDB) {
-      if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"){
+      if (
+        typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+        "string"
+      ) {
         this.code.line(`const result = await ${queryName}(event.arguments);`);
-      }else{
+      } else {
         this.code.line(`const result = await ${queryName}();`);
       }
-      
+
       this.code.line("return result");
       // this.code.line();
       // this.code.line("// Example Schema: ");
@@ -398,12 +412,16 @@ export class LambdaFunction {
           process.env.NEPTUNE_ENDPOINT!
         );
         `);
-        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"){
-          this.code.line(`const result = await ${queryName}(event.arguments,g);`);
-        }else{
+        if (
+          typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+          "string"
+        ) {
+          this.code.line(
+            `const result = await ${queryName}(event.arguments,g);`
+          );
+        } else {
           this.code.line(`const result = await ${queryName}(g);`);
         }
-        
       }
       this.code.line("return result");
       // this.code.line();
@@ -517,21 +535,23 @@ export class LambdaFunction {
     this.code.line();
     if (database === DATABASE.neptuneDB) {
       if (neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin) {
-        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments==="string"
-          ){
-            this.code.line(
-              `async function ${queryName}(args:${
-                mockData?.types[queryName!].fields[queryName!][0].arguments
-              },g:gprocess.GraphTraversalSource):Promise<${returnType}>
+        if (
+          typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+          "string"
+        ) {
+          this.code.line(
+            `async function ${queryName}(args:${
+              mockData?.types[queryName!].fields[queryName!][0].arguments
+            },g:gprocess.GraphTraversalSource):Promise<${returnType}>
               {`
-            );
-        }else{
+          );
+        } else {
           this.code.line(
             `async function ${queryName}(g:gprocess.GraphTraversalSource):Promise<${returnType}>
             {`
           );
         }
-        
+
         this.code.line();
         this.code.line("// Example Schema: ");
         this.code.line(`
@@ -584,25 +604,26 @@ export class LambdaFunction {
         `);
           this.code.line(`// return user.name;`);
         }
-        this.code.line(
-          `return ${mockDataStr}`
-        );
+        this.code.line(`return ${mockDataStr}`);
         this.code.line("}");
       } else {
-        if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments === "string"){
+        if (
+          typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+          "string"
+        ) {
           this.code.line(
             `async function ${queryName}(args:${
               mockData?.types[queryName!].fields[queryName!][0].arguments
             },url:string):Promise<${returnType}>
             {`
           );
-        }else{
+        } else {
           this.code.line(
             `async function ${queryName}(url:string):Promise<${returnType}>
             {`
           );
         }
-        
+
         this.code.line();
         this.code.line("// Example Schema: ");
         this.code.line(`
@@ -669,26 +690,27 @@ export class LambdaFunction {
           // }`);
         }
         this.code.line(`// Example Code: `);
-        this.code.line(
-          `return ${mockDataStr}`
-        );
+        this.code.line(`return ${mockDataStr}`);
         this.code.line("}");
       }
     } else if (database === DATABASE.auroraDB) {
-      if(typeof mockData?.types[queryName!].fields[queryName!][0].arguments === "string"){
+      if (
+        typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+        "string"
+      ) {
         this.code.line(
           `async function ${queryName}(args:${
             mockData?.types[queryName!].fields[queryName!][0].arguments
           }):Promise<${returnType}>
           {`
         );
-      }else{
+      } else {
         this.code.line(
           `async function ${queryName}():Promise<${returnType}>
           {`
         );
       }
-      
+
       this.code.line();
       this.code.line("// Example Schema: ");
       this.code.line(`
@@ -732,9 +754,7 @@ export class LambdaFunction {
       this.code.line("// return null");
       this.code.line("// }");
 
-      this.code.line(
-        `return ${mockDataStr}`
-      );
+      this.code.line(`return ${mockDataStr}`);
 
       this.code.line("}");
     }

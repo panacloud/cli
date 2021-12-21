@@ -64,7 +64,7 @@ export class GremlinSetupFile {
     `);
 
     this.code.closeFile("gremlin_init.ts");
-    await this.code.save("editable_src/customMockLambdaLayer/utils");
+    await this.code.save("editable_src/lambdaLayer/utils");
   }
 }
 
