@@ -38,6 +38,7 @@ class CustomLambda {
         microServiceFields,
         mutationFields,
         apiName,
+        mySchema,
         nestedResolver,
         nestedResolverFieldsAndLambdas,
         asyncFields,
@@ -123,7 +124,8 @@ class CustomLambda {
             isMutation,
             mockApiData,
             diff,
-            true
+            true,
+            mySchema
           );
 
           code.closeFile(this.outputFile);
@@ -207,7 +209,8 @@ class CustomLambda {
             isMutation,
             mockApiData,
             key,
-            false
+            false,
+            mySchema
           );
 
           code.closeFile(this.outputFile);
@@ -261,13 +264,18 @@ class CustomLambda {
             code.openFile(this.outputFile);
             code.line();
             imp.importAxios();
-            lambda.helloWorldFunction(
-              apiName,
-              database,
-              neptuneQueryLanguage!,
-              mockApiData,
-              ele
-            );
+
+            // lambda.emptyLambdaFunction(
+            //   true,
+            //   database,
+            //   neptuneQueryLanguage!,
+            //   false,
+            //   mockApiData,
+            //   ele,
+            //   false,
+            //   mySchema
+            // )
+
             code.closeFile(this.outputFile);
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${ele}`;
             await code.save(this.outputDir);
@@ -293,6 +301,16 @@ class CustomLambda {
               mockApiData,
               key
             );
+            // lambda.emptyLambdaFunction(
+            //   true,
+            //   database,
+            //   neptuneQueryLanguage!,
+            //   false,
+            //    mockApiData,
+            //   key,
+            //   false,
+            //   gqlSchema?:GraphQLSchema
+            // )
             code.closeFile(this.outputFile);
 
             this.outputDir = `editable_src/lambda_stubs/nestedResolvers/${key}`;

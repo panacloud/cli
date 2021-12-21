@@ -203,6 +203,7 @@ async function defineYourOwnApi(
       schema,
       asyncFieldSplitterOutput
     );
+    
 
     if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length > 0) {
       gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
@@ -240,6 +241,7 @@ async function defineYourOwnApi(
     // );
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
+    model.api.mySchema = gqlSchema
     model.api.mockApiData = mockApiCollection;
     // if user selects nested resolver
     if (nestedResolver) {
