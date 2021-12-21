@@ -47,6 +47,8 @@ export interface QueryUserArgs {
 
 export interface User {
   __typename?: "User";
+  age: Scalars["Int"];
   id: Scalars["String"];
   name?: Maybe<Scalars["String"]>;
+  nationality: Scalars["String"];
 }
