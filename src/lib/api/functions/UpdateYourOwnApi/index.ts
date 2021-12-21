@@ -94,6 +94,7 @@ async function updateYourOwnApi(config: Config, spinner: any): Promise<void> {
 
   const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
   model.api.mockApiData = mockApiCollection;
+  model.api.mySchema = gqlSchema
 
   if (model.api.nestedResolver) {
     const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model, gqlSchema);
