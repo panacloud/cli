@@ -136,6 +136,7 @@ async function defineYourOwnApi(
   //   }
   // );
 
+  
   if (apiType === APITYPE.graphql) {
     await mkdirRecursiveAsync(`editable_src`);
     await mkdirRecursiveAsync(`editable_src/graphql`);
@@ -144,6 +145,7 @@ async function defineYourOwnApi(
     await mkdirRecursiveAsync(`editable_src/lambda_stubs`);
     await mkdirRecursiveAsync(`tests`);
     await mkdirRecursiveAsync(`tests/apiTests`);
+    await mkdirRecursiveAsync(`.vscode`);
     await mkdirRecursiveAsync(`.panacloud`);
     await mkdirRecursiveAsync(`.panacloud/editable_src`);
     await mkdirRecursiveAsync(`.panacloud/editable_src/graphql`);
@@ -220,7 +222,11 @@ async function defineYourOwnApi(
     model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`;
 
     model.api.asyncFields = asyncFieldSplitterOutput;
-
+    writeFileSync(".vscode/settings.json",JSON.stringify({
+      "files.exclude": {
+        ".panacloud": true,
+      }
+    }))
     writeFileSync(
       `./editable_src/graphql/schema/schema.graphql`,
       `${scalars}\n${newSchema}`
