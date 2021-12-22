@@ -71,20 +71,6 @@ export default class Create extends Command {
     ];
   }
 
-  isNewStageAdded(
-    fileOnestages: string[], // User
-    fileTwoStage: string[] // hidder folder
-  ): string[] {
-    let newStages: string[] = [];
-
-    let compare = fileOnestages.filter(function (v) {
-      return !fileTwoStage.includes(v);
-    });
-    newStages = [...compare];
-
-    return newStages;
-  }
-
   isSchemaFileChanged(): boolean {
     let result: boolean = false;
 
@@ -114,6 +100,13 @@ export default class Create extends Command {
 
   updatePackageJson(stages: string[]) {
     const stackPackageJson = readJsonSync(`package.json`);
+
+    let scriptKeys = Object.keys(stackPackageJson.scripts).filter(
+      (v) => v.includes("deploy") || v.includes("test") || v.includes("destroy")
+    );
+
+    scriptKeys.forEach((v) => delete stackPackageJson.scripts[v]);
+
     stages?.forEach((v) => {
       stackPackageJson.scripts[
         `test-${v}`
@@ -133,7 +126,7 @@ export default class Create extends Command {
       parser: "json",
     });
     writeFileSync("package.json", nextData, "utf8");
-    this.log(`${success} ${greenBright("New Stages are added.")}`);
+    this.log(`${success} ${greenBright("Stages updated")}`);
   }
 
   async update() {
@@ -143,7 +136,11 @@ export default class Create extends Command {
 
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api.apiType === APITYPE.graphql) {
-        validateGraphqlSchemaFile(configCli.api?.schemaPath, updatingCode);
+        validateGraphqlSchemaFile(
+          configCli.api?.schemaPath,
+          updatingCode,
+          "update"
+        );
       } else {
         stopSpinner(
           updatingCode,
@@ -230,14 +227,13 @@ export default class Create extends Command {
       "./.panacloud/editable_src/graphql/schema/schema.graphql"
     );
 
-
     if (!existsDotPanacloudFolder || !existsEditableSrc) {
       this.log(`${error} ${red(".panacloud folder not found")}`);
       await mkdirRecursiveAsync(`.panacloud`);
       await mkdirRecursiveAsync(`.panacloud/editable_src`);
       await mkdirRecursiveAsync(`.panacloud/editable_src/graphql`);
       await mkdirRecursiveAsync(`.panacloud/editable_src/graphql/schema`);
-      
+
       hide(".panacloud", (err, newpath) => {
         if (err) {
           console.log(red("Error Occured"));
@@ -317,15 +313,11 @@ export default class Create extends Command {
     }
 
     if (!isNewStageAdded && isConfigChanged) {
-      this.log(`${error} ${red("No New Stage is added.")}`);
+      this.log(`${error} ${red("Stages are not updated")}`);
     }
 
     if (isNewStageAdded) {
-      const isStagesAdded = this.isNewStageAdded(
-        pancloudConfigJson?.stages,
-        hiddenPanacloudConfig?.stages
-      );
-      this.updatePackageJson(isStagesAdded);
+      this.updatePackageJson(pancloudConfigJson?.stages);
     }
 
     if (isConfigChangedExceptStages || isSchemaChanged) {

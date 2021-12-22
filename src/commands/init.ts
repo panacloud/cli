@@ -86,7 +86,7 @@ export default class Create extends Command {
     if (config!.saasType === SAASTYPE.api) {
       templateDir = resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      validateGraphqlSchemaFile(config!.api?.schemaPath, validating);
+      validateGraphqlSchemaFile(config!.api?.schemaPath, validating, "init");
     }
 
     writeJsonSync(`./codegenconfig.json`, {

@@ -34,7 +34,7 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
   let configJson: PanacloudconfigFile = {
     lambdas: {},
     mockLambdaLayer: {},
-    stages: ["prd", "dev"]
+    stages: ["prd", "dev"],
   };
   const microServices = Object.keys(microServiceFields!);
 
@@ -88,7 +88,6 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
     }
   }
 
- 
   configJson.mockLambdaLayer["asset_path"] = `mock_lambda_layer`;
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
@@ -327,11 +326,11 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
     panacloudConfigNew.nestedLambdas && delete panacloudConfigNew.nestedLambdas;
   }
 
-  if(configPanacloud.mockLambdaLayer['asset_path']) 
-  panacloudConfigNew.mockLambdaLayer['asset_path'] = configPanacloud.mockLambdaLayer['asset_path'];
-else
-  panacloudConfigNew.mockLambdaLayer['asset_path'] = "mock_lambda_layer";
-  
+  if (configPanacloud.mockLambdaLayer["asset_path"])
+    panacloudConfigNew.mockLambdaLayer["asset_path"] =
+      configPanacloud.mockLambdaLayer["asset_path"];
+  else panacloudConfigNew.mockLambdaLayer["asset_path"] = "mock_lambda_layer";
+
   fse.removeSync("editable_src/panacloudconfig.json");
   fse.writeJson(
     `./editable_src/panacloudconfig.json`,

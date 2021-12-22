@@ -26,7 +26,11 @@ export const checkEmptyDirectoy = (spinner: any) => {
   }
 };
 
-export const validateGraphqlSchemaFile = (file: string, spinner: any) => {
+export const validateGraphqlSchemaFile = (
+  file: string,
+  spinner: any,
+  type: "init" | "update"
+) => {
   if (path.extname(file) !== ".gql" && path.extname(file) !== ".graphql") {
     stopSpinner(spinner, `Error: GraphQL Schema not found`, true);
     process.exit(1);
@@ -44,16 +48,17 @@ export const validateGraphqlSchemaFile = (file: string, spinner: any) => {
     "../../utils/awsAppsyncDirectives.graphql"
   );
 
-  let scalarPath = resolve(
-    __dirname,
-    "../../utils/awsAppsyncScalars.graphql"
-  );
+  let scalarPath = resolve(__dirname, "../../utils/awsAppsyncScalars.graphql");
 
   let directives = readFileSync(directivesPath, "utf8");
 
   let scalars = readFileSync(scalarPath, "utf8");
 
-  let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
+  if (type === "update") {
+    buildSchema(`${directives}\n${schema}`);
+  } else {
+    buildSchema(`${scalars}\n${directives}\n${schema}`);
+  }
 };
 
 // export const validateSchemaFile = (
@@ -74,24 +79,24 @@ export const validateGraphqlSchemaFile = (file: string, spinner: any) => {
 //       process.exit(1);
 //     }
 //   }
-  // else {
-  //   if (
-  //     path.extname(file) !== ".json" &&
-  //     path.extname(file) !== ".yml" &&
-  //     path.extname(file) !== ".yaml"
-  //   ) {
-  //     stopSpinner(
-  //       spinner,
-  //       `Error: REST OpenAPI Specifications not found`,
-  //       true
-  //     );
-  //     process.exit(1);
-  //   } else {
-  //     const OpenApiFileData = fs.readFileSync(file).toString("utf8");
-  //     if (OpenApiFileData.length == 0) {
-  //       stopSpinner(spinner, "Error: File can not be empty", true);
-  //       process.exit(1);
-  //     }
-  //   }
-  // }
+// else {
+//   if (
+//     path.extname(file) !== ".json" &&
+//     path.extname(file) !== ".yml" &&
+//     path.extname(file) !== ".yaml"
+//   ) {
+//     stopSpinner(
+//       spinner,
+//       `Error: REST OpenAPI Specifications not found`,
+//       true
+//     );
+//     process.exit(1);
+//   } else {
+//     const OpenApiFileData = fs.readFileSync(file).toString("utf8");
+//     if (OpenApiFileData.length == 0) {
+//       stopSpinner(spinner, "Error: File can not be empty", true);
+//       process.exit(1);
+//     }
+//   }
+// }
 // };
