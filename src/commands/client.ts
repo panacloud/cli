@@ -23,7 +23,7 @@ export default class Open extends Command {
   static args = [{ name: "file" }];
   async run() {
     const {stages} = JSON.parse(
-      readFileSync("./editable_src/panacloudConfig.json").toString()
+      readFileSync("./editable_src/panacloudconfig.json").toString()
     )
     const userInput =  await inquirer.prompt([
       {
