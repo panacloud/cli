@@ -16,7 +16,7 @@ export default class Status extends Command {
   async run() {
     const {args, flags} = this.parse(Status)
     const {stages} = JSON.parse(
-      readFileSync("./editable_src/panacloudConfig.json").toString()
+      readFileSync("./editable_src/panacloudconfig.json").toString()
     )
     const {stage} =  await inquirer.prompt([
       {
