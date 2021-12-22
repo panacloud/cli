@@ -36,16 +36,28 @@ class MockApiTestCollectionsFile {
       }
 
       code.openFile("testCollectionsTypes.ts");
-
+      const allTypes = new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`).map((val:string)=>{
+        return val.split("_")
+      .reduce((out_str: string, val: string, index: number, arr: string[]) => {
+        return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(1)}${
+          arr.length > index + 1 ? "_" : ""
+        }`);
+      }, "")
+      })
+      
+      // console.log(allTypes)
       if (new_config.api.mockApiData?.imports) {
-        ts.writeImports("../../../types", [
-          ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`),
-        ]);
+        ts.writeImports("../../../types", allTypes);
       }
       code.line();
 
       code.indent(`export type TestCollection =
-          ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}
+          ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '').split("_")
+          .reduce((out_str: string, val: string, index: number, arr: string[]) => {
+            return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(1)}${
+              arr.length > index + 1 ? "_" : ""
+            }`);
+          }, "")}
       `);
 
       code.closeFile("testCollectionsTypes.ts");

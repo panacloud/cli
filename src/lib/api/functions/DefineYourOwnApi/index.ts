@@ -29,6 +29,8 @@ import {
   asyncDirectiveFieldSplitter,
   asyncDirectiveResponseCreator,
 } from "../../directives/asyncDirective";
+import { hide } from "hidefile";
+import chalk = require("chalk");
 
 const YAML = require("yamljs");
 const exec = require("await-exec");
@@ -142,7 +144,12 @@ async function defineYourOwnApi(
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
-
+  hide('.panacloud', (err, newpath) => {
+    if (err) {
+      console.log(chalk.red("Error Occured")); 
+      process.exit(1)
+    }
+  });
   let schema = readFileSync(schemaPath, "utf8");
 
   let PanacloudConfig: any;
@@ -210,14 +217,12 @@ async function defineYourOwnApi(
     model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`;
 
     model.api.asyncFields = asyncFieldSplitterOutput;
-    writeFileSync(
-      ".vscode/settings.json",
-      JSON.stringify({
-        "files.exclude": {
-          ".panacloud": true,
-        },
-      })
-    );
+    writeFileSync(".vscode/settings.json",JSON.stringify({
+      "files.exclude": {
+        ".panacloud": true,
+      }
+    }))
+
     writeFileSync(
       `./editable_src/graphql/schema/schema.graphql`,
       `${scalars}\n${newSchema}`

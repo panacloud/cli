@@ -19,7 +19,6 @@ import {
   CLOUDPROVIDER,
   LANGUAGE,
 } from "../utils/constants";
-
 const prettier = require("prettier");
 const exec = require("await-exec");
 

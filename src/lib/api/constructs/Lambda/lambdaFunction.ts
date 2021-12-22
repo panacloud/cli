@@ -218,6 +218,13 @@ export class LambdaFunction {
 
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
+    const argType = typeof mockData?.types[queryName!].fields[queryName!][0]?.arguments==="string" && mockData?.types[queryName!].fields[queryName!][0].arguments
+      .split("_")
+      .reduce((out_str: string, val: string, index: number, arr: string[]) => {
+        return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(1)}${
+          arr.length > index + 1 ? "_" : ""
+        }`);
+      }, "");
     if (
       mockData &&
       mockData?.enumImports &&
@@ -231,7 +238,7 @@ export class LambdaFunction {
         "string"
       ) {
         ts.writeImports(path, [
-          mockData?.types[queryName!].fields[queryName!][0].arguments,
+         argType
         ]);
       }
     }
@@ -342,7 +349,7 @@ export class LambdaFunction {
       `exports.handler = async (event: AppSyncResolverEvent<${
         typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
         "string"
-          ? mockData?.types[queryName!].fields[queryName!][0].arguments
+          ? argType
           : "null"
       }>) => {`
     );
@@ -540,9 +547,7 @@ export class LambdaFunction {
           "string"
         ) {
           this.code.line(
-            `async function ${queryName}(args:${
-              mockData?.types[queryName!].fields[queryName!][0].arguments
-            },g:gprocess.GraphTraversalSource):Promise<${returnType}>
+            `async function ${queryName}(args:${argType},g:gprocess.GraphTraversalSource):Promise<${returnType}>
               {`
           );
         } else {
@@ -612,9 +617,7 @@ export class LambdaFunction {
           "string"
         ) {
           this.code.line(
-            `async function ${queryName}(args:${
-              mockData?.types[queryName!].fields[queryName!][0].arguments
-            },url:string):Promise<${returnType}>
+            `async function ${queryName}(args:${argType},url:string):Promise<${returnType}>
             {`
           );
         } else {
@@ -699,9 +702,7 @@ export class LambdaFunction {
         "string"
       ) {
         this.code.line(
-          `async function ${queryName}(args:${
-            mockData?.types[queryName!].fields[queryName!][0].arguments
-          }):Promise<${returnType}>
+          `async function ${queryName}(args:${argType}):Promise<${returnType}>
           {`
         );
       } else {
