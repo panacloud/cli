@@ -7,20 +7,23 @@ import {
   readJsonSync,
   copy,
   writeJsonSync,
+  pathExists,
 } from "fs-extra";
 import * as globby from "globby";
 import { isEqual } from "lodash";
 import { error, success, info } from "log-symbols";
 import { greenBright, red, yellowBright } from "chalk";
+import { hide } from "hidefile";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { updateYourOwnApi } from "../lib/api/functions";
-import { validateSchemaFile } from "../lib/api/errorHandling";
+import { validateGraphqlSchemaFile } from "../lib/api/errorHandling";
 import {
   SAASTYPE,
   Config,
   APITYPE,
   PanacloudconfigFile,
 } from "../utils/constants";
+import { mkdirRecursiveAsync } from "../lib/fs";
 const prettier = require("prettier");
 const exec = require("await-exec");
 
@@ -114,7 +117,7 @@ export default class Create extends Command {
     stages?.forEach((v) => {
       stackPackageJson.scripts[
         `test-${v}`
-      ]= `mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit ${v}`
+      ] = `mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit ${v}`;
       stackPackageJson.scripts[
         `deploy-${v}`
       ] = `tsc && STAGE=${v} cdk deploy --outputs-file ./cdk-${v}-outputs.json`;
@@ -140,11 +143,7 @@ export default class Create extends Command {
 
     if (configCli.saasType === SAASTYPE.api) {
       if (configCli.api.apiType === APITYPE.graphql) {
-        validateSchemaFile(
-          configCli.api?.schemaPath,
-          updatingCode,
-          configCli.api?.apiType
-        );
+        validateGraphqlSchemaFile(configCli.api?.schemaPath, updatingCode);
       } else {
         stopSpinner(
           updatingCode,
@@ -222,6 +221,77 @@ export default class Create extends Command {
   async run() {
     const { flags } = this.parse(Create);
 
+    const existsDotPanacloudFolder = await pathExists("./.panacloud");
+    const existsEditableSrc = await pathExists("./.panacloud/editable_src");
+    const existsPanacloudconfig = await pathExists(
+      "./.panacloud/editable_src/panacloudconfig.json"
+    );
+    const existsSchema = await pathExists(
+      "./.panacloud/editable_src/graphql/schema/schema.graphql"
+    );
+
+
+    if (!existsDotPanacloudFolder || !existsEditableSrc) {
+      this.log(`${error} ${red(".panacloud folder not found")}`);
+      await mkdirRecursiveAsync(`.panacloud`);
+      await mkdirRecursiveAsync(`.panacloud/editable_src`);
+      await mkdirRecursiveAsync(`.panacloud/editable_src/graphql`);
+      await mkdirRecursiveAsync(`.panacloud/editable_src/graphql/schema`);
+      
+      hide(".panacloud", (err, newpath) => {
+        if (err) {
+          console.log(red("Error Occured"));
+          process.exit(1);
+        }
+      });
+
+      try {
+        await copy(
+          "editable_src/graphql/schema/schema.graphql",
+          ".panacloud/editable_src/graphql/schema/schema.graphql"
+        );
+        await copy(
+          "editable_src/panacloudconfig.json",
+          ".panacloud/editable_src/panacloudconfig.json"
+        );
+      } catch (err) {
+        console.error(err);
+      }
+
+      this.log(`${info} ${yellowBright(".panacloud folder added")}`);
+      process.exit(1);
+    }
+
+    if (!existsPanacloudconfig) {
+      this.log(`${error} ${red("Panacloud Config not found")}`);
+      try {
+        await copy(
+          "editable_src/panacloudconfig.json",
+          ".panacloud/editable_src/panacloudconfig.json"
+        );
+      } catch (err) {
+        console.error(err);
+      }
+
+      this.log(`${info} ${yellowBright("Panacloud Config added")}`);
+      process.exit(1);
+    }
+
+    if (!existsSchema) {
+      this.log(`${error} ${red("GraphQL Schema not found")}`);
+      try {
+        await copy(
+          "editable_src/graphql/schema/schema.graphql",
+          ".panacloud/editable_src/graphql/schema/schema.graphql"
+        );
+      } catch (err) {
+        console.error(err);
+      }
+
+      this.log(`${info} ${yellowBright("GraphQL Schema added")}`);
+      process.exit(1);
+    }
+
     const pancloudConfigJson: PanacloudconfigFile = readJsonSync(
       "editable_src/panacloudconfig.json"
     );
@@ -263,11 +333,11 @@ export default class Create extends Command {
     }
 
     try {
-      copy(
+      await copy(
         "editable_src/graphql/schema/schema.graphql",
         ".panacloud/editable_src/graphql/schema/schema.graphql"
       );
-      copy(
+      await copy(
         "editable_src/panacloudconfig.json",
         ".panacloud/editable_src/panacloudconfig.json"
       );

@@ -232,7 +232,6 @@ export class LambdaFunction {
     ) {
       ts.writeImports(path, [...mockData?.enumImports!]);
     }
-
     if (mockData?.imports) {
       if (
         typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===

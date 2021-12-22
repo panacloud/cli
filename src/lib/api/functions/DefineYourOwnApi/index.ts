@@ -85,16 +85,6 @@ async function defineYourOwnApi(
             }
           }
         );
-        copy(
-          `${templateDir}/${file}`,
-          "editable_src/customMockLambdaLayer",
-          (err: Error) => {
-            if (err) {
-              stopSpinner(generatingCode, `Error: ${err}`, true);
-              process.exit(1);
-            }
-          }
-        );
       } else if (apiType === APITYPE.graphql && file === "graphqlClient") {
         copy(`${templateDir}/${file}`, file, (err: Error) => {
           if (err) {
@@ -138,7 +128,6 @@ async function defineYourOwnApi(
   //   }
   // );
 
-  
   if (apiType === APITYPE.graphql) {
     await mkdirRecursiveAsync(`editable_src`);
     await mkdirRecursiveAsync(`editable_src/graphql`);
@@ -212,7 +201,6 @@ async function defineYourOwnApi(
       schema,
       asyncFieldSplitterOutput
     );
-    
 
     if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length > 0) {
       gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
@@ -255,7 +243,7 @@ async function defineYourOwnApi(
     // );
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
-    model.api.mySchema = gqlSchema
+    model.api.mySchema = gqlSchema;
     model.api.mockApiData = mockApiCollection;
     // if user selects nested resolver
     if (nestedResolver) {
@@ -325,18 +313,15 @@ async function defineYourOwnApi(
       database === DATABASE.neptuneDB &&
       neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
     ) {
-      await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(
-        `cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i && npm i gremlin`
+        `cd ./editable_src/lambdaLayer/nodejs/ && npm i && npm i gremlin`
       );
     } else if (database === DATABASE.auroraDB) {
-      await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
       await exec(
         `cd ./editable_src/lambdaLayer/nodejs/ && npm i && npm i data-api-client`
       );
     } else {
       await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
-      await exec(`cd ./editable_src/customMockLambdaLayer/nodejs/ && npm i`);
     }
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
