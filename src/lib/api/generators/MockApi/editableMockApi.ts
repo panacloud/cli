@@ -7,7 +7,7 @@ import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
 type StackBuilderProps = {
   config: ApiModel;
   dummyData: TestCollectionType;
-  type: string
+  type: string;
 };
 
 class EditableMockApiTestCollectionsFile {
@@ -15,170 +15,209 @@ class EditableMockApiTestCollectionsFile {
   outputDir: string = `types`;
   config: ApiModel;
   dummyData: TestCollectionType;
-  type: string
-
+  type: string;
 
   constructor(props: StackBuilderProps) {
     this.config = props.config;
     this.dummyData = props.dummyData;
     this.type = props.type;
   }
-  
 
   async mockApiTestCollectionsFile() {
-
     let new_config = JSON.parse(JSON.stringify(this.config));
 
-    if(this.type === "update"){
+    if (this.type === "update") {
       for (const key of this.config.api.createMockLambda!) {
+        if (key !== async_response_mutName) {
+          const code = new CodeMaker();
+          const ts = new TypeScriptWriter(code);
 
-        if (key !== async_response_mutName){
-        const code = new CodeMaker();
-        const ts = new TypeScriptWriter(code);
-  
-  
-        if(new_config.api.mockApiData){
-          new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0])}[]`;
-        }
-  
-        code.openFile("testCollectionsTypes.ts");
-  
-        if (new_config.api.mockApiData?.imports) {
-          ts.writeImports("../../../../types", [
-            ...new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`),
-          ]);
-        }
-        code.line();
-  
-        // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
-        
-        code.indent(`export type TestCollection =
-            ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}
+          if (new_config.api.mockApiData) {
+            new_config.api.mockApiData.types[key].fields[
+              key
+            ] = `${JSON.stringify(
+              new_config.api.mockApiData?.types[key].fields[key][0]
+            )}[]`;
+          }
+
+          code.openFile("testCollectionsTypes.ts");
+
+          if (new_config.api.mockApiData?.imports) {
+            ts.writeImports("../types", [
+              ...new_config.api.mockApiData?.imports.filter(
+                (val: string) =>
+                  val !==
+                  `Mutation${async_response_mutName
+                    .charAt(0)
+                    .toUpperCase()}${async_response_mutName.slice(1)}Args`
+              ),
+            ]);
+          }
+          code.line();
+
+          // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
+
+          code.indent(`export type TestCollection =
+            ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(
+              /"*\\*/g,
+              ""
+            )}
         `);
-  
-        code.closeFile("testCollectionsTypes.ts");
-        await code.save(`editable_src/customMockLambdaLayer/mockData/${key}`);
-  
-        ///TestCollections.ts
-  
-        const code1 = new CodeMaker();
-        const ts1 = new TypeScriptWriter(code1);
-  
-        code1.openFile("testCollections.ts");
-  
-        ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
-        if (new_config.api.mockApiData?.enumImports.length !== 0) {
-          ts1.writeImports("../../../../types", [
-            ...new_config.api.mockApiData?.enumImports!,
-          ]);
-        }
-        code1.line();
-        
-        const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
-        let mockDataStr = `${JSON.stringify({ [key]: this.dummyData.fields[key] }, null, 2)}`;
-        const matchEnums = mockDataStr.match(enumPattern);
-        // console.log(matchEnums);
-  
-        matchEnums?.forEach(enumStr => {
-          mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
-        })
-  
-        code1.indent(`export const testCollections: TestCollection = {
+
+          code.closeFile("testCollectionsTypes.ts");
+          await code.save(`editable_src/customMockLambdaLayer/mockData/${key}`);
+
+          ///TestCollections.ts
+
+          const code1 = new CodeMaker();
+          const ts1 = new TypeScriptWriter(code1);
+
+          code1.openFile("testCollections.ts");
+
+          ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
+          if (new_config.api.mockApiData?.enumImports.length !== 0) {
+            ts1.writeImports("../types", [
+              ...new_config.api.mockApiData?.enumImports!,
+            ]);
+          }
+          code1.line();
+
+          const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
+          let mockDataStr = `${JSON.stringify(
+            { [key]: this.dummyData.fields[key] },
+            null,
+            2
+          )}`;
+          const matchEnums = mockDataStr.match(enumPattern);
+          // console.log(matchEnums);
+
+          matchEnums?.forEach((enumStr) => {
+            mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+          });
+
+          code1.indent(`export const testCollections: TestCollection = {
             fields: ${mockDataStr}
             
         }
         `);
-  
-        code1.closeFile("testCollections.ts");
-        this.outputDir = `editable_src/customMockLambdaLayer/mockData/${key}`;
-        await code1.save(this.outputDir);
-  
-      }
-    }
-    }
-    else
-    {
 
+          code1.closeFile("testCollections.ts");
+          this.outputDir = `editable_src/customMockLambdaLayer/mockData/${key}`;
+          await code1.save(this.outputDir);
+        }
+      }
+    } else {
       for (const key in this.config.api.mockApiData?.collections.fields) {
         const code = new CodeMaker();
         const ts = new TypeScriptWriter(code);
-  
-        if (key !== async_response_mutName){
 
-  
-        if(new_config.api.mockApiData){
-          new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0])}[]`;
-        }
-  
-        code.openFile("testCollectionsTypes.ts");
-        const allTypes = new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`).map((val:string)=>{
-          return val.split("_")
-        .reduce((out_str: string, val: string, index: number, arr: string[]) => {
-          return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(1)}${
-            arr.length > index + 1 ? "_" : ""
-          }`);
-        }, "")
-        })
-        if (new_config.api.mockApiData?.imports) {
-          ts.writeImports("../../../../types", allTypes);
-        }
-        code.line();
-  
-        // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
-        
-        code.indent(`export type TestCollection =
-            ${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '').split("_")
-            .reduce((out_str: string, val: string, index: number, arr: string[]) => {
-              return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(1)}${
-                arr.length > index + 1 ? "_" : ""
-              }`);
-            }, "")}
+        if (key !== async_response_mutName) {
+          if (new_config.api.mockApiData) {
+            new_config.api.mockApiData.types[key].fields[
+              key
+            ] = `${JSON.stringify(
+              new_config.api.mockApiData?.types[key].fields[key][0]
+            )}[]`;
+          }
+
+          code.openFile("testCollectionsTypes.ts");
+          const allTypes = new_config.api.mockApiData?.imports
+            .filter(
+              (val: string) =>
+                val !==
+                `Mutation${async_response_mutName
+                  .charAt(0)
+                  .toUpperCase()}${async_response_mutName.slice(1)}Args`
+            )
+            .map((val: string) => {
+              return val
+                .split("_")
+                .reduce(
+                  (
+                    out_str: string,
+                    val: string,
+                    index: number,
+                    arr: string[]
+                  ) => {
+                    return (out_str += `${val
+                      .charAt(0)
+                      .toUpperCase()}${val.slice(1)}${
+                      arr.length > index + 1 ? "_" : ""
+                    }`);
+                  },
+                  ""
+                );
+            });
+          if (new_config.api.mockApiData?.imports) {
+            ts.writeImports("../types", allTypes);
+          }
+          code.line();
+
+          // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
+
+          code.indent(`export type TestCollection =
+            ${JSON.stringify(new_config.api.mockApiData?.types[key])
+              .replace(/"*\\*/g, "")
+              .split("_")
+              .reduce(
+                (
+                  out_str: string,
+                  val: string,
+                  index: number,
+                  arr: string[]
+                ) => {
+                  return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(
+                    1
+                  )}${arr.length > index + 1 ? "_" : ""}`);
+                },
+                ""
+              )}
         `);
-  
-        code.closeFile("testCollectionsTypes.ts");
-        await code.save(`editable_src/customMockLambdaLayer/mockData/${key}`);
-  
-        ///TestCollections.ts
-  
-        const code1 = new CodeMaker();
-        const ts1 = new TypeScriptWriter(code1);
-  
-        code1.openFile("testCollections.ts");
-  
-        ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
-        if (new_config.api.mockApiData?.enumImports.length !== 0) {
-          ts1.writeImports("../../../../types", [
-            ...new_config.api.mockApiData?.enumImports!,
-          ]);
-        }
-        code1.line();
-        
-        const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
-        let mockDataStr = `${JSON.stringify({ [key]: this.dummyData.fields[key] }, null, 2)}`;
-        const matchEnums = mockDataStr.match(enumPattern);
-        // console.log(matchEnums);
-  
-        matchEnums?.forEach(enumStr => {
-          mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
-        })
-  
-        code1.indent(`export const testCollections: TestCollection = {
+
+          code.closeFile("testCollectionsTypes.ts");
+          await code.save(`editable_src/customMockLambdaLayer/mockData/${key}`);
+
+          ///TestCollections.ts
+
+          const code1 = new CodeMaker();
+          const ts1 = new TypeScriptWriter(code1);
+
+          code1.openFile("testCollections.ts");
+
+          ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
+          if (new_config.api.mockApiData?.enumImports.length !== 0) {
+            ts1.writeImports("../types", [
+              ...new_config.api.mockApiData?.enumImports!,
+            ]);
+          }
+          code1.line();
+
+          const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
+          let mockDataStr = `${JSON.stringify(
+            { [key]: this.dummyData.fields[key] },
+            null,
+            2
+          )}`;
+          const matchEnums = mockDataStr.match(enumPattern);
+          // console.log(matchEnums);
+
+          matchEnums?.forEach((enumStr) => {
+            mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+          });
+
+          code1.indent(`export const testCollections: TestCollection = {
             fields: ${mockDataStr}
             
         }
         `);
-  
-        code1.closeFile("testCollections.ts");
-        this.outputDir = `editable_src/customMockLambdaLayer/mockData/${key}`;
-        await code1.save(this.outputDir);
-  
+
+          code1.closeFile("testCollections.ts");
+          this.outputDir = `editable_src/customMockLambdaLayer/mockData/${key}`;
+          await code1.save(this.outputDir);
+        }
       }
     }
-  
-    }
-
   }
-
 }
 
 export const EditableMockApiTestCollections = async (

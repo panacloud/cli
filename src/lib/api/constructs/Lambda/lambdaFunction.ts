@@ -214,17 +214,25 @@ export class LambdaFunction {
       });
     }
     const ts = new TypeScriptWriter(this.code);
-    const path = isService ? "../../../../types" : "../../../types";
+    const path = isService
+      ? "../../../customMockLambdaLayer/mockData/types"
+      : "../../customMockLambdaLayer/mockData/types";
 
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
-    const argType = typeof mockData?.types[queryName!].fields[queryName!][0]?.arguments==="string" && mockData?.types[queryName!].fields[queryName!][0].arguments
-      .split("_")
-      .reduce((out_str: string, val: string, index: number, arr: string[]) => {
-        return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(1)}${
-          arr.length > index + 1 ? "_" : ""
-        }`);
-      }, "");
+    const argType =
+      typeof mockData?.types[queryName!].fields[queryName!][0]?.arguments ===
+        "string" &&
+      mockData?.types[queryName!].fields[queryName!][0].arguments
+        .split("_")
+        .reduce(
+          (out_str: string, val: string, index: number, arr: string[]) => {
+            return (out_str += `${val.charAt(0).toUpperCase()}${val.slice(1)}${
+              arr.length > index + 1 ? "_" : ""
+            }`);
+          },
+          ""
+        );
     if (
       mockData &&
       mockData?.enumImports &&
@@ -237,9 +245,7 @@ export class LambdaFunction {
         typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
         "string"
       ) {
-        ts.writeImports(path, [
-         argType
-        ]);
+        ts.writeImports(path, [argType]);
       }
     }
 
