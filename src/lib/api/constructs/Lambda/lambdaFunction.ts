@@ -117,7 +117,7 @@ export class LambdaFunction {
     mockData?: mockApiData,
     queryName?: string
   ) {
-    writeFileSync("./data.json", JSON.stringify(mockData));
+    // writeFileSync("./data.json", JSON.stringify(mockData));
     const ts = new TypeScriptWriter(this.code);
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
@@ -270,7 +270,7 @@ export class LambdaFunction {
     //   console.log("Result",result)
     //   return true
     // }
-    writeFileSync("./data.json",JSON.stringify(mockData?.types[queryName!].fields[queryName!][0]))
+    // writeFileSync("./data.json",JSON.stringify(mockData?.types[queryName!].fields[queryName!][0]))
     const argType = typeof mockData?.types[queryName!].fields[queryName!][0]?.arguments==="string" && mockData?.types[queryName!].fields[queryName!][0].arguments
       .split("_")
       .reduce((out_str: string, val: string, index: number, arr: string[]) => {

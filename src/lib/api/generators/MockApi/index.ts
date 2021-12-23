@@ -59,7 +59,7 @@ class MockApiTestCollectionsFile {
       let returnType = new_config.api.mockApiData?.types[key]
       let data1 = returnType.fields[key].replace(/\\*/g, '')
       let data2 = JSON.parse(data1.substring(0,data1.length -2))
-      writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
+      // writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
       // console.log("Arguments=====>",returnType.fields[key])
       if(data2["arguments"]){
         // console.log("has arguments")
