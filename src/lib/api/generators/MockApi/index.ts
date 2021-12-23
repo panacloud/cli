@@ -24,9 +24,7 @@ class MockApiTestCollectionsFile {
   }
 
   async mockApiTestCollectionsFile() {
-
     let new_config = JSON.parse(JSON.stringify(this.config));
-
 
     for (const key in new_config.api.mockApiData?.collections.fields) {
 
@@ -99,47 +97,49 @@ class MockApiTestCollectionsFile {
       `);
       // console.log(`${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}`)
 
-      code.closeFile("testCollectionsTypes.ts");
-      await code.save(`mock_lambda_layer/mockData/${key}`);
+        code.closeFile("testCollectionsTypes.ts");
+        await code.save(`mock_lambda_layer/mockData/${key}`);
 
-      ///TestCollections.ts
+        ///TestCollections.ts
 
-      const code1 = new CodeMaker();
-      const ts1 = new TypeScriptWriter(code1);
+        const code1 = new CodeMaker();
+        const ts1 = new TypeScriptWriter(code1);
 
-      code1.openFile("testCollections.ts");
+        code1.openFile("testCollections.ts");
 
-      ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
+        ts1.writeImports("./testCollectionsTypes", ["TestCollection"]);
 
-      if (new_config.api.mockApiData?.enumImports.length !== 0) {
-        ts1.writeImports("../../../types", [
-          ...new_config.api.mockApiData?.enumImports!,
-        ]);
-      }
-      code1.line();
+        if (new_config.api.mockApiData?.enumImports.length !== 0) {
+          ts1.writeImports("../types", [
+            ...new_config.api.mockApiData?.enumImports!,
+          ]);
+        }
+        code1.line();
 
-      const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
-      let mockDataStr = `${JSON.stringify({ [key]: this.dummyData.fields[key] }, null, 2)}`;
-      const matchEnums = mockDataStr.match(enumPattern);
-      // console.log(matchEnums);
+        const enumPattern = /"[a-zA-Z_]+[.][a-zA-Z_]+"/g;
+        let mockDataStr = `${JSON.stringify(
+          { [key]: this.dummyData.fields[key] },
+          null,
+          2
+        )}`;
+        const matchEnums = mockDataStr.match(enumPattern);
+        // console.log(matchEnums);
 
-      matchEnums?.forEach(enumStr => {
-        mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
-      })
+        matchEnums?.forEach((enumStr) => {
+          mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
+        });
 
-      code1.indent(`export const testCollections: TestCollection = {
+        code1.indent(`export const testCollections: TestCollection = {
           fields: ${mockDataStr}
           
       }
       `);
 
-      code1.closeFile("testCollections.ts");
-      this.outputDir = `mock_lambda_layer/mockData/${key}`;
-      await code1.save(this.outputDir);
-
+        code1.closeFile("testCollections.ts");
+        this.outputDir = `mock_lambda_layer/mockData/${key}`;
+        await code1.save(this.outputDir);
+      }
     }
-
-  }
   }
 }
 

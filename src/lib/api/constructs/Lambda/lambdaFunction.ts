@@ -217,7 +217,9 @@ export class LambdaFunction {
       });
     }
     const ts = new TypeScriptWriter(this.code);
-    const path = isService ? "../../../../types" : "../../../types";
+    const path = isService
+      ? "../../../customMockLambdaLayer/mockData/types"
+      : "../../customMockLambdaLayer/mockData/types";
 
     ts.writeAllImports("aws-sdk", "* as AWS");
     ts.writeImports("aws-lambda", ["AppSyncResolverEvent"]);
@@ -290,9 +292,7 @@ export class LambdaFunction {
         typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
         "string"
       ) {
-        ts.writeImports(path, [
-         argType
-        ]);
+        ts.writeImports(path, [argType]);
       }
     }
 

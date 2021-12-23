@@ -222,13 +222,15 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
       //if (isMutation && !panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`]){
 
       if (asyncFields?.includes(mutLambda)) {
-        panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`] =
+        if(!Object.keys(panacloudConfigNew.lambdas[service]).includes(`${mutLambda}_consumer`)){
+          panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`] =
           {} as PanacloudConfiglambdaParams;
-        panacloudConfigNew.lambdas[service][
-          `${mutLambda}_consumer`
-        ].asset_path = `mock_lambda/${service}/${mutLambda}_consumer/index.ts`;
-        panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`].is_mock =
-          true;
+          panacloudConfigNew.lambdas[service][
+            `${mutLambda}_consumer`
+          ].asset_path = `mock_lambda/${service}/${mutLambda}_consumer/index.ts`;
+          panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`].is_mock =
+            true;
+        }
       } else {
         delete panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`];
       }
