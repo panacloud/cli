@@ -151,7 +151,7 @@ class CustomLambda {
                 code.openFile(this.outputFile);
 
                 code.line();
-
+                // imp.importAxios()
                 lambda.appsyncMutationInvokeFunction();
 
                 code.closeFile(this.outputFile);
@@ -199,19 +199,24 @@ class CustomLambda {
 
           code.openFile(this.outputFile);
 
-          imp.importAxios();
           code.line();
+          if(key.split("_").pop() === "consumer"){
+            lambda.appsyncMutationInvokeFunction()
+          }else{
+            imp.importAxios();
+            lambda.emptyLambdaFunction(
+              undefined,
+              database,
+              neptuneQueryLanguage!,
+              isMutation,
+              mockApiData,
+              key,
+              false,
+              mySchema
+            );
+          }
 
-          lambda.emptyLambdaFunction(
-            undefined,
-            database,
-            neptuneQueryLanguage!,
-            isMutation,
-            mockApiData,
-            key,
-            false,
-            mySchema
-          );
+          
 
           code.closeFile(this.outputFile);
 
