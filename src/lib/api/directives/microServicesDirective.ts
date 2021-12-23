@@ -10,10 +10,10 @@ export class microServicesDirective {
       [k: string]: any[];
     };
   } {
-    const queryNames = [...Object.keys(queryFields)];
-    const mutationNames = [...Object.keys(mutationFields)];
+    const queryNames = [...Object.keys(queryFields||{})];
+    const mutationNames = [...Object.keys(mutationFields||{})];
 
-    let allGraphqlFieldNames = [...queryNames, ...mutationNames];
+    let allGraphqlFieldNames = [...queryNames,...(mutationNames||[])];
     let microServiceFields: { [k: string]: any[] } = {};
     let generalFields: string[] = [];
 
@@ -43,7 +43,7 @@ export class microServicesDirective {
         }
       }
 
-      if (mutationFields[field]) {
+      if (mutationFields&&mutationFields[field]) {
         if (mutationFields[field].astNode.directives) {
           const microServiceInfo = mutationFields[
             field

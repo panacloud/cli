@@ -55,8 +55,8 @@ async function updateYourOwnApi(config: Config, spinner: any): Promise<void> {
   let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
   let introspection = introspectionFromSchema(gqlSchema);
   model.api.schema = introspection;
-  model.api.queiresFields = [...Object.keys(queriesFields)];
-  model.api.mutationFields = [...Object.keys(mutationsFields)];
+  model.api.queiresFields = [...Object.keys(queriesFields||{})];
+  model.api.mutationFields = [...Object.keys(mutationsFields||{})];
 
   const microServicesfieldSplitterOutput = microServicesDirectiveFieldSplitter(
     queriesFields,
@@ -84,8 +84,8 @@ async function updateYourOwnApi(config: Config, spinner: any): Promise<void> {
     introspection = introspectionFromSchema(gqlSchema);
 
     model.api.schema = introspection;
-    model.api.queiresFields = [...Object.keys(queriesFields)];
-    model.api.mutationFields = [...Object.keys(mutationsFields)];
+    model.api.queiresFields = [...Object.keys(queriesFields||{})];
+    model.api.mutationFields = [...Object.keys(mutationsFields||{})];
   }
 
   writeFileSync(`./editable_src/graphql/schema/schema.graphql`, `${newSchema}`);

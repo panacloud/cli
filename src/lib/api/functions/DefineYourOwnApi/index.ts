@@ -170,20 +170,24 @@ async function defineYourOwnApi(
     let scalars = readFileSync(scalarPath, "utf8");
 
     let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-
+      console.log(gqlSchema)
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
     // Model Config
     let queriesFields: any = gqlSchema.getQueryType()?.getFields();
     let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+    console.log(mutationsFields)
     let introspection = introspectionFromSchema(gqlSchema);
     let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+    console.log(introspection)
 
     model.api.schema = introspection;
-    model.api.queiresFields = [...Object.keys(queriesFields)];
-    model.api.mutationFields = [...Object.keys(mutationsFields)];
-
+        model.api.queiresFields = [...Object.keys(queriesFields||{})];
+        model.api.mutationFields = [...Object.keys(mutationsFields||{})];
+    // console.log("hello")
+    // model.api.mutationFields = [...Object.keys(mutationsFields)];
+    //   console.log("hello1")
     const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
       queriesFields,
       mutationsFields
@@ -193,7 +197,7 @@ async function defineYourOwnApi(
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
     const asyncFieldSplitterOutput =
-      asyncDirectiveFieldSplitter(mutationsFields);
+    mutationsFields?asyncDirectiveFieldSplitter(mutationsFields):[];
 
     const newSchema = asyncDirectiveResponseCreator(
       mutationsFields,
@@ -263,6 +267,7 @@ async function defineYourOwnApi(
       }
     }
     PanacloudConfig = await generatePanacloudConfig(model);
+
   } else {
     copy(schemaPath, `./schema/${basename(schemaPath)}`, (err: Error) => {
       if (err) {

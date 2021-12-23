@@ -178,9 +178,9 @@ class EditableMockApiTestCollectionsFile {
         // console.log(data2)
         // writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
         // console.log("Arguments=====>",returnType.fields[key])
-        if(data2["arguments"]){
+        if(typeof data2["arguments"] === "string"){
           // console.log("has arguments")
-          data2["arguments"] = data2["arguments"].split("_")
+          data2["arguments"] = typeof data2["arguments"]==="string"&& data2["arguments"].split("_")
           .reduce((out_str: string, val: string, index: number, arr: string[]) => {
             // console.log("out_str",out_str)
             // console.log("val",val)
@@ -191,7 +191,7 @@ class EditableMockApiTestCollectionsFile {
           }, "")
   
         }
-        if(data2["response"]){
+        if(typeof data2["response"] === "string"){
           data2["response"] = data2["response"].split("_")
           .reduce((out_str: string, val: string, index: number, arr: string[]) => {
             if(val.includes("|")){
@@ -203,6 +203,16 @@ class EditableMockApiTestCollectionsFile {
                   }`)
               },"")
               return out_str +=commaStr
+            }
+            if(val.includes("[]")){
+              let commaStr =  val.split("[]").reduce((outStr,val,index: number, arr: string[])=>{
+                val = val.replace(" ","")
+     
+                 return (outStr += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
+                   arr.length > index + 1 ? "[]" : ""
+                 }`)
+             },"")
+             return out_str +=commaStr
             }
              return (out_str += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
               arr.length > index + 1 ? "_" : ""

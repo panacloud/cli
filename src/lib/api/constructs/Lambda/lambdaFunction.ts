@@ -367,6 +367,16 @@ export class LambdaFunction {
               },"")
               return out_str +=commaStr
             }
+            if(val.includes("[]")){
+              let commaStr =  val.split("[]").reduce((outStr,val,index: number, arr: string[])=>{
+                val = val.replace(" ","")
+     
+                 return (outStr += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
+                   arr.length > index + 1 ? "[]" : ""
+                 }`)
+             },"")
+             return out_str +=commaStr
+            }
             return (out_str += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
               arr.length > index + 1 ? "_" : ""
             }`);
