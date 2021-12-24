@@ -221,11 +221,11 @@ async function defineYourOwnApi(
     model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`;
 
     // model.api.asyncFields = asyncFieldSplitterOutput;
-    // writeFileSync(".vscode/settings.json",JSON.stringify({
-    //   "files.exclude": {
-    //     ".panacloud": true,
-    //   }
-    // }))
+    writeFileSync(".vscode/settings.json",JSON.stringify({
+      "files.exclude": {
+        ".panacloud": true,
+      }
+    }))
 
     writeFileSync(
       `./editable_src/graphql/schema/schema.graphql`,
