@@ -27,85 +27,121 @@ class MockApiTestCollectionsFile {
     let new_config = JSON.parse(JSON.stringify(this.config));
 
     for (const key in new_config.api.mockApiData?.collections.fields) {
+      if (key !== async_response_mutName) {
+        const code = new CodeMaker();
+        const ts = new TypeScriptWriter(code);
 
-      if (key !== async_response_mutName){
-      const code = new CodeMaker();
-      const ts = new TypeScriptWriter(code);
+        if (new_config.api.mockApiData) {
+          new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(
+            new_config.api.mockApiData?.types[key].fields[key][0]
+          )}[]`;
+        }
 
-      if (new_config.api.mockApiData) {
-        new_config.api.mockApiData.types[key].fields[key] = `${JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0])}[]`;
-      }
+        code.openFile("testCollectionsTypes.ts");
+        const allTypes = new_config.api.mockApiData?.imports
+          .filter(
+            (val: string) =>
+              val !==
+              `Mutation${async_response_mutName
+                .charAt(0)
+                .toUpperCase()}${async_response_mutName.slice(1)}Args`
+          )
+          .map((val: string) => {
+            return val
+              .split("_")
+              .reduce(
+                (
+                  out_str: string,
+                  val: string,
+                  index: number,
+                  arr: string[]
+                ) => {
+                  return (out_str += `${transformStr(val)}${
+                    arr.length > index + 1 ? "_" : ""
+                  }`);
+                },
+                ""
+              );
+          });
+        // console.log("old Types ====>",new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`))
 
-      code.openFile("testCollectionsTypes.ts");
-      const allTypes = new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`).map((val:string)=>{
-        return val.split("_")
-        .reduce((out_str: string, val: string, index: number, arr: string[]) => {
-          return (out_str += `${transformStr(val)}${
-            arr.length > index + 1 ? "_" : ""
-          }`);
-        }, "")
-      })
-      // console.log("old Types ====>",new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`))
+        // console.log("new Types ====>",allTypes)
 
-      // console.log("new Types ====>",allTypes)
-      
-      // console.log(allTypes)
-      if (new_config.api.mockApiData?.imports) {
-        ts.writeImports("../types", allTypes);
-      }
-      code.line();
-      let returnType = new_config.api.mockApiData?.types[key]
-      let data1 = returnType.fields[key].replace(/\\*/g, '')
-      let data2 = JSON.parse(data1.substring(0,data1.length -2))
-      // writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
-      // console.log("Arguments=====>",returnType.fields[key])
-      if(typeof data2["arguments"]==="string"){
-        // console.log("has arguments")
-        data2["arguments"] = data2["arguments"].split("_")
-        .reduce((out_str: string, val: string, index: number, arr: string[]) => {
-          // console.log("out_str",out_str)
-          // console.log("val",val)
+        // console.log(allTypes)
+        if (new_config.api.mockApiData?.imports) {
+          ts.writeImports("../types", allTypes);
+        }
+        code.line();
+        let returnType = new_config.api.mockApiData?.types[key];
+        let data1 = returnType.fields[key].replace(/\\*/g, "");
+        let data2 = JSON.parse(data1.substring(0, data1.length - 2));
+        // writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
+        // console.log("Arguments=====>",returnType.fields[key])
+        if (typeof data2["arguments"] === "string") {
+          // console.log("has arguments")
+          data2["arguments"] = data2["arguments"]
+            .split("_")
+            .reduce(
+              (out_str: string, val: string, index: number, arr: string[]) => {
+                // console.log("out_str",out_str)
+                // console.log("val",val)
 
-          return (out_str += `${transformStr(val)}${
-            arr.length > index + 1 ? "_" : ""
-          }`);
-        }, "")
+                return (out_str += `${transformStr(val)}${
+                  arr.length > index + 1 ? "_" : ""
+                }`);
+              },
+              ""
+            );
+        }
+        if (typeof data2["response"] === "string") {
+          data2["response"] = data2["response"]
+            .split("_")
+            .reduce(
+              (out_str: string, val: string, index: number, arr: string[]) => {
+                if (val.includes("|")) {
+                  let commaStr = val
+                    .split("|")
+                    .reduce((outStr, val, index: number, arr: string[]) => {
+                      val = val.replace(" ", "");
 
-      }
-      if(typeof data2["response"] === "string"){
-        data2["response"] = data2["response"].split("_")
-        .reduce((out_str: string, val: string, index: number, arr: string[]) => {
-          if(val.includes("|")){
-            let commaStr =  val.split("|").reduce((outStr,val,index: number, arr: string[])=>{
-               val = val.replace(" ","")
-    
-                return (outStr += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                  arr.length > index + 1 ? "|" : ""
-                }`)
-            },"")
-            return out_str +=commaStr
-          }
-          if(val.includes("[]")){
-            let commaStr =  val.split("[]").reduce((outStr,val,index: number, arr: string[])=>{
-              val = val.replace(" ","")
-   
-               return (outStr += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                 arr.length > index + 1 ? "[]" : ""
-               }`)
-           },"")
-           return out_str +=commaStr
-          }
-           return (out_str += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
-            arr.length > index + 1 ? "_" : ""
-          }`);
-        }, "")
-      }
-      returnType.fields[key] = JSON.stringify(data2).replace(/"*\\*/g, '') + "[]"
-      // console.log("My Return Type ===>",returnType)
-      code.indent(`export type TestCollection =
-          ${JSON.stringify(returnType).replace(/"*\\*/g, '')}
+                      return (outStr += `${val
+                        .charAt(0)
+                        .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+                        arr.length > index + 1 ? "|" : ""
+                      }`);
+                    }, "");
+                  return (out_str += commaStr);
+                }
+                if (val.includes("[]")) {
+                  let commaStr = val
+                    .split("[]")
+                    .reduce((outStr, val, index: number, arr: string[]) => {
+                      val = val.replace(" ", "");
+
+                      return (outStr += `${val
+                        .charAt(0)
+                        .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+                        arr.length > index + 1 ? "[]" : ""
+                      }`);
+                    }, "");
+                  return (out_str += commaStr);
+                }
+                return (out_str += `${val
+                  .charAt(0)
+                  .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+                  arr.length > index + 1 ? "_" : ""
+                }`);
+              },
+              ""
+            );
+        }
+        returnType.fields[key] =
+          JSON.stringify(data2).replace(/"*\\*/g, "") + "[]";
+        // console.log("My Return Type ===>",returnType)
+        code.indent(`export type TestCollection =
+          ${JSON.stringify(returnType).replace(/"*\\*/g, "")}
       `);
-      // console.log(`${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}`)
+        // console.log(`${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}`)
 
         code.closeFile("testCollectionsTypes.ts");
         await code.save(`mock_lambda_layer/mockData/${key}`);
