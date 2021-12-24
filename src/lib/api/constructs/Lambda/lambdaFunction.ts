@@ -367,6 +367,16 @@ export class LambdaFunction {
               },"")
               return out_str +=commaStr
             }
+            if(val.includes("[]")){
+              let commaStr =  val.split("[]").reduce((outStr,val,index: number, arr: string[])=>{
+                val = val.replace(" ","")
+     
+                 return (outStr += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
+                   arr.length > index + 1 ? "[]" : ""
+                 }`)
+             },"")
+             return out_str +=commaStr
+            }
             return (out_str += `${val.charAt(0).toUpperCase()}${lodash.camelCase(val.slice(1))}${
               arr.length > index + 1 ? "_" : ""
             }`);
@@ -395,7 +405,18 @@ export class LambdaFunction {
         ]);
         break;
     }
-    
+    if(database===DATABASE.dynamoDB){
+      ts.writeVariableDeclaration(
+        {
+          name: "docClient",
+          typeName: "",
+          initializer: () => {
+            this.code.line(`new AWS.DynamoDB.DocumentClient()`);
+          },
+        },
+        "const"
+      );
+    }
     if (database === DATABASE.auroraDB) {
       ts.writeVariableDeclaration(
         {
@@ -438,7 +459,18 @@ export class LambdaFunction {
           : "null"
       }>) => {`
     );
+    if(database === DATABASE.dynamoDB){
+      if (
+        typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+        "string"
+      ) {
+        this.code.line(`const result = await ${queryName}(event.arguments);`);
+      } else {
+        this.code.line(`const result = await ${queryName}();`);
+      }
 
+      this.code.line("return result");
+    }
     if (database === DATABASE.auroraDB) {
       if (
         typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
@@ -781,6 +813,69 @@ export class LambdaFunction {
         this.code.line(`return ${mockDataStr}`);
         this.code.line("}");
       }
+    }else if(database === DATABASE.dynamoDB){
+      if (
+        typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===
+        "string"
+      ) {
+        this.code.line(
+          `async function ${queryName}(args:${argType}):Promise<${returnType}>
+          {`
+        );
+      } else {
+        this.code.line(
+          `async function ${queryName}():Promise<${returnType}>
+          {`
+        );
+      }
+
+      this.code.line();
+      this.code.line("// Example Schema: ");
+      this.code.line(`
+        // type User {
+        //   id: ID!
+        //   name: String!
+        //   age: Int!
+        // }
+        
+        // input userInput {
+        //   name: String!
+        //   age: Int!
+        // }
+
+        // type Query {
+        //   listUsers: [User!]
+        // }
+        
+        // type Mutation {
+        //   createUser(user: userInput!): String
+        // }
+        `);
+
+      this.code.line(`// Example Code: `);
+      this.code.line();
+      
+      this.code.line("// try{");
+      if (!isMutation) {
+        this.code.line("// const params = {TableName:process.env.TableName}")
+        this.code.line("//   const data = await docClient.scan(params).promise()");
+        this.code.line("// return data");
+      } else {
+        this.code.line("// const params = {TableName:process.env.TableName, Item: user}")
+        
+        this.code.line("// await docClient.put(params).promise()");
+        this.code.line(" //return user.name");
+      }
+      this.code.line("// }");
+      this.code.openBlock("// catch (err) ");
+      this.code.line("// console.log('ERROR', err)");
+      this.code.line("// return null");
+      this.code.line("// }");
+
+      this.code.line(`return ${mockDataStr}`);
+
+      this.code.line("}");
+
     } else if (database === DATABASE.auroraDB) {
       if (
         typeof mockData?.types[queryName!].fields[queryName!][0].arguments ===

@@ -25,10 +25,10 @@ import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
 import { microServicesDirectiveFieldSplitter } from "../../directives/microServicesDirective";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
-import {
-  asyncDirectiveFieldSplitter,
-  asyncDirectiveResponseCreator,
-} from "../../directives/asyncDirective";
+// import {
+//   asyncDirectiveFieldSplitter,
+//   asyncDirectiveResponseCreator,
+// } from "../../directives/asyncDirective";
 import { hide } from "hidefile";
 import chalk = require("chalk");
 
@@ -170,20 +170,24 @@ async function defineYourOwnApi(
     let scalars = readFileSync(scalarPath, "utf8");
 
     let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-
+      // console.log(gqlSchema)
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
     // Model Config
     let queriesFields: any = gqlSchema.getQueryType()?.getFields();
     let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+    // console.log(mutationsFields)
     let introspection = introspectionFromSchema(gqlSchema);
     let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+    // console.log(introspection)
 
     model.api.schema = introspection;
-    model.api.queiresFields = [...Object.keys(queriesFields)];
-    model.api.mutationFields = [...Object.keys(mutationsFields)];
-
+        model.api.queiresFields = [...Object.keys(queriesFields||{})];
+        model.api.mutationFields = [...Object.keys(mutationsFields||{})];
+    // console.log("hello")
+    // model.api.mutationFields = [...Object.keys(mutationsFields)];
+    //   console.log("hello1")
     const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
       queriesFields,
       mutationsFields
@@ -192,45 +196,45 @@ async function defineYourOwnApi(
     model.api.generalFields = fieldSplitterOutput.generalFields;
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
-    const asyncFieldSplitterOutput =
-      asyncDirectiveFieldSplitter(mutationsFields);
+    // const asyncFieldSplitterOutput =
+    // mutationsFields?asyncDirectiveFieldSplitter(mutationsFields):[];
 
-    const newSchema = asyncDirectiveResponseCreator(
-      mutationsFields,
-      subscriptionsFields,
-      schema,
-      asyncFieldSplitterOutput
-    );
+    // const newSchema = asyncDirectiveResponseCreator(
+    //   mutationsFields,
+    //   subscriptionsFields,
+    //   schema,
+    //   asyncFieldSplitterOutput
+    // );
 
-    if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length > 0) {
-      gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
+    // if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length > 0) {
+    //   gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
 
-      queriesFields = gqlSchema.getQueryType()?.getFields();
-      mutationsFields = gqlSchema.getMutationType()?.getFields();
-      introspection = introspectionFromSchema(gqlSchema);
+    //   queriesFields = gqlSchema.getQueryType()?.getFields();
+    //   mutationsFields = gqlSchema.getMutationType()?.getFields();
+    //   introspection = introspectionFromSchema(gqlSchema);
 
-      model.api.schema = introspection;
-      model.api.queiresFields = [...Object.keys(queriesFields)];
-      model.api.mutationFields = [...Object.keys(mutationsFields)];
-    }
+    //   model.api.schema = introspection;
+    //   model.api.queiresFields = [...Object.keys(queriesFields)];
+    //   model.api.mutationFields = [...Object.keys(mutationsFields)];
+    // }
 
     model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`;
 
-    model.api.asyncFields = asyncFieldSplitterOutput;
-    writeFileSync(".vscode/settings.json",JSON.stringify({
-      "files.exclude": {
-        ".panacloud": true,
-      }
-    }))
+    // model.api.asyncFields = asyncFieldSplitterOutput;
+    // writeFileSync(".vscode/settings.json",JSON.stringify({
+    //   "files.exclude": {
+    //     ".panacloud": true,
+    //   }
+    // }))
 
     writeFileSync(
       `./editable_src/graphql/schema/schema.graphql`,
-      `${scalars}\n${newSchema}`
+      `${scalars}\n${schema}`
     );
 
     writeFileSync(
       `./.panacloud/editable_src/graphql/schema/schema.graphql`,
-      `${scalars}\n${newSchema}`
+      `${scalars}\n${schema}`
     );
 
     // writeFileSync(
@@ -263,6 +267,7 @@ async function defineYourOwnApi(
       }
     }
     PanacloudConfig = await generatePanacloudConfig(model);
+
   } else {
     copy(schemaPath, `./schema/${basename(schemaPath)}`, (err: Error) => {
       if (err) {

@@ -91,22 +91,23 @@ export const userInput = async () => {
     {
       type: "list",
       name: "database",
-      message: "Select Database?",
+      message: "Select Database Engine",
       choices: [
+        DATABASE.dynamoDB,
         DATABASE.neptuneDB,
         DATABASE.auroraDB,
         // DATABASE.none,
       ],
-      default: DATABASE.auroraDB,
+      default: DATABASE.dynamoDB,
       validate: Boolean,
     },
     {
       type: "list",
       name: "rdbmsEngine",
       message: "Select Database Engine",
-      choices: [RDBMSENGINE.postgresql,RDBMSENGINE.mysql],
+      choices: [RDBMSENGINE.postgresql, RDBMSENGINE.mysql],
       default: RDBMSENGINE.postgresql,
-   when: (answers: any) => answers.database === DATABASE.auroraDB,
+      when: (answers: any) => answers.database === DATABASE.auroraDB,
       validate: Boolean,
     },
     {
@@ -115,7 +116,7 @@ export const userInput = async () => {
       message: "Select Query Language",
       choices: [NEPTUNEQUERYLANGUAGE.gremlin, NEPTUNEQUERYLANGUAGE.cypher],
       default: NEPTUNEQUERYLANGUAGE.gremlin,
-   when: (answers: any) => answers.database === DATABASE.neptuneDB,
+      when: (answers: any) => answers.database === DATABASE.neptuneDB,
       validate: Boolean,
     },
   ]);

@@ -4,7 +4,7 @@ export class AsyncDirective {
   constructor() {}
 
   public fieldSplitter(mutationFields: any) {
-    const mutationNames = [...Object.keys(mutationFields)];
+    const mutationNames = [...Object.keys(mutationFields||{})];
     let asyncFields: string[] = [];
 
     for (let mutationName of mutationNames) {
@@ -29,13 +29,15 @@ export class AsyncDirective {
     asyncFields: string[]
   ) {
     let newSchema = schema;
-
+    // console.log("In Async ========")
+    // console.log(mutationFields)
+    // console.log(asyncFields)
     let subNames: string[] = subscriptionFields
       ? Object.keys(subscriptionFields)
       : [];
 
     if (asyncFields.length > 0) {
-      if (!mutationFields[async_response_mutName]) {
+      if (mutationFields&&!mutationFields[async_response_mutName]) {
         const mutRegex = /type[\s]+Mutation[\s]+{[a-zA-Z\(\)\s:!@\"\#\_]+}/g;
 
         const oldMut = newSchema.match(mutRegex);
@@ -79,7 +81,7 @@ export class AsyncDirective {
     }
 
     if (asyncFields.length === 0) {
-      if (mutationFields[async_response_mutName]) {
+      if (mutationFields&&mutationFields[async_response_mutName]) {
         // newSchema = schema.replace(`async_response(input:String!):String!`, '')
 
         // console.log(newSchema)

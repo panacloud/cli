@@ -8,6 +8,19 @@ export function transformStr(str:string):string {
         replaced.slice(1)
       )}Args`
     }
+    else if(str.includes("Query")&&str.includes("Args")){
+      let replaced = str.replace("Query", "").replace("Args", "");
+      result = `Query${replaced.charAt(0).toUpperCase()}${lodash.camelCase(
+        replaced.slice(1)
+      )}Args`
+    }
+    else if (str.includes("Query")) {
+      let replaced = str.replace("Query", "");
+      result = `Query${replaced.charAt(0).toUpperCase()}${lodash.camelCase(
+        replaced.slice(1)
+      )}`;
+    }
+    
     else if (str.includes("Mutation")) {
       let replaced = str.replace("Mutation", "");
       result = `Mutation${replaced.charAt(0).toUpperCase()}${lodash.camelCase(
