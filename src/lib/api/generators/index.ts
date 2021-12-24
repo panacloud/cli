@@ -68,9 +68,9 @@ export const generator = async (
     await EditableMockApiTestCollections({ config, dummyData, type });
     await customLambda({ config, type });
   }
-  if (config.api.apiType === APITYPE.graphql) {
-    apiTests({ config }, panacloudConfig);
-  }
+  // if (config.api.apiType === APITYPE.graphql) {
+  //   apiTests({ config }, panacloudConfig);
+  // }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
     await eventBridgeConstruct({ config });

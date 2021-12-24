@@ -7,8 +7,6 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test-dev": "mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit dev",
-    "test-prd": "mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit prd",
     "cdk": "cdk",
     "deploy-dev": "tsc && cross-env STAGE=dev cdk deploy --outputs-file ./cdk-dev-outputs.json",
     "deploy-prd": "tsc && cross-env STAGE=prd cdk deploy --outputs-file ./cdk-prd-outputs.json",

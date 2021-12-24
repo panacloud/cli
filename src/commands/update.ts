@@ -102,15 +102,15 @@ export default class Create extends Command {
     const stackPackageJson = readJsonSync(`package.json`);
 
     let scriptKeys = Object.keys(stackPackageJson.scripts).filter(
-      (v) => v.includes("deploy") || v.includes("test") || v.includes("destroy")
+      (v) => v.includes("deploy")  || v.includes("destroy")
     );
 
     scriptKeys.forEach((v) => delete stackPackageJson.scripts[v]);
 
     stages?.forEach((v) => {
-      stackPackageJson.scripts[
-        `test-${v}`
-      ] = `mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit ${v}`;
+      // stackPackageJson.scripts[
+      //   `test-${v}`
+      // ] = `mocha  -r ts-node/register 'tests/**/*.ts' --recursive  --timeout 60000 --exit ${v}`;
       stackPackageJson.scripts[
         `deploy-${v}`
       ] = `tsc && cross-env STAGE=${v} cdk deploy --outputs-file ./cdk-${v}-outputs.json`;
@@ -155,23 +155,23 @@ export default class Create extends Command {
     removeSync("mock_lambda_layer/mockData");
     removeSync("consumer_lambda");
     removeSync("lib");
-    removeSync("tests/apiTests");
+    // removeSync("tests/apiTests");
 
     if (configCli.saasType === SAASTYPE.api) {
       await updateYourOwnApi(configCli, updatingCode);
     }
 
     stopSpinner(updatingCode, "CDK Code Updated", false);
-    const setUpForTest = startSpinner("Setup For Test");
-    try {
-      await exec(
-        `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
-      );
-    } catch (error) {
-      stopSpinner(setUpForTest, `Error: ${error}`, true);
-      process.exit(1);
-    }
-    stopSpinner(setUpForTest, "Test Setup", false);
+    // const setUpForTest = startSpinner("Setup For Test");
+    // try {
+    //   await exec(
+    //     `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
+    //   );
+    // } catch (error) {
+    //   stopSpinner(setUpForTest, `Error: ${error}`, true);
+    //   process.exit(1);
+    // }
+    // stopSpinner(setUpForTest, "Test Setup", false);
 
     const generatingTypes = startSpinner("Generating Types");
     try {
