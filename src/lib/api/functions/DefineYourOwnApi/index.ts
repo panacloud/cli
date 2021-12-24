@@ -170,17 +170,17 @@ async function defineYourOwnApi(
     let scalars = readFileSync(scalarPath, "utf8");
 
     let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-      console.log(gqlSchema)
+      // console.log(gqlSchema)
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
     // Model Config
     let queriesFields: any = gqlSchema.getQueryType()?.getFields();
     let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    console.log(mutationsFields)
+    // console.log(mutationsFields)
     let introspection = introspectionFromSchema(gqlSchema);
     let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
-    console.log(introspection)
+    // console.log(introspection)
 
     model.api.schema = introspection;
         model.api.queiresFields = [...Object.keys(queriesFields||{})];
