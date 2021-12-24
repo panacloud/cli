@@ -29,9 +29,9 @@ export class AsyncDirective {
     asyncFields: string[]
   ) {
     let newSchema = schema;
-    console.log("In Async ========")
-    console.log(mutationFields)
-    console.log(asyncFields)
+    // console.log("In Async ========")
+    // console.log(mutationFields)
+    // console.log(asyncFields)
     let subNames: string[] = subscriptionFields
       ? Object.keys(subscriptionFields)
       : [];
