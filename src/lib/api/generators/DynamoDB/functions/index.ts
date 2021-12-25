@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { DynamoDB } from "../../../constructs/DynamoDB";
+import { DynamoDB } from "../../../constructs/Dynamodb";
 
 export const dynamodbAccessHandler = (
   apiName: string,
