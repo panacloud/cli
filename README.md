@@ -208,19 +208,40 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ### First Public Release
 
-Expected Date: December 14, 2021
+Release Date: December 25, 2021
 
-Functionality: Auto-Generation of GraphQL API for AWS, Single Tenant, Mock API, Serverless Stubs, Database Support: Relational & Graph, API Testing, Staging, init, update, config, deploy, destroy, and client commands
+Functionality:
+
+1. DynamoDB 
+2. Neptune & AuroraDB
+3. Microservice dirrective
+4. Multiple stacks
+5. MockData & MockLambda 
+6. panacloud status
+7. panacloud client
  
 ### Second Release
 
-Expected Date: January 1, 2022
+Expected Date: January 15, 2022
 
-Functionality: Multi-Tenant monetering and billing data live streamed to Amazon Timestream Database deployed in Panacloud AWS Account. 
+Functionality: 
+
+1. API Tests
+2. Async Dirrective
+3. Nested Resolver 
+4. Return Type ( Issues with DynamoDB & Neptune )
 
 ### Third Release
 
-Expected Date: January 15, 2022
+Expected Date: Feburary 1, 2022
+
+Functionality: 
+
+Multi-Tenant monetering and billing data live streamed to Amazon Timestream Database deployed in Panacloud AWS Account. 
+
+### Fourth Release
+
+Expected Date: March 1, 2022
 
 Functionality: Basic OpenAPI speficication support. 
 
