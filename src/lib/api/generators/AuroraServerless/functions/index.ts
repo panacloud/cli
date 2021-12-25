@@ -7,13 +7,28 @@ export const auroradbPropertiesInitializer = (
 ) => {
   code.line(`this.serviceRole = ${apiName}Lambda_serviceRole;`);
   code.line(`this.vpcRef = ${apiName}_vpc;`);
-  code.line(`this.secretRef = ${apiName}_secret`);
+  code.line(`this.SECRET_ARN = ${apiName}_secret`);
+  code.line(`this.CLUSTER_ARN = ${apiName}_db.clusterArn`);
+  code.line(`this.DB_NAME =  props?.prod ? props?.prod+"${apiName}DB" : "${apiName}DB"`);
+  code.line(`this.db_cluster = ${apiName}_db`)
 };
 
 export const auroradbPropertiesHandler = (): Property[] => {
   return [
     {
-      name: "secretRef",
+      name: "CLUSTER_ARN",
+      typeName: "string",
+      accessModifier: "public",
+      isReadonly: false,
+    },
+    {
+      name: "SECRET_ARN",
+      typeName: "string",
+      accessModifier: "public",
+      isReadonly: false,
+    },
+    {
+      name: "DB_NAME",
       typeName: "string",
       accessModifier: "public",
       isReadonly: false,
@@ -30,5 +45,12 @@ export const auroradbPropertiesHandler = (): Property[] => {
       accessModifier: "public",
       isReadonly: false,
     },
+    {
+      name: "db_cluster",
+      typeName: "rds.ServerlessCluster",
+      accessModifier: "public",
+      isReadonly: false,
+    },
+    
   ];
 };

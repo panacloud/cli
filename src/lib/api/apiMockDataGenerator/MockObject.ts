@@ -26,14 +26,16 @@ export class RootMockObject extends MockObject {
     super(schema);
     const queries = this.graphQLSchema?.getQueryType()?.getFields();
     const mutations = this.graphQLSchema?.getMutationType()?.getFields();
-    Object.entries(queries || []).forEach(([queryName, queryFieldObject]) => {
-      const queryMockObject = new QueryMockObject(this.graphQLSchema, queryName, queryFieldObject);
-      this.queryMockObjects.push(queryMockObject);
-    });
-    Object.entries(mutations || []).forEach(([mutationName, mutationFieldObject]) => {
-      const mutationMockObject = new MutationMockObject(this.graphQLSchema, mutationName, mutationFieldObject);
-      this.mutationMockObjects.push(mutationMockObject);
-    });
+      Object.entries(queries || []).forEach(([queryName, queryFieldObject]) => {
+        const queryMockObject = new QueryMockObject(this.graphQLSchema, queryName, queryFieldObject);
+        this.queryMockObjects.push(queryMockObject);
+      });
+    // console.log(mutations)
+      Object.entries(mutations || []).forEach(([mutationName, mutationFieldObject]) => {
+        const mutationMockObject = new MutationMockObject(this.graphQLSchema, mutationName, mutationFieldObject);
+        this.mutationMockObjects.push(mutationMockObject);
+      });
+    
   }
   write(object: TestCollectionType) {
     this.queryMockObjects.forEach((v) => {

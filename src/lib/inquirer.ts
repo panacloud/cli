@@ -1,10 +1,11 @@
 import {
-  TEMPLATE,
   APITYPE,
   DATABASE,
   CLOUDPROVIDER,
   LANGUAGE,
   SAASTYPE,
+  NEPTUNEQUERYLANGUAGE,
+  RDBMSENGINE,
 } from "../utils/constants";
 import { fileExistsAsync } from "./fs";
 const inquirer = require("inquirer");
@@ -35,14 +36,6 @@ export const userInput = async () => {
     //   default: SAASTYPE.api,
     //   validate: Boolean,
     // },
-    {
-      type: "list",
-      name: "template",
-      message: "Which Kind of Mutli-Tenant Serverless API?",
-      choices: [TEMPLATE.basicApi, TEMPLATE.todoApi, TEMPLATE.defineApi],
-      default: TEMPLATE.basicApi,
-      validate: Boolean,
-    },
     // {
     //   type: "string",
     //   name: "entityId",
@@ -55,61 +48,75 @@ export const userInput = async () => {
     //   message: "Enter Your Panacloud Portal API Key",
     //   validate: Boolean,
     // },
-    {
-      type: "list",
-      name: "api_type",
-      message: "Select API Type?",
-      choices: [APITYPE.graphql, APITYPE.rest],
-      default: APITYPE.graphql,
-      when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi,
-      validate: Boolean,
-    },
+    // {
+    //   type: "list",
+    //   name: "api_type",
+    //   message: "Select API Type?",
+    //   choices: [APITYPE.graphql, APITYPE.rest],
+    //   default: APITYPE.graphql,
+    //   when: (answers: any) =>
+    //     answers.template === TEMPLATE.defineApi,
+    //   validate: Boolean,
+    // },
     {
       type: "string",
       name: "schema_path",
       message: "GraphQL Schema File Path",
-      when: (answers: any) =>
-        answers.api_type === APITYPE.graphql,
+      // when: (answers: any) =>
+      //   answers.api_type === APITYPE.graphql,
       validate: (val: string) => fileExistsAsync(val),
     },
-    {
-      type: "string",
-      name: "schema_path",
-      message: "REST OpenAPI Specifications File Path",
-      when: (answers: any) =>
-        answers.api_type === APITYPE.rest,
-      validate: (val: string) => fileExistsAsync(val),
-    },
+    // {
+    //   type: "string",
+    //   name: "schema_path",
+    //   message: "REST OpenAPI Specifications File Path",
+    //   when: (answers: any) =>
+    //     answers.api_type === APITYPE.rest,
+    //   validate: (val: string) => fileExistsAsync(val),
+    // },
     {
       type: "string",
       name: "api_name",
       message: "API Name",
-      default: "myApi",
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      default: "MyApi",
       validate: Boolean,
     },
-    {
-      type: "confirm",
-      name: "nestedResolver",
-      message: "Nested Resolver",
-      validate: Boolean,
-      when: (answers: any) =>
-        answers.template === TEMPLATE.defineApi ||
-        answers.api_type === APITYPE.graphql,
-    },
+    // {
+    //   type: "confirm",
+    //   name: "nestedResolver",
+    //   message: "Nested Resolver",
+    //   validate: Boolean,
+    //   // when: (answers: any) => answers.api_type === APITYPE.graphql,
+    // },
     {
       type: "list",
       name: "database",
-      message: "Select Database?",
+      message: "Select Database Engine",
       choices: [
         DATABASE.dynamoDB,
         DATABASE.neptuneDB,
         DATABASE.auroraDB,
-        DATABASE.none,
+        // DATABASE.none,
       ],
-      default: DATABASE.auroraDB,
-      when: (answers: any) => answers.template === TEMPLATE.defineApi,
+      default: DATABASE.dynamoDB,
+      validate: Boolean,
+    },
+    {
+      type: "list",
+      name: "rdbmsEngine",
+      message: "Select Database Engine",
+      choices: [RDBMSENGINE.postgresql, RDBMSENGINE.mysql],
+      default: RDBMSENGINE.postgresql,
+      when: (answers: any) => answers.database === DATABASE.auroraDB,
+      validate: Boolean,
+    },
+    {
+      type: "list",
+      name: "neptuneQueryLanguage",
+      message: "Select Query Language",
+      choices: [NEPTUNEQUERYLANGUAGE.gremlin, NEPTUNEQUERYLANGUAGE.cypher],
+      default: NEPTUNEQUERYLANGUAGE.gremlin,
+      when: (answers: any) => answers.database === DATABASE.neptuneDB,
       validate: Boolean,
     },
   ]);

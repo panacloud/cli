@@ -20,7 +20,12 @@ export class Imports {
 
   public importAppsync() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync"]);
+    ts.writeImports("aws-cdk-lib", ["aws_appsync as appsync","CfnOutput"]);
+  }
+
+  public importCfnOutput() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports("aws-cdk-lib", ["CfnOutput as CfnOutput"]);
   }
 
   public importForEventBrideConstruct() {

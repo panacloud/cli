@@ -32,7 +32,10 @@ export const lambdaInitializerForNestedResolvers = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ] 
   }
 
   for (let i = 0; i < nestedResolverLambdas.length; i++) {
@@ -40,7 +43,7 @@ export const lambdaInitializerForNestedResolvers = (
     if (asyncFields && asyncFields.includes(key)) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
     }
-    lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,undefined,true);
+    lambda.initializeLambda(database,apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,undefined,true);
     code.line();
     code.line();
   }
@@ -72,7 +75,10 @@ export const lambdaInitializerForMicroServices = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ] 
   }
 
   for (let i = 0; i < microServices.length; i++) {
@@ -91,6 +97,7 @@ export const lambdaInitializerForMicroServices = (
         );     
       }
       lambda.initializeLambda(
+        database,
         apiName,
         key,
         vpcRef,
@@ -132,8 +139,10 @@ export const lambdaInitializerForGeneralFields = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
-  }
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ]   }
 
   for (let i = 0; i < general_Fields.length; i++) {
     const key = general_Fields[i];
@@ -143,7 +152,7 @@ export const lambdaInitializerForGeneralFields = (
     if (asyncFields && asyncFields.includes(key)) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
     }
-    lambda.initializeLambda(apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole);
+    lambda.initializeLambda(database,apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole);
     code.line();
     code.line();
 
@@ -176,10 +185,12 @@ export const lambdaInitializerForEventDriven = (
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "INSTANCE_CREDENTIALS",value: `${apiName}_auroradb.secretRef`}] 
-  }
+    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
+    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
+    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
+  ]   }
 
-  lambda.initializeLambda(apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");
+  lambda.initializeLambda(database,apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");
   code.line();
   code.line();
 };
@@ -267,9 +278,11 @@ export const lambdaHandlerForAuroradb = (
     },
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
-  lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
+  lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
+      "",
       apiName,
       undefined,
       `${apiName}_auroradb.vpcRef`,
@@ -287,6 +300,7 @@ export const lambdaHandlerForAuroradb = (
   } else {
     if (microServiceFields) {
       lambdaInitializerForMicroServices(model.api,panacloudConfig,code)
+      
     }
 
     if (generalFields) {
@@ -314,9 +328,11 @@ export const lambdaHandlerForNeptunedb = (
   } = model;
 
   const lambda = new Lambda(code, panacloudConfig);
-  lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
+  lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
+      "",
       apiName,
       undefined,
       `${apiName}_neptunedb.VPCRef`,
@@ -434,9 +450,11 @@ export const lambdaHandlerForDynamodb = (
     }
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
-  lambda.lambdaLayer(apiName, panacloudConfig.mockData["asset_path"]);
+  lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
+
   if (apiType === APITYPE.rest) {
-    lambda.initializeLambda(apiName, undefined, undefined, undefined, [
+    lambda.initializeLambda("",apiName, undefined, undefined, undefined, [
       { name: "TableName", value: `${apiName}_table.tableName` },
     ]);
     code.line();

@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { CONSTRUCTS } from "../../../../utils/constants";
+import { CONSTRUCTS, RDBMSENGINE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 
 export class AuroraServerless {
@@ -7,17 +7,17 @@ export class AuroraServerless {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-  public initializeAuroraCluster(apiName: string, vpcName: string) {
+  public initializeAuroraCluster(apiName: string, vpcName: string,rdbmsEngine:RDBMSENGINE) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
         name: `${apiName}_db`,
         typeName: "",
         initializer: () => {
-          this.code.line(`new rds.ServerlessCluster(this, "${apiName}DB", {
+          this.code.line(`new rds.ServerlessCluster(this, props?.prod?props.prod+"${apiName}DB":"${apiName}DB", {
             vpc: ${vpcName},
-            engine: rds.DatabaseClusterEngine.auroraMysql({
-              version: rds.AuroraMysqlEngineVersion.VER_5_7_12,
+            engine: rds.DatabaseClusterEngine.${rdbmsEngine === RDBMSENGINE.mysql? "auroraMysql":"auroraPostgres"}({
+              version: rds.${rdbmsEngine===RDBMSENGINE.mysql? "AuroraMysqlEngineVersion.VER_5_7_12":"AuroraPostgresEngineVersion.VER_10_14"},
             }),
             scaling: {
               autoPause: Duration.minutes(10), 
@@ -25,7 +25,7 @@ export class AuroraServerless {
               maxCapacity: rds.AuroraCapacityUnit.ACU_32,
             },
             deletionProtection: false,
-            defaultDatabaseName: props?.prod ? props?.prod+"_${apiName}DB" : "${apiName}DB",
+            defaultDatabaseName: props?.prod ? props?.prod+"${apiName}DB" : "${apiName}DB",
           });`);
         },
       },

@@ -1,5 +1,5 @@
 import { CodeMaker } from "codemaker";
-import { ApiModel, APITYPE, ARCHITECTURE, async_response_mutName, CONSTRUCTS } from "../../../../utils/constants";
+import { ApiModel, APITYPE, ARCHITECTURE, async_response_mutName, CONSTRUCTS, DATABASE } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 import { Imports } from "../../constructs/ConstructsImports";
 import { LambdaFunction } from "../../constructs/Lambda/lambdaFunction";
@@ -38,10 +38,10 @@ class MultipleLambda {
             this.outputFile = `index.ts`;
             code.openFile(this.outputFile);
 
-            ts.writeImports(`../../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
+            ts.writeImports(`../../../mock_lambda_layer/mockData/${key}/testCollectionsTypes`, [
               "TestCollection",
             ]);
-            code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
+            code.line(`var data = require("/opt/mockData/${key}/testCollections") as {
             testCollections: TestCollection;
           };`);
             code.line();
@@ -91,10 +91,10 @@ class MultipleLambda {
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
 
-          ts.writeImports(`../../lambdaLayer/mockApi/${key}/testCollectionsTypes`, [
+          ts.writeImports(`../../mock_lambda_layer/mockData/${key}/testCollectionsTypes`, [
             "TestCollection",
           ]);
-          code.line(`var data = require("/opt/mockApi/${key}/testCollections") as {
+          code.line(`var data = require("/opt/mockData/${key}/testCollections") as {
           testCollections: TestCollection;
         };`);
           code.line();
@@ -137,7 +137,11 @@ class MultipleLambda {
           const lambda = new LambdaFunction(code);
           this.outputFile = "index.ts";
           code.openFile(this.outputFile);
-          lambda.emptyLambdaFunction(nestedResolver);
+          code.line(`import * as AWS from "aws-sdk";`)
+          code.line(`import { AppSyncResolverEvent } from "aws-lambda";`)
+          code.line(`exports.handler = async (event: AppSyncResolverEvent<null>) => {`)
+          code.line(`return event.source![event.info.fieldName]`);
+          code.line(`}`)
           code.closeFile(this.outputFile);
           this.outputDir = `mock_lambda/nestedResolvers/${key}`;
           await code.save(this.outputDir);

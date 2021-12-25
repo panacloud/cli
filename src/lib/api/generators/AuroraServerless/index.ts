@@ -35,7 +35,7 @@ export class AuroraDBConstruct {
     const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
 
-    const { apiName } = this.config.api;
+    const { apiName ,rdbmsEngine} = this.config.api;
     const cdk = new Cdk(this.code);
     const ec2 = new Ec2(this.code);
     const aurora = new AuroraServerless(this.code);
@@ -63,7 +63,7 @@ export class AuroraDBConstruct {
       () => {
         ec2.initializeVpc(apiName);
         this.code.line();
-        aurora.initializeAuroraCluster(apiName, `${apiName}_vpc`);
+        rdbmsEngine&&aurora.initializeAuroraCluster(apiName, `${apiName}_vpc`,rdbmsEngine);
         this.code.line();
         iam.serviceRoleForLambda(apiName, [
           "AmazonRDSDataFullAccess",

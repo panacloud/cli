@@ -1,20 +1,22 @@
+import { snakeCase } from "lodash";
+import { basename, resolve } from "path";
+import { readFileSync, writeFileSync } from "fs-extra";
 import { stopSpinner } from "../../../spinner";
 import { updatePanacloudConfig } from "../../info";
 import { Config, ApiModel } from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
-import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
+import { microServicesDirectiveFieldSplitter } from "../../directives/microServicesDirective";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
-import { AsyncDirective, asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
+// import {
+//   asyncDirectiveFieldSplitter,
+//   asyncDirectiveResponseCreator,
+// } from "../../directives/asyncDirective";
 
-const path = require("path");
-const fs = require("fs");
-const snakeCase = require("lodash/snakeCase");
-
-async function updateYourOwnApi(config: Config, spinner: any) {
-  const workingDir = snakeCase(path.basename(process.cwd()));
+async function updateYourOwnApi(config: Config, spinner: any): Promise<void> {
+  const workingDir = snakeCase(basename(process.cwd()));
   const { schemaPath } = config.api;
 
   const model: ApiModel = {
@@ -26,37 +28,21 @@ async function updateYourOwnApi(config: Config, spinner: any) {
 
   const dummyData: TestCollectionType = { fields: {} };
 
-
-  let directivesPath = path.resolve(
+  let directivesPath = resolve(
     __dirname,
     "../../../../utils/awsAppsyncDirectives.graphql"
   );
 
-  let scalarPath = path.resolve(
+  let scalarPath = resolve(
     __dirname,
     "../../../../utils/awsAppsyncScalars.graphql"
   );
 
-  let schema = fs.readFileSync(schemaPath, "utf8", (err: string) => {
-    if (err) {
-      stopSpinner(spinner, `Error: ${err}`, true);
-      process.exit(1);
-    }
-  });
+  let schema = readFileSync(schemaPath, "utf8");
 
-  let directives = fs.readFileSync(directivesPath, "utf8", (err: string) => {
-    if (err) {
-      stopSpinner(spinner, `Error: ${err}`, true);
-      process.exit(1);
-    }
-  });
+  let directives = readFileSync(directivesPath, "utf8");
 
-  let scalars = fs.readFileSync(scalarPath, "utf8", (err: string) => {
-    if (err) {
-      stopSpinner(spinner, `Error: ${err}`, true);
-      process.exit(1);
-    }
-  });
+  let scalars = readFileSync(scalarPath, "utf8");
 
   let gqlSchema = buildSchema(`${directives}\n${schema}`);
 
@@ -69,8 +55,8 @@ async function updateYourOwnApi(config: Config, spinner: any) {
   let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
   let introspection = introspectionFromSchema(gqlSchema);
   model.api.schema = introspection;
-  model.api.queiresFields = [...Object.keys(queriesFields)];
-  model.api.mutationFields = [...Object.keys(mutationsFields)];
+  model.api.queiresFields = [...Object.keys(queriesFields||{})];
+  model.api.mutationFields = [...Object.keys(mutationsFields||{})];
 
   const microServicesfieldSplitterOutput = microServicesDirectiveFieldSplitter(
     queriesFields,
@@ -78,47 +64,37 @@ async function updateYourOwnApi(config: Config, spinner: any) {
   );
 
   model.api.generalFields = microServicesfieldSplitterOutput.generalFields;
-  model.api.microServiceFields = microServicesfieldSplitterOutput.microServiceFields;
+  model.api.microServiceFields =
+    microServicesfieldSplitterOutput.microServiceFields;
 
+  // const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields);
 
- const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
+  // const newSchema = asyncDirectiveResponseCreator(
+  //   mutationsFields,
+  //   subscriptionsFields,
+  //   schema,
+  //   asyncFieldSplitterOutput
+  // );
 
- const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
- 
+  // if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length > 0) {
+  //   gqlSchema = buildSchema(`${directives}\n${newSchema}`);
 
- 
- if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length>0){
+  //   queriesFields = gqlSchema.getQueryType()?.getFields();
+  //   mutationsFields = gqlSchema.getMutationType()?.getFields();
+  //   introspection = introspectionFromSchema(gqlSchema);
 
+  //   model.api.schema = introspection;
+  //   model.api.queiresFields = [...Object.keys(queriesFields||{})];
+  //   model.api.mutationFields = [...Object.keys(mutationsFields||{})];
+  // }
 
-  gqlSchema = buildSchema(`${directives}\n${newSchema}`);
+  writeFileSync(`./editable_src/graphql/schema/schema.graphql`, `${schema}`);
 
-
-   queriesFields = gqlSchema.getQueryType()?.getFields();
-   mutationsFields = gqlSchema.getMutationType()?.getFields();
-   introspection = introspectionFromSchema(gqlSchema);
-
-   model.api.schema = introspection;
-   model.api.queiresFields = [...Object.keys(queriesFields)];
-   model.api.mutationFields = [...Object.keys(mutationsFields)];
-
- }
-
-
- fs.writeFileSync(
-  `./editable_src/graphql/schema/schema.graphql`,
-  `${newSchema}`,
-  (err: string) => {
-    if (err) {
-      stopSpinner(spinner, `Error: ${err}`, true);
-      process.exit(1);
-    }
-  }
-);
-
- model.api.asyncFields = asyncFieldSplitterOutput
+ model.api.asyncFields = [];
 
   const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
   model.api.mockApiData = mockApiCollection;
+  model.api.mySchema = gqlSchema
 
   if (model.api.nestedResolver) {
     const fieldsAndLambdas = FieldsAndLambdaForNestedResolver(model, gqlSchema);
@@ -134,11 +110,11 @@ async function updateYourOwnApi(config: Config, spinner: any) {
     }
   }
 
-    // Codegenerator Function
+  // Codegenerator Function
   const updatedPanacloudConfig = await updatePanacloudConfig(model, spinner);
 
   // Codegenerator Function
-  await generator(model, updatedPanacloudConfig, 'update', dummyData);
+  await generator(model, updatedPanacloudConfig, "update", dummyData);
 }
 
 export default updateYourOwnApi;

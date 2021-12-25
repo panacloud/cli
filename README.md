@@ -3,13 +3,13 @@
 [![Downloads/week](https://img.shields.io/npm/dw/@panacloud/cli.svg)](https://www.npmjs.org/package/@panacloud/cli)
 [![License](https://img.shields.io/npm/l/@panacloud/cli.svg)](https://github.com/panacloud/cli/blob/master/package.json)
 
-# Panacloud Command Line Interface
+# Panacloud Command Line Interface (CLI)
 
-Panacloud is an unified API development, fundraising, and ownership economy platform. It provides services, libraries, tools, and frameworks for developing totally open multi-tenant, serverless cloud services with integrated multi-tenant billing, crowdfunding, and ownership economy constructs.  This allows developers to concentrate solely on creating specialised code related to their domain, leaving the rest to the Panacloud platform and services. This model has the potential to disrupt both the software and venture investment industries.
+In a recent [report](https://venturebeat.com/2021/12/09/report-75-of-devs-indicate-that-participating-in-api-economy-is-top-priority/) 75% of developers indicate that participating in API economy is ‘top priority’. Panacloud is an unified API development, fundraising, and ownership economy platform.  It provides services, libraries, tools, and frameworks for developing totally open multi-tenant, serverless cloud services with integrated multi-tenant billing, crowdfunding, and ownership economy constructs.  This allows developers to concentrate solely on creating specialised code related to their domain, leaving the rest to the Panacloud platform and services. This model has the potential to disrupt both the software and venture investment industries and making the API developers rich and owners of their own destiny and unicorn startups.
 
-Panacloud CLI accelerates the building of multi-tenant serverless SaaS APIs. The CLI applies the design-first paradigm and implements the best practices for designing GraphQL APIs using public cloud serverless and infrastructure as code technologies. The CLI takes a [GraphQL API](https://graphql.org/) [schema](https://graphql.org/learn/schema/) that has been augmented with Panacloud directives and creates [infrastructure as code (IaC)](https://acloudguru.com/blog/engineering/cloudformation-terraform-or-cdk-guide-to-iac-on-aws), mock lambdas, tests, and scaffolding for genuine lambdas that include business logic and database requests. It makes use of [AWS CDK](https://aws.amazon.com/cdk/) for IaC. It now only supports AWS, TypeScript and GraphQL, but future versions will also support Azure and Google Cloud, OpenAPI and other languages as well.
+Panacloud CLI accelerates the building of modern multi-tenant serverless SaaS APIs. The CLI applies the design-first paradigm and implements the best practices for designing GraphQL APIs using public cloud serverless and infrastructure as code technologies. The CLI takes a [GraphQL API](https://graphql.org/) [schema](https://graphql.org/learn/schema/) that has been augmented with Panacloud directives and creates [infrastructure as code (IaC)](https://acloudguru.com/blog/engineering/cloudformation-terraform-or-cdk-guide-to-iac-on-aws), mock lambdas, tests, and scaffolding for genuine lambdas that include business logic and database requests. It makes use of [AWS CDK](https://aws.amazon.com/cdk/) for IaC. It now only supports AWS, TypeScript and GraphQL, but future versions will also support Azure and Google Cloud, OpenAPI and other languages as well.
 
-![CLI Flow](cli.png "CLI Diagram")
+![CLI Flow](img/cli.png "CLI Diagram")
 
 
 The generated serverless SaaS API project supports multi-tenant usage based billing and monetering and is closely integrated with the [Panacloud portal](https://www.panacloud.org). The developer just needs to write the specific code required by the Multi-Tenant SaaS project. This greatly reduces custom developer coding and increases speed to market. GraphQL and Open REST APIs can be built by using the Panacloud CLI. The APIs may use Graph or Relational databases, etc.
@@ -60,12 +60,14 @@ USAGE
 ```
 <!-- usagestop -->
 
-# Commands
+# Panacloud Commands
 
 <!-- commands -->
 * [`panacloud help [COMMAND]`](#panacloud-help-command)
 * [`panacloud init`](#panacloud-init)
 * [`panacloud update`](#panacloud-update)
+* [`panacloud status`](#panacloud-status)
+* [`panacloud client`](#panacloud-client)
 * [`panacloud merge`](#panacloud-merge)
 
 ## `panacloud help [COMMAND]`
@@ -100,6 +102,7 @@ OPTIONS
 _See code: [src/commands/init.ts](https://github.com/panacloud/cli/commands/init.ts)_
 <!-- commandsstop -->
 
+
 ## `panacloud update`
 
 Update CDK code and mock lambdas based on the updated schema. This command doesnot overwrite code in the editiable_src directory.
@@ -115,6 +118,26 @@ OPTIONS
 _See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/update.ts)_
 <!-- commandsstop -->
 
+
+
+
+## `panacloud client`
+
+Open a API explorer in the browser to query the API.
+
+```
+USAGE
+  $ panacloud client
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/client.ts](https://github.com/panacloud/cli/src/commands/client.ts)_
+<!-- commandsstop -->
+
+
+
 ## `panacloud merge`
 
 Merges GraphQL schema files.
@@ -129,6 +152,19 @@ OPTIONS
 
 _See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/merge.ts)_
 <!-- commandsstop -->
+
+# Project NPM Commands
+
+Once the project is generated you may run the following npm scripts
+
+<!-- npm commands -->
+* `npm run deploy-dev` Deploy Development Stage
+* `npm run deploy-prd` Deploy Production Stage
+* `npm run destroy-dev` Destroy Development Stage
+* `npm run destroy-prd` Destroy Production Stage
+* `npm run test-dev` Run Tests for the Development Stage
+* `npm run test-prd` Run Tests for the Production Stage
+
 
 ## Details about the Project Generated by the CLI
 
@@ -166,6 +202,27 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
  5. Monitor APIs and do multi-tenant billing and clearing on the Ethereum blockchain using smart contracts. 
  6. Issue tokens to API early adopters and users to incentivize them to subscribe and use the APIs and become a participant in the [Owership Economy](https://variant.fund/writing/the-ownership-economy-crypto-and-consumer-software).
  8. Allow the stakeholders to cash out whenever they require liquidity by selling API tokens.
+
+
+ ## The Panacloud CLI Roadmap
+
+### First Public Release
+
+Expected Date: December 14, 2021
+
+Functionality: Auto-Generation of GraphQL API for AWS, Single Tenant, Mock API, Serverless Stubs, Database Support: Relational & Graph, API Testing, Staging, init, update, config, deploy, destroy, and client commands
+ 
+### Second Release
+
+Expected Date: January 1, 2022
+
+Functionality: Multi-Tenant monetering and billing data live streamed to Amazon Timestream Database deployed in Panacloud AWS Account. 
+
+### Third Release
+
+Expected Date: January 15, 2022
+
+Functionality: Basic OpenAPI speficication support. 
 
 
 
