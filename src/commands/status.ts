@@ -41,8 +41,16 @@ export default class Status extends Command {
     for(let key of allLambdas){
       if(config.lambdas[key].is_mock ===true){
         mockLambdas.push(key)
-      }else{
+      }else if(config.lambdas[key].is_mock ===false){
         realLambdas.push(key)
+      }else{
+        for(let a of Object.keys(config.lambdas[key])){
+          if(config.lambdas[key][a].is_mock ===true){
+            mockLambdas.push(`${key}/${a}`)
+          }else if(config.lambdas[key][a].is_mock ===false){
+            realLambdas.push(`${key}/${a}`)
+          }
+        }
       }
     }
     this.log("\n")
