@@ -103,18 +103,18 @@ export default class Create extends Command {
       await defineYourOwnApi(config, templateDir!);
     }
 
-    const setUpForTest = startSpinner("Setup For Test");
+    // const setUpForTest = startSpinner("Setup For Test");
 
-    try {
-      await exec(
-        `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
-      );
-    } catch (error) {
-      stopSpinner(setUpForTest, `Error: ${error}`, true);
-      process.exit(1);
-    }
+    // try {
+    //   await exec(
+    //     `npx gqlg --schemaFilePath ./editable_src/graphql/schema/schema.graphql --destDirPath ./tests/apiTests/graphql/`
+    //   );
+    // } catch (error) {
+    //   stopSpinner(setUpForTest, `Error: ${error}`, true);
+    //   process.exit(1);
+    // }
 
-    stopSpinner(setUpForTest, "Setup For Test", false);
+    // stopSpinner(setUpForTest, "Setup For Test", false);
 
     const generatingTypes = startSpinner("Generating Types");
 

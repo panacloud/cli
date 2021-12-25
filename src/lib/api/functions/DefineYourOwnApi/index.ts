@@ -75,6 +75,12 @@ async function defineYourOwnApi(
             process.exit(1);
           }
         });
+        copy(`${templateDir}/${file}`, "editable_src/customMockLambdaLayer", (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
         copy(
           `${templateDir}/${file}`,
           "editable_src/lambdaLayer",
@@ -134,8 +140,8 @@ async function defineYourOwnApi(
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
     await mkdirRecursiveAsync(`editable_src/aspects`);
     await mkdirRecursiveAsync(`editable_src/lambda_stubs`);
-    await mkdirRecursiveAsync(`tests`);
-    await mkdirRecursiveAsync(`tests/apiTests`);
+    // await mkdirRecursiveAsync(`tests`);
+    // await mkdirRecursiveAsync(`tests/apiTests`);
     await mkdirRecursiveAsync(`.vscode`);
     await mkdirRecursiveAsync(`.panacloud`);
     await mkdirRecursiveAsync(`.panacloud/editable_src`);
@@ -221,11 +227,11 @@ async function defineYourOwnApi(
     model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`;
 
     // model.api.asyncFields = asyncFieldSplitterOutput;
-    // writeFileSync(".vscode/settings.json",JSON.stringify({
-    //   "files.exclude": {
-    //     ".panacloud": true,
-    //   }
-    // }))
+    writeFileSync(".vscode/settings.json",JSON.stringify({
+      "files.exclude": {
+        ".panacloud": true,
+      }
+    }))
 
     writeFileSync(
       `./editable_src/graphql/schema/schema.graphql`,
@@ -308,6 +314,7 @@ async function defineYourOwnApi(
 
   try {
     await exec(`cd mock_lambda_layer/nodejs && npm i`);
+    await exec(`cd editable_src/customMockLambdaLayer/nodejs && npm i`);
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);

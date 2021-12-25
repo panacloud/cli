@@ -90,7 +90,7 @@ async function updateYourOwnApi(config: Config, spinner: any): Promise<void> {
 
   writeFileSync(`./editable_src/graphql/schema/schema.graphql`, `${schema}`);
 
- // model.api.asyncFields = asyncFieldSplitterOutput;
+ model.api.asyncFields = [];
 
   const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
   model.api.mockApiData = mockApiCollection;
