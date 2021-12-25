@@ -301,142 +301,142 @@ export class LambdaFunction {
       }
     }
 
-    switch (mockData?.types[queryName!].fields[queryName!][0].response) {
-      case "ID":
-        returnType = `Scalars["ID"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "String":
-        returnType = `Scalars["String"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "Boolean":
-        returnType = `Scalars["Boolean"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "Int":
-        returnType = `Scalars["Int"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "Float":
-        returnType = `Scalars["Float"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSDate":
-        returnType = `Scalars["AWSDate"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSDateTime":
-        returnType = `Scalars["AWSDateTime"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSEmail":
-        returnType = `Scalars["AWSEmail"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSIPAddress":
-        returnType = `Scalars["AWSIPAddress"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSJSON":
-        returnType = `Scalars["AWSJSON"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSPhone":
-        returnType = `Scalars["AWSPhone"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSTime":
-        returnType = `Scalars["AWSTime"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSTimestamp":
-        returnType = `Scalars["AWSTimestamp"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      case "AWSURL":
-        returnType = `Scalars["AWSURL"]`;
-        ts.writeImports(path, ["Scalars"]);
-        break;
-      default:
-        returnType = `${mockData?.types[queryName!].fields[
-          queryName!
-        ][0].response
-          .split("_")
-          .reduce(
-            (out_str: string, val: string, index: number, arr: string[]) => {
-              if (val.includes("|")) {
-                let commaStr = val
-                  .split("|")
-                  .reduce((outStr, val, index: number, arr: string[]) => {
-                    val = val.replace(" ", "");
+    // switch (mockData?.types[queryName!].fields[queryName!][0].response) {
+    //   case "ID":
+    //     returnType = `Scalars["ID"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "String":
+    //     returnType = `Scalars["String"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "Boolean":
+    //     returnType = `Scalars["Boolean"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "Int":
+    //     returnType = `Scalars["Int"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "Float":
+    //     returnType = `Scalars["Float"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSDate":
+    //     returnType = `Scalars["AWSDate"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSDateTime":
+    //     returnType = `Scalars["AWSDateTime"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSEmail":
+    //     returnType = `Scalars["AWSEmail"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSIPAddress":
+    //     returnType = `Scalars["AWSIPAddress"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSJSON":
+    //     returnType = `Scalars["AWSJSON"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSPhone":
+    //     returnType = `Scalars["AWSPhone"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSTime":
+    //     returnType = `Scalars["AWSTime"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSTimestamp":
+    //     returnType = `Scalars["AWSTimestamp"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   case "AWSURL":
+    //     returnType = `Scalars["AWSURL"]`;
+    //     ts.writeImports(path, ["Scalars"]);
+    //     break;
+    //   default:
+    //     returnType = `${mockData?.types[queryName!].fields[
+    //       queryName!
+    //     ][0].response
+    //       .split("_")
+    //       .reduce(
+    //         (out_str: string, val: string, index: number, arr: string[]) => {
+    //           if (val.includes("|")) {
+    //             let commaStr = val
+    //               .split("|")
+    //               .reduce((outStr, val, index: number, arr: string[]) => {
+    //                 val = val.replace(" ", "");
 
-                    return (outStr += `${val
-                      .charAt(0)
-                      .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                      arr.length > index + 1 ? "|" : ""
-                    }`);
-                  }, "");
-                return (out_str += commaStr);
-              }
-              if (val.includes("[]")) {
-                let commaStr = val
-                  .split("[]")
-                  .reduce((outStr, val, index: number, arr: string[]) => {
-                    val = val.replace(" ", "");
+    //                 return (outStr += `${val
+    //                   .charAt(0)
+    //                   .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+    //                   arr.length > index + 1 ? "|" : ""
+    //                 }`);
+    //               }, "");
+    //             return (out_str += commaStr);
+    //           }
+    //           if (val.includes("[]")) {
+    //             let commaStr = val
+    //               .split("[]")
+    //               .reduce((outStr, val, index: number, arr: string[]) => {
+    //                 val = val.replace(" ", "");
 
-                    return (outStr += `${val
-                      .charAt(0)
-                      .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                      arr.length > index + 1 ? "[]" : ""
-                    }`);
-                  }, "");
-                return (out_str += commaStr);
-              }
-              return (out_str += `${val
-                .charAt(0)
-                .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                arr.length > index + 1 ? "_" : ""
-              }`);
-            },
-            ""
-          )}`;
+    //                 return (outStr += `${val
+    //                   .charAt(0)
+    //                   .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+    //                   arr.length > index + 1 ? "[]" : ""
+    //                 }`);
+    //               }, "");
+    //             return (out_str += commaStr);
+    //           }
+    //           return (out_str += `${val
+    //             .charAt(0)
+    //             .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+    //             arr.length > index + 1 ? "_" : ""
+    //           }`);
+    //         },
+    //         ""
+    //       )}`;
 
-        ts.writeImports(path, [
-          `${mockData?.types[queryName!].fields[queryName!][0].response
-            .replace(/[\[\]']+/g, "")
-            .replace("|", ",")
-            .split("_")
-            .reduce(
-              (out_str: string, val: string, index: number, arr: string[]) => {
-                if (val.includes(",")) {
-                  let commaStr = val
-                    .split(",")
-                    .reduce((outStr, val, index: number, arr: string[]) => {
-                      val = val.replace(" ", "");
+    //     ts.writeImports(path, [
+    //       `${mockData?.types[queryName!].fields[queryName!][0].response
+    //         .replace(/[\[\]']+/g, "")
+    //         .replace("|", ",")
+    //         .split("_")
+    //         .reduce(
+    //           (out_str: string, val: string, index: number, arr: string[]) => {
+    //             if (val.includes(",")) {
+    //               let commaStr = val
+    //                 .split(",")
+    //                 .reduce((outStr, val, index: number, arr: string[]) => {
+    //                   val = val.replace(" ", "");
 
-                      return (outStr += `${val
-                        .charAt(0)
-                        .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                        arr.length > index + 1 ? "," : ""
-                      }`);
-                    }, "");
-                  return (out_str += commaStr);
-                }
-                return (out_str += `${val
-                  .charAt(0)
-                  .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                  arr.length > index + 1 ? "_" : ""
-                }`);
-              },
-              ""
-            )}`,
-        ]);
-        break;
-    }
+    //                   return (outStr += `${val
+    //                     .charAt(0)
+    //                     .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+    //                     arr.length > index + 1 ? "," : ""
+    //                   }`);
+    //                 }, "");
+    //               return (out_str += commaStr);
+    //             }
+    //             return (out_str += `${val
+    //               .charAt(0)
+    //               .toUpperCase()}${lodash.camelCase(val.slice(1))}${
+    //               arr.length > index + 1 ? "_" : ""
+    //             }`);
+    //           },
+    //           ""
+    //         )}`,
+    //     ]);
+    //     break;
+    // }
     if (database === DATABASE.dynamoDB) {
-      ts.writeImports("aws-sdk/lib/request",["PromiseResult"])
-      ts.writeImports("aws-sdk",["AWSError"])
+      // ts.writeImports("aws-sdk/lib/request",["PromiseResult"])
+      // ts.writeImports("aws-sdk",["AWSError"])
       ts.writeVariableDeclaration(
         {
           name: "docClient",
@@ -702,17 +702,20 @@ export class LambdaFunction {
           "string"
         ) {
           this.code.line(
-            `async function ${queryName}(args:${argType},g:gprocess.GraphTraversalSource):Promise<${returnType}>
+            `async function ${queryName}(args:${argType},g:gprocess.GraphTraversalSource)
               {`
           );
         } else {
           this.code.line(
-            `async function ${queryName}(g:gprocess.GraphTraversalSource):Promise<${returnType}>
+            `async function ${queryName}(g:gprocess.GraphTraversalSource)
             {`
           );
         }
 
         this.code.line();
+        this.code.line("// Write your buisness logic here ");
+        this.code.line();
+
         this.code.line("// Example Schema: ");
         this.code.line(`
         // type User {
@@ -762,7 +765,7 @@ export class LambdaFunction {
           this.code.line(`
           //  await g.addV('user').property('name', 'John').property('age', 20)
         `);
-          this.code.line(`// return user.name;`);
+          this.code.line(`// return args.user.name;`);
         }
         this.code.line(`return ${mockDataStr}`);
         this.code.line("}");
@@ -772,17 +775,20 @@ export class LambdaFunction {
           "string"
         ) {
           this.code.line(
-            `async function ${queryName}(args:${argType},url:string):Promise<${returnType}>
+            `async function ${queryName}(args:${argType},url:string)
             {`
           );
         } else {
           this.code.line(
-            `async function ${queryName}(url:string):Promise<${returnType}>
+            `async function ${queryName}(url:string)
             {`
           );
         }
 
         this.code.line();
+        this.code.line("// Write your buisness logic here ");
+        this.code.line();
+
         this.code.line("// Example Schema: ");
         this.code.line(`
         // type User {
@@ -857,12 +863,12 @@ export class LambdaFunction {
         "string"
       ) {
         this.code.line(
-          `async function ${queryName}(args:${argType}):Promise<PromiseResult<any,AWSError>|${returnType}|null>
+          `async function ${queryName}(args:${argType})
           {`
         );
       } else {
         this.code.line(
-          `async function ${queryName}():Promise<PromiseResult<any,AWSError>|${returnType}|null>
+          `async function ${queryName}()
           {`
         );
       }
@@ -925,17 +931,21 @@ export class LambdaFunction {
         "string"
       ) {
         this.code.line(
-          `async function ${queryName}(args:${argType}):Promise<${returnType}>
+          `async function ${queryName}(args:${argType})
           {`
         );
       } else {
         this.code.line(
-          `async function ${queryName}():Promise<${returnType}>
+          `async function ${queryName}()
           {`
         );
       }
 
       this.code.line();
+      this.code.line("// Write your buisness logic here ");
+
+      this.code.line();
+
       this.code.line("// Example Schema: ");
       this.code.line(`
         // type User {
@@ -970,7 +980,7 @@ export class LambdaFunction {
           "// const query = `INSERT INTO users (name,age) VALUES(:name,:age)`;"
         );
         this.code.line("// await db.query(query, { name:'John', age:20 })");
-        this.code.line(" //return user.name");
+        this.code.line(" //return args.user.name");
       }
       this.code.line("// }");
       this.code.openBlock("// catch (err) ");
