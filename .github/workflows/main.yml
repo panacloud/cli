@@ -2,6 +2,8 @@ name: Test and Release
 on:
   release:
     types: [created]
+  workflow_dispatch:
+
 
 jobs:
   publish:
