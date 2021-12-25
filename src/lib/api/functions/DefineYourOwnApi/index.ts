@@ -75,6 +75,12 @@ async function defineYourOwnApi(
             process.exit(1);
           }
         });
+        copy(`${templateDir}/${file}`, "editable_src/customMockLambdaLayer", (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
         copy(
           `${templateDir}/${file}`,
           "editable_src/lambdaLayer",
@@ -308,6 +314,7 @@ async function defineYourOwnApi(
 
   try {
     await exec(`cd mock_lambda_layer/nodejs && npm i`);
+    await exec(`cd editable_src/customMockLambdaLayer/nodejs && npm i`);
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);
