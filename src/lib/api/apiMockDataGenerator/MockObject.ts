@@ -685,7 +685,8 @@ class CustomObjectResponse extends ObjectResponse {
     try {
       const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
       this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as any;
       // console.log("error: 946", error.message);
       if (error.message.includes("objectType.getFields is not a function")) {
         throw Error(objectType.toString() + " type in your graphql schema is not supported in mock data generator");
@@ -1023,7 +1024,8 @@ class CustomObjectRequest extends ObjectRequest {
     try {
       const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
       this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as any;
       console.log("error: 946", error.toString())
       throw Error(error)
     }

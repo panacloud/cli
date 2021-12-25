@@ -81,7 +81,7 @@ export const FieldsAndLambdaForNestedResolver = (
     nestedResolverFields: {},
     nestedResolverLambdas: [],
   };
-  schema?.__schema.types.forEach((allTypes) => {
+  (schema as any).__schema.types.forEach((allTypes: { name: string; }) => {
     if (EliminateScalarTypes(allTypes)) {
       if (ScalarAndEnumKindFinder(allTypes)) {
         const typeName = gqlSchema.getType(allTypes.name) as GraphQLObjectType;
