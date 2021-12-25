@@ -15,6 +15,11 @@ type StackBuilderProps = {
   config: ApiModel;
 };
 
+interface ConstructPropsType {
+  name: string;
+  type: string;
+}
+
 export class AuroraDBConstruct {
   outputFile: string = `index.ts`;
   outputDir: string = `lib/${CONSTRUCTS.auroraDB}`;
@@ -30,7 +35,7 @@ export class AuroraDBConstruct {
     const ts = new TypeScriptWriter(this.code);
     this.code.openFile(this.outputFile);
 
-    const { apiName } = this.config.api;
+    const { apiName ,rdbmsEngine} = this.config.api;
     const cdk = new Cdk(this.code);
     const ec2 = new Ec2(this.code);
     const aurora = new AuroraServerless(this.code);
@@ -42,15 +47,23 @@ export class AuroraDBConstruct {
     imp.importRds();
     imp.importEc2();
 
+    let ConstructProps: ConstructPropsType[] = [];
+
+    ConstructProps.push({
+      name: `prod?`,
+      type: "string",
+    })
+
+
     const auroradbProperties: Property[] = auroradbPropertiesHandler();
 
     cdk.initializeConstruct(
       CONSTRUCTS.auroraDB,
-      undefined,
+      "ArouraProps",
       () => {
         ec2.initializeVpc(apiName);
         this.code.line();
-        aurora.initializeAuroraCluster(apiName, `${apiName}_vpc`);
+        rdbmsEngine&&aurora.initializeAuroraCluster(apiName, `${apiName}_vpc`,rdbmsEngine);
         this.code.line();
         iam.serviceRoleForLambda(apiName, [
           "AmazonRDSDataFullAccess",
@@ -75,7 +88,7 @@ export class AuroraDBConstruct {
 
         auroradbPropertiesInitializer(apiName, this.code);
       },
-      undefined,
+      ConstructProps,
       auroradbProperties
     );
 

@@ -30,6 +30,12 @@ type StackBuilderProps = {
   panacloudConfig: PanacloudconfigFile
 };
 
+interface ConstructPropsType {
+  name: string;
+  type: string;
+}
+
+
 export class CdkStack {
   outputFile: string = `index.ts`;
   outputDir: string = `lib`;
@@ -67,8 +73,17 @@ export class CdkStack {
     database !== DATABASE.dynamoDB && imp.importEc2()
     this.code.line();
 
+    let ConstructProps: ConstructPropsType[] = [];
+
+    ConstructProps.push({
+      name: `prod`,
+      type: "string",
+    })
+
+
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
+      "EnvProps",
       () => {
           // manager.apiManagerInitializer(apiName);
           this.code.line();
@@ -86,7 +101,7 @@ export class CdkStack {
         LambdaConstructFile(this.config, this.panacloudConfig, this.code)
 
         database === DATABASE.dynamoDB && LambdaAccessHandler(this.code,this.config.api);
-
+     
         if (apiType === APITYPE.graphql) {
           appsync.appsyncConstructInitializer(
             this.config.api
@@ -108,16 +123,16 @@ export class CdkStack {
           for (let asyncField of this.config.api.asyncFields){
             lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_END_POINT"',value:`${apiName}.api_url`},apiName)
             lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_KEY"',value:`${apiName}.api_key`},apiName)
-
           }
 
           eventBridge.eventBridgeConstructInitializer(this.config.api);
         }
 
-        this.code.line(`new AspectController(this)`)
+        this.code.line(`new AspectController(this, props?.prod)`)
 
 
-      }
+      },
+      ConstructProps,
     );
 
 

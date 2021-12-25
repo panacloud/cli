@@ -1,10 +1,20 @@
-import { IntrospectionQuery } from "graphql";
+import { GraphQLSchema, IntrospectionQuery } from "graphql";
 
-export const async_response_mutName = 'async_response'
+export const async_response_mutName = "async_response";
 
 export enum APITYPE {
   graphql = "GraphQL",
   rest = "REST OpenAPI",
+}
+
+export enum RDBMSENGINE {
+  postgresql = "PostgreSQL",
+  mysql = "MySQL",
+}
+
+export enum NEPTUNEQUERYLANGUAGE {
+  gremlin = "Gremlin",
+  cypher = "Cypher",
 }
 
 export enum DATABASE {
@@ -30,11 +40,11 @@ export enum CONSTRUCTS {
   eventBridge = "EventBridgeConstruct",
 }
 
-export enum TEMPLATE {
-  basicApi = "Basic Multi-Tenant Serverless API Scaffolding",
-  todoApi = "Todo CRUD Multi-Tenant Serverless API",
-  defineApi = "Generate Multi-Tenant Serverless API Scaffolding from Schema",
-}
+// export enum TEMPLATE {
+//   basicApi = "Basic Multi-Tenant Serverless API Scaffolding",
+//   todoApi = "Todo CRUD Multi-Tenant Serverless API",
+//   defineApi = "Generate Multi-Tenant Serverless API Scaffolding from Schema",
+// }
 
 export enum CLOUDPROVIDER {
   aws = "AWS",
@@ -64,17 +74,20 @@ export interface mockApiData {
 }
 
 export type nestedResolverFieldsAndLambda = {
-  nestedResolverFields: {[key: string]: {fieldName:string,lambda:string}[] },
-  nestedResolverLambdas: string[]
-}
+  nestedResolverFields: {
+    [key: string]: { fieldName: string; lambda: string }[];
+  };
+  nestedResolverLambdas: string[];
+};
 export interface API {
-  template: TEMPLATE;
+  multitenancy?: boolean;
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
+  mySchema?:GraphQLSchema;
   apiName: string;
   schemaPath: string;
-  schema?: IntrospectionQuery;
-  nestedResolverFieldsAndLambdas?:nestedResolverFieldsAndLambda
+  schema?: IntrospectionQuery | string;
+  nestedResolverFieldsAndLambdas?: nestedResolverFieldsAndLambda;
   createMockLambda?: string[];
   createNestedResolverLambdaOnUpdate?: string[];
   // nestedResolverLambdas?:string[]
@@ -85,11 +98,13 @@ export interface API {
   database: DATABASE;
   nestedResolver?: boolean;
   mockApiData?: mockApiData;
-  microServiceFields?:{
+  microServiceFields?: {
     [k: string]: any[];
-};
-  generalFields?: string[],
-  asyncFields?:string[]
+  };
+  generalFields?: string[];
+  asyncFields?: string[];
+  rdbmsEngine?: RDBMSENGINE;
+  neptuneQueryLanguage?: NEPTUNEQUERYLANGUAGE;
 }
 
 export enum ARCHITECTURE {
@@ -99,10 +114,12 @@ export enum ARCHITECTURE {
 
 export type PanacloudconfigFile = {
   lambdas: any;
-  nestedLambdas?:any
-  mockData?: any
+  nestedLambdas?: any;
+  mockLambdaLayer?: any;
+  stages: string[];
 };
 
 export type PanacloudConfiglambdaParams = {
   asset_path: string;
+  is_mock: boolean;
 };

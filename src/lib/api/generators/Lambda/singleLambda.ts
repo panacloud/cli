@@ -21,7 +21,7 @@ class SingleLambda {
 
   async SingleLambdaFile() {
     const {
-      api: { apiType,apiName },
+      api: { apiType, apiName, database, neptuneQueryLanguage },
     } = this.config;
 
     if (apiType === APITYPE.rest) {
@@ -51,7 +51,7 @@ class SingleLambda {
             this.code.line();
 
             let isFirstIf: boolean = true;
-            lambda.initializeLambdaFunction(apiType,apiName, () => {
+            lambda.initializeLambdaFunction(apiType, apiName, () => {
               Object.keys(api.paths).forEach((path) => {
                 for (var methodName in api.paths[`${path}`]) {
                   let lambdaFunctionFile =
@@ -88,7 +88,11 @@ class SingleLambda {
                 this.code.openFile(this.outputFile);
 
                 const lambda = new LambdaFunction(this.code);
-                lambda.helloWorldFunction(lambdaFunctionFile);
+                lambda.helloWorldFunction(
+                  lambdaFunctionFile,
+                  database,
+                  neptuneQueryLanguage!
+                );
 
                 this.code.closeFile(this.outputFile);
                 await this.code.save(this.outputDir);

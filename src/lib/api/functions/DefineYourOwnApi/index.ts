@@ -1,32 +1,59 @@
+import { snakeCase } from "lodash";
+import { basename, resolve, extname } from "path";
+import {
+  writeJsonSync,
+  readJsonSync,
+  copy,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "fs-extra";
 import { startSpinner, stopSpinner } from "../../../spinner";
 import { mkdirRecursiveAsync } from "../../../fs";
 import { generatePanacloudConfig } from "../../info";
-import { Config, APITYPE, ApiModel } from "../../../../utils/constants";
+import {
+  Config,
+  APITYPE,
+  ApiModel,
+  DATABASE,
+  NEPTUNEQUERYLANGUAGE,
+} from "../../../../utils/constants";
 import { generator } from "../../generators";
 import { introspectionFromSchema, buildSchema } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
-import { microServicesDirectiveFieldSplitter } from "../../microServicesDirective";
+import { microServicesDirectiveFieldSplitter } from "../../directives/microServicesDirective";
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
-import { asyncDirectiveFieldSplitter, asyncDirectiveResponseCreator } from "../../asyncDirective";
-const path = require("path");
-const fs = require("fs");
+// import {
+//   asyncDirectiveFieldSplitter,
+//   asyncDirectiveResponseCreator,
+// } from "../../directives/asyncDirective";
+import { hide } from "hidefile";
+import chalk = require("chalk");
+
 const YAML = require("yamljs");
 const exec = require("await-exec");
-const fse = require("fs-extra");
-const snakeCase = require("lodash/snakeCase");
 
-async function defineYourOwnApi(config: Config, templateDir: string) {
+async function defineYourOwnApi(
+  config: Config,
+  templateDir: string
+): Promise<void> {
   // const { api_token, entityId } = config;
 
   const {
-    api: { schemaPath, apiType, nestedResolver },
+    api: {
+      schemaPath,
+      apiType,
+      nestedResolver,
+      database,
+      neptuneQueryLanguage,
+    },
   } = config;
 
   const dummyData: TestCollectionType = { fields: {} };
 
-  const workingDir = snakeCase(path.basename(process.cwd()));
+  const workingDir = snakeCase(basename(process.cwd()));
 
   const model: ApiModel = {
     api: {
@@ -37,13 +64,42 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
 
   const generatingCode = startSpinner("Generating CDK Code...");
   /* copy files from global package dir to cwd */
-  fs.readdirSync(templateDir).forEach(async (file: any) => {
+  readdirSync(templateDir).forEach((file: any) => {
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
-        fse.copy(`${templateDir}/${file}`, ".gitignore");
-      }
-      else {
-        await fse.copy(`${templateDir}/${file}`, file, (err: string) => {
+        copy(`${templateDir}/${file}`, ".gitignore");
+      } else if (file === "lambdaLayer") {
+        copy(`${templateDir}/${file}`, "mock_lambda_layer", (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
+        copy(`${templateDir}/${file}`, "editable_src/customMockLambdaLayer", (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
+        copy(
+          `${templateDir}/${file}`,
+          "editable_src/lambdaLayer",
+          (err: Error) => {
+            if (err) {
+              stopSpinner(generatingCode, `Error: ${err}`, true);
+              process.exit(1);
+            }
+          }
+        );
+      } else if (apiType === APITYPE.graphql && file === "graphqlClient") {
+        copy(`${templateDir}/${file}`, file, (err: Error) => {
+          if (err) {
+            stopSpinner(generatingCode, `Error: ${err}`, true);
+            process.exit(1);
+          }
+        });
+      } else {
+        copy(`${templateDir}/${file}`, file, (err: Error) => {
           if (err) {
             stopSpinner(generatingCode, `Error: ${err}`, true);
             process.exit(1);
@@ -54,28 +110,18 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   });
 
   // Updating fileName
-  const stackPackageJson = await fse.readJson(`${templateDir}/package.json`);
+  const stackPackageJson = readJsonSync(`${templateDir}/package.json`);
 
-  const cdkJson = await fse.readJson(`${templateDir}/cdk.json`);
+  const cdkJson = readJsonSync(`${templateDir}/cdk.json`);
 
   stackPackageJson.bin = `bin/${workingDir}.js`;
   stackPackageJson.name = workingDir;
 
   cdkJson.app = `npx ts-node --prefer-ts-exts bin/${workingDir}.ts`;
 
-  await fse.writeJson(`./package.json`, stackPackageJson, (err: string) => {
-    if (err) {
-      stopSpinner(generatingCode, `Error: ${err}`, true);
-      process.exit(1);
-    }
-  });
+  writeJsonSync(`./package.json`, stackPackageJson);
 
-  await fse.writeJson(`./cdk.json`, cdkJson, (err: string) => {
-    if (err) {
-      stopSpinner(generatingCode, `Error: ${err}`, true);
-      process.exit(1);
-    }
-  });
+  writeJsonSync(`./cdk.json`, cdkJson);
 
   // await fse.writeJson(
   //   `./cdk.context.json`,
@@ -93,73 +139,61 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     await mkdirRecursiveAsync(`editable_src/graphql`);
     await mkdirRecursiveAsync(`editable_src/graphql/schema`);
     await mkdirRecursiveAsync(`editable_src/aspects`);
-    await mkdirRecursiveAsync(`editable_src/lambda`);
-
-    fs.readdirSync(templateDir).forEach(async (file: any) => {
-      if (file === "lambdaLayer") {
-        await fse.copy(`${templateDir}/${file}`, "editable_src/lambdaLayer");
-      }
-    });
-
+    await mkdirRecursiveAsync(`editable_src/lambda_stubs`);
+    // await mkdirRecursiveAsync(`tests`);
+    // await mkdirRecursiveAsync(`tests/apiTests`);
+    await mkdirRecursiveAsync(`.vscode`);
+    await mkdirRecursiveAsync(`.panacloud`);
+    await mkdirRecursiveAsync(`.panacloud/editable_src`);
+    await mkdirRecursiveAsync(`.panacloud/editable_src/graphql`);
+    await mkdirRecursiveAsync(`.panacloud/editable_src/graphql/schema`);
   } else {
     await mkdirRecursiveAsync(`schema`);
   }
-
-  let schema = fs.readFileSync(schemaPath, "utf8", (err: string) => {
+  hide('.panacloud', (err, newpath) => {
     if (err) {
-      stopSpinner(generatingCode, `Error: ${err}`, true);
-      process.exit(1);
+      console.log(chalk.red("Error Occured")); 
+      process.exit(1)
     }
   });
+  let schema = readFileSync(schemaPath, "utf8");
 
   let PanacloudConfig: any;
 
   if (apiType === APITYPE.graphql) {
-    let directivesPath = path.resolve(
+    let directivesPath = resolve(
       __dirname,
       "../../../../utils/awsAppsyncDirectives.graphql"
     );
 
-    let scalarPath = path.resolve(
+    let scalarPath = resolve(
       __dirname,
       "../../../../utils/awsAppsyncScalars.graphql"
     );
 
-    let directives = await fs.readFileSync(
-      directivesPath,
-      "utf8",
-      (err: string) => {
-        if (err) {
-          stopSpinner(generatingCode, `Error: ${err}`, true);
-          process.exit(1);
-        }
-      }
-    );
+    let directives = readFileSync(directivesPath, "utf8");
 
-    let scalars = await fs.readFileSync(scalarPath, "utf8", (err: string) => {
-      if (err) {
-        stopSpinner(generatingCode, `Error: ${err}`, true);
-        process.exit(1);
-      }
-    });
-
-
+    let scalars = readFileSync(scalarPath, "utf8");
 
     let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-
+      // console.log(gqlSchema)
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
     // Model Config
     let queriesFields: any = gqlSchema.getQueryType()?.getFields();
     let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+    // console.log(mutationsFields)
     let introspection = introspectionFromSchema(gqlSchema);
     let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+    // console.log(introspection)
 
     model.api.schema = introspection;
-    model.api.queiresFields = [...Object.keys(queriesFields)];
-    model.api.mutationFields = [...Object.keys(mutationsFields)];
-
+        model.api.queiresFields = [...Object.keys(queriesFields||{})];
+        model.api.mutationFields = [...Object.keys(mutationsFields||{})];
+    // console.log("hello")
+    // model.api.mutationFields = [...Object.keys(mutationsFields)];
+    //   console.log("hello1")
     const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
       queriesFields,
       mutationsFields
@@ -168,49 +202,58 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
     model.api.generalFields = fieldSplitterOutput.generalFields;
     model.api.microServiceFields = fieldSplitterOutput.microServiceFields;
 
+    // const asyncFieldSplitterOutput =
+    // mutationsFields?asyncDirectiveFieldSplitter(mutationsFields):[];
 
-    const asyncFieldSplitterOutput = asyncDirectiveFieldSplitter(mutationsFields)
+    // const newSchema = asyncDirectiveResponseCreator(
+    //   mutationsFields,
+    //   subscriptionsFields,
+    //   schema,
+    //   asyncFieldSplitterOutput
+    // );
 
+    // if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length > 0) {
+    //   gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
 
-    const newSchema = asyncDirectiveResponseCreator(mutationsFields,subscriptionsFields,schema,asyncFieldSplitterOutput)
-    
+    //   queriesFields = gqlSchema.getQueryType()?.getFields();
+    //   mutationsFields = gqlSchema.getMutationType()?.getFields();
+    //   introspection = introspectionFromSchema(gqlSchema);
 
-    if (asyncFieldSplitterOutput && asyncFieldSplitterOutput.length>0){
+    //   model.api.schema = introspection;
+    //   model.api.queiresFields = [...Object.keys(queriesFields)];
+    //   model.api.mutationFields = [...Object.keys(mutationsFields)];
+    // }
 
+    model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`;
 
-     gqlSchema = buildSchema(`${scalars}\n${directives}\n${newSchema}`);
-
-
-      queriesFields = gqlSchema.getQueryType()?.getFields();
-      mutationsFields = gqlSchema.getMutationType()?.getFields();
-      introspection = introspectionFromSchema(gqlSchema);
-  
-      model.api.schema = introspection;
-      model.api.queiresFields = [...Object.keys(queriesFields)];
-      model.api.mutationFields = [...Object.keys(mutationsFields)];
-
-    }
-
-
-    model.api.schemaPath = `./editable_src/graphql/schema/schema.graphql`
-
-    model.api.asyncFields = asyncFieldSplitterOutput
-
-
-
-    fs.writeFileSync(
-      `./editable_src/graphql/schema/schema.graphql`,
-      `${scalars}\n${newSchema}`,
-      (err: string) => {
-        if (err) {
-          stopSpinner(generatingCode, `Error: ${err}`, true);
-          process.exit(1);
-        }
+    // model.api.asyncFields = asyncFieldSplitterOutput;
+    writeFileSync(".vscode/settings.json",JSON.stringify({
+      "files.exclude": {
+        ".panacloud": true,
       }
+    }))
+
+    writeFileSync(
+      `./editable_src/graphql/schema/schema.graphql`,
+      `${scalars}\n${schema}`
     );
-   
+
+    writeFileSync(
+      `./.panacloud/editable_src/graphql/schema/schema.graphql`,
+      `${scalars}\n${schema}`
+    );
+
+    // writeFileSync(
+    //   "./cdk-outputs.json",
+    //   `{
+    //   "${config.api.apiName}Stack" : {
+
+    //   }
+    // }`
+    // );
 
     const mockApiCollection = buildSchemaToTypescript(gqlSchema, introspection);
+    model.api.mySchema = gqlSchema;
     model.api.mockApiData = mockApiCollection;
     // if user selects nested resolver
     if (nestedResolver) {
@@ -230,21 +273,15 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
       }
     }
     PanacloudConfig = await generatePanacloudConfig(model);
+
   } else {
-    fse.copy(
-      schemaPath,
-      `./schema/${path.basename(schemaPath)}`,
-      (err: string) => {
-        if (err) {
-          stopSpinner(generatingCode, `Error: ${err}`, true);
-          process.exit(1);
-        }
+    copy(schemaPath, `./schema/${basename(schemaPath)}`, (err: Error) => {
+      if (err) {
+        stopSpinner(generatingCode, `Error: ${err}`, true);
+        process.exit(1);
       }
-    );
-    if (
-      path.extname(schemaPath) === ".yml" ||
-      path.extname(schemaPath) === ".yaml"
-    ) {
+    });
+    if (extname(schemaPath) === ".yml" || extname(schemaPath) === ".yaml") {
       schema = YAML.parse(schema);
       model.api.schema = schema;
     }
@@ -253,21 +290,51 @@ async function defineYourOwnApi(config: Config, templateDir: string) {
   await CreateAspects({ config: model });
 
   // Codegenerator Function
-  await generator(model, PanacloudConfig, 'init', dummyData);
+  await generator(model, PanacloudConfig, "init", dummyData);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 
   const installingModules = startSpinner("Installing Modules");
 
   try {
-    await exec(`npm install`);
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      await exec(`npm i && npm i gremlin @types/gremlin`);
+    } else if (database === DATABASE.auroraDB) {
+      await exec(`npm i && npm i data-api-client`);
+    } else {
+      await exec(`npm install`);
+    }
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);
   }
 
   try {
-    await exec(`cd lambdaLayer/nodejs && npm i && cd ../../editable_src/lambdaLayer/nodejs/ && npm i`);
+    await exec(`cd mock_lambda_layer/nodejs && npm i`);
+    await exec(`cd editable_src/customMockLambdaLayer/nodejs && npm i`);
+  } catch (error) {
+    stopSpinner(installingModules, `Error: ${error}`, true);
+    process.exit(1);
+  }
+
+  try {
+    if (
+      database === DATABASE.neptuneDB &&
+      neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin
+    ) {
+      await exec(
+        `cd ./editable_src/lambdaLayer/nodejs/ && npm i && npm i gremlin`
+      );
+    } else if (database === DATABASE.auroraDB) {
+      await exec(
+        `cd ./editable_src/lambdaLayer/nodejs/ && npm i && npm i data-api-client`
+      );
+    } else {
+      await exec(`cd ./editable_src/lambdaLayer/nodejs/ && npm i`);
+    }
   } catch (error) {
     stopSpinner(installingModules, `Error: ${error}`, true);
     process.exit(1);

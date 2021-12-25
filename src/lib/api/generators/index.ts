@@ -2,6 +2,7 @@ import {
   ApiModel,
   APITYPE,
   DATABASE,
+  NEPTUNEQUERYLANGUAGE,
   PanacloudconfigFile,
 } from "../../../utils/constants";
 import { ApiGatewayConstruct } from "./ApiGateway";
@@ -18,7 +19,9 @@ import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
-
+import { apiTests } from "./ApiTests";
+import { GremlinSetup } from "./Neptune/gremlinSetup";
+const fs = require("fs");
 export const generator = async (
   config: ApiModel,
   panacloudConfig: PanacloudconfigFile,
@@ -46,6 +49,9 @@ export const generator = async (
   }
   if (config.api.database === DATABASE.neptuneDB) {
     await neptuneDBConstruct({ config });
+    if (config.api.neptuneQueryLanguage === NEPTUNEQUERYLANGUAGE.gremlin) {
+      await GremlinSetup({ config });
+    }
     // neptuneDBConstructTest({ config });
   }
   if (config.api.database === DATABASE.dynamoDB) {
@@ -62,6 +68,9 @@ export const generator = async (
     await EditableMockApiTestCollections({ config, dummyData, type });
     await customLambda({ config, type });
   }
+  // if (config.api.apiType === APITYPE.graphql) {
+  //   apiTests({ config }, panacloudConfig);
+  // }
 
   if (config.api.asyncFields && config.api.asyncFields.length > 0) {
     await eventBridgeConstruct({ config });

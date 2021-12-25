@@ -36,7 +36,7 @@ export class Ec2 {
             vpc: ${vpcName},
             allowAllOutbound: true,
             description: "${apiName} security group",
-            securityGroupName: "${apiName}SecurityGroup",
+            securityGroupName: props?.prod ? props?.prod+"-${apiName}SecurityGroup" : "${apiName}SecurityGroup",
           });
           `);
         },

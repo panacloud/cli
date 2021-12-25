@@ -17,7 +17,7 @@ class AspectController {
      imp.importStack();
      imp.importDefaultVisitor();
 
-    ts.writeBasicClassBlock({name:"AspectController",export:true},undefined,"scope:Stack",()=>{
+    ts.writeBasicClassBlock({name:"AspectController",export:true},undefined,"scope:Stack, prod?: string",()=>{
         code.line("Aspects.of(scope).add(new DefaultVisitor());")
     })
 

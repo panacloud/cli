@@ -22,9 +22,9 @@ export class Appsync {
         name: `${this.apiName}_appsync`,
         typeName: "appsync.CfnGraphQLApi",
         initializer: () => {
-          this.code.line(`new appsync.CfnGraphQLApi(this,'${this.apiName}',{
+          this.code.line(`new appsync.CfnGraphQLApi(this, props?.prod ? props?.prod+"${this.apiName}" : "${this.apiName}", {
           authenticationType:'API_KEY',
-          name: '${this.apiName}',
+          name: props?.prod ? props?.prod+"${this.apiName}" : "${this.apiName}",
         })`);
         },
       },
@@ -41,7 +41,7 @@ export class Appsync {
         typeName: "appsync.CfnGraphQLSchema",
         initializer: () => {
           this.code
-            .line(`new appsync.CfnGraphQLSchema(this,'${this.apiName}Schema',{
+            .line(`new appsync.CfnGraphQLSchema(this, props?.prod ? props?.prod+"${this.apiName}Schema" : "${this.apiName}Schema",{
             apiId: ${this.apiName}_appsync.attrApiId,
             definition:${gqlSchema}
           })`);
@@ -135,11 +135,13 @@ export class Appsync {
     mutationsAndQueries.forEach((key: string) => {
 
       if (key !== async_response_mutName){
-      lambdafunc = `${apiName}_lambdaFn_${key}`;
-      code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
-
-    }
+        lambdafunc = `${apiName}_lambdaFn_${key}`;
+        code.line(`${lambdafunc}Arn : ${lambdafunc}.functionArn,`);
+      }
     });
+
+    code.line(`prod : props?.prod,`);
+
   }
 
   public appsyncLambdaDataSource(
@@ -160,8 +162,8 @@ export class Appsync {
         typeName: "appsync.CfnDataSource",
         initializer: () => {
           this.code
-            .line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
-          name: "${ds_name}",
+            .line(`new appsync.CfnDataSource(this, props?.prod ? props?.prod+"${ds_initializerName}" : "${ds_initializerName}",{
+          name: props?.prod ? props?.prod+"${ds_name}" : "${ds_name}",
           apiId: ${this.apiName}_appsync.attrApiId,
           type:"AWS_LAMBDA",
           lambdaConfig: {lambdaFunctionArn:${lambdaFunctionArn}},
@@ -189,8 +191,8 @@ export class Appsync {
         typeName: "appsync.CfnDataSource",
         initializer: () => {
           this.code
-            .line(`new appsync.CfnDataSource(this,'${ds_initializerName}',{
-          name: "${ds_name}",
+            .line(`new appsync.CfnDataSource(this, props?.prod ? props?.prod+"${ds_initializerName}" : "${ds_initializerName}",{
+          name: props?.prod ? props?.prod+"${ds_name}" : "${ds_name}",
           apiId: ${this.apiName}_appsync.attrApiId,
           type:"NONE",
           serviceRoleArn:${this.apiName}_serviceRole.roleArn

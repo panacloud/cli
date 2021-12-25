@@ -25,6 +25,7 @@ export class Lambda {
   }
 
   public initializeLambda(
+    database:string,
     apiName: string,
     functionName?: string,
     vpcName?: string,
@@ -33,7 +34,7 @@ export class Lambda {
     vpcSubnets?: string,
     roleName?: string,
     microServiceName?:string,
-    nestedResolver?:boolean
+    nestedResolver?:boolean,
   ) {
     const ts = new TypeScriptWriter(this.code);
     let handlerName: string
@@ -41,7 +42,29 @@ export class Lambda {
     let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
     let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
     let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
-    if(functionName){      
+    const checkIsMock = ():boolean=>{
+      if(microServiceName){
+        if(this.panacloudConfig.lambdas[microServiceName][`${functionName}`].is_mock === true){
+          return true
+        }
+        return false
+      }else{
+        if(nestedResolver){
+          if(this.panacloudConfig.nestedLambdas[`${functionName}`].is_mock === true){
+            return true
+          }
+          return false
+        }else{
+          if(this.panacloudConfig.lambdas[`${functionName}`].is_mock === true){
+            return true
+          }
+          return false
+        }
+      }
+      
+    }
+    if(functionName){  
+      
       const {lambdas} = this.panacloudConfig;
       if (microServiceName){
         const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
@@ -79,7 +102,7 @@ export class Lambda {
       ? `vpcSubnets: { subnetType: ${vpcSubnets} },`
       : "";
     let role = roleName ? `role: ${roleName},` : "";
-    let lambdaLayer = `layers:[${apiName}_lambdaLayer],`;
+    let lambdaLayer = `layers:[${apiName}${checkIsMock()?"_mock_":"_"}lambdaLayer],`;
 
     ts.writeVariableDeclaration(
       {
@@ -87,7 +110,7 @@ export class Lambda {
         typeName: "lambda.Function",
         initializer: () => {
           this.code.line(`new lambda.Function(this, "${funcName}", {
-        functionName: "${funcName}",
+        functionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
         code: lambda.Code.fromAsset("${handlerAsset}"),
@@ -102,6 +125,9 @@ export class Lambda {
       },
       "const"
     );
+    if(database === DATABASE.auroraDB){
+      this.code.line(`${apiName}_auroradb.db_cluster.grantDataApiAccess(${lambdaVariable})`)
+    }
   }
 
   public lambdaLayer(apiName: string, path: string) {
@@ -120,7 +146,22 @@ export class Lambda {
       "const"
     );
   }
-
+  public mockLambdaLayer(apiName: string, path: string) {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeVariableDeclaration(
+      {
+        name: `${apiName}_mock_lambdaLayer`,
+        typeName: "lambda.LayerVersion",
+        initializer: () => {
+          this.code
+            .line(`new lambda.LayerVersion(this, "${apiName}MockLambdaLayer", {
+          code: lambda.Code.fromAsset("${path}"),
+        })`);
+        },
+      },
+      "const"
+    );
+  }
   public lambdaConstructInitializer(apiName: string, database: string) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
@@ -215,7 +256,7 @@ export class Lambda {
     handlerName: string
   ) {
     this.code.line(`expect(stack).toHaveResource("AWS::Lambda::Function", {
-      FunctionName: "${funcName}",
+      FunctionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
       Handler: "${handlerName}.handler",
       Runtime: "nodejs12.x",
       Environment: {
@@ -236,7 +277,7 @@ export class Lambda {
     handlerName: string
   ) {
     this.code.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
-    FunctionName: '${funcName}',
+    FunctionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
     Handler: '${handlerName}.handler',
     Runtime: 'nodejs12.x',
     Environment: {
@@ -276,7 +317,7 @@ export class Lambda {
     handlerName: string
   ) {
     this.code.line(`expect(stack).toHaveResource('AWS::Lambda::Function', {
-    FunctionName: '${funcName}',
+    FunctionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
     Handler: '${handlerName}.handler',
     Runtime: 'nodejs12.x',
     Environment: {

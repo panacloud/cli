@@ -2,7 +2,7 @@ const fs = require("fs");
 const fse = require('fs-extra')
 const { promisify } = require("util");
 const makeDir = require("make-dir");
-
+const chalk = require('chalk');
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 const rmFileAsync = promisify(fs.unlink);
@@ -17,6 +17,9 @@ const fileExistsAsync = async (filePath: string) => {
     await accessAsync(filePath, fs.F_OK);
     return true;
   } catch (_) {
+    console.log("\n")
+    console.log(chalk.red("Add a valid path!"))
+    console.log("\n")
     return false;
   }
 };

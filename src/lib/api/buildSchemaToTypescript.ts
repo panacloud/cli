@@ -1,8 +1,18 @@
 let upperFirst = require("lodash/upperFirst");
-import { GraphQLFieldMap, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, isInterfaceType } from 'graphql';
+let startCase = require("lodash/startCase");
+import {
+  GraphQLFieldMap,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLSchema,
+  isInterfaceType,
+} from "graphql";
 const fse = require("fs-extra");
 
-export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection: any) => {
+export const buildSchemaToTypescript = (
+  gqlSchema: GraphQLSchema,
+  introspection: any
+) => {
   let includeDeprecatedFields = false;
 
   let collectionsObject: {
@@ -15,11 +25,13 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
   let allEnumImports: string[] = [];
   let typeStrings: any = {};
 
-  const generateCollections = (obj: GraphQLFieldMap<any, any>, description: "Query" | "Mutation") => {
-
+  const generateCollections = (
+    obj: GraphQLFieldMap<any, any>,
+    description: "Query" | "Mutation"
+  ) => {
     Object.keys(obj).forEach((type: string) => {
-      let typeStr: any = {}
-      // let typeStr = "type TestCollection = {\n fields: {\n";
+      let typeStr: any = {};
+      
       const _field = gqlSchema.getType(description) as GraphQLObjectType;
       const field = _field.getFields()[type];
 
@@ -31,8 +43,12 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
         } else if (responseTypeName === "Int") {
           res = 0;
         } else if (isInterfaceType(gqlSchema.getType(responseTypeName))) {
-          const implementedTypes = gqlSchema.getImplementations(gqlSchema.getType(responseTypeName) as GraphQLInterfaceType).objects.map(v => v.toString());
-          responseTypeName = implementedTypes.join(' | ')
+          const implementedTypes = gqlSchema
+            .getImplementations(
+              gqlSchema.getType(responseTypeName) as GraphQLInterfaceType
+            )
+            .objects.map((v) => upperFirst(v.toString()));
+          responseTypeName = implementedTypes.join(" | ");
         } else {
           res = {};
         }
@@ -41,29 +57,52 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
           field.args.length > 0
             ? [{ arguments: {}, response: res }]
             : [
-              {
-                ...(isArray(field.type.toString())
-                  // ...(field.type.inspect().includes("[") &&
-                  // field.type.inspect().includes("]")
-                  ? { response: [] }
-                  : { response: {} }),
-              },
-            ];
+                {
+                  ...(isArray(field.type.toString())
+                    ? // ...(field.type.inspect().includes("[") &&
+                      // field.type.inspect().includes("]")
+                      { response: [] }
+                    : { response: {} }),
+                },
+              ];
+
+        if (responseTypeName === "Int") {
+          responseTypeName = "number";
+        }
 
         let responseType = isArray(field.type.toString())
-          // field.type.inspect().includes("[") &&
-          //   field.type.inspect().includes("]")
-          ? `${responseTypeName}[]`
+          ? // field.type.inspect().includes("[") &&
+            //   field.type.inspect().includes("]")
+            `${responseTypeName}[]`
           : `${responseTypeName}`;
 
         field.args.length > 0
-          ? typeStr = { "fields": { [type]: [{ arguments: `${description}${upperFirst(type)}Args`, response: responseType }] } }
-          : typeStr = { "fields": { [type]: [{ arguments: {}, response: responseType }] } }
+          ? (typeStr = {
+              fields: {
+                [type]: [
+                  {
+                    arguments: `${description}${upperFirst(type)}Args`,
+                    response: upperFirst(responseType),
+                  },
+                ],
+              },
+            })
+          : (typeStr = {
+              fields: {
+                [type]: [{ arguments: {}, response: upperFirst(responseType) }],
+              },
+            });
 
         introspection.__schema.types.forEach((v: any) => {
           if (v.kind === "ENUM") {
             if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
-              allEnumImports.push(v.name);
+              if (v.name.includes("_")) {
+                let enum_imp: string = startCase(v.name);
+                enum_imp = enum_imp.split(" ").join("_");
+                allEnumImports.push(enum_imp);
+              } else {
+                allEnumImports.push(upperFirst(v.name));
+              }
             }
           }
         });
@@ -74,23 +113,41 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
 
         if (
           (responseTypeName === "String" ||
-            responseTypeName === "Int" ||
-            responseTypeName === "ID") &&
+            responseTypeName === "number" ||
+            responseTypeName === "ID" ||
+            responseTypeName === "Boolean") &&
           field.args.length !== 0
         ) {
           allImports.push(`${description}${upperFirst(type)}Args`);
         } else if (field.args.length > 0) {
-          allImports.push(...(responseTypeName.split(' | ')));
+          allImports.push(
+            ...responseTypeName.split(" | ").map((v) => upperFirst(v))
+          );
           allImports.push(`${description}${upperFirst(type)}Args`);
         } else {
-          allImports.push(...(responseTypeName.split(' | ')));
+          if (
+            responseTypeName !== "String" &&
+            responseTypeName !== "number" &&
+            responseTypeName !== "ID" &&
+            responseTypeName !== "Boolean"
+          ) {
+            allImports.push(
+              ...responseTypeName.split(" | ").map((v) => upperFirst(v))
+            );
+          }
         }
+        // }
       }
     });
+
+    // console.log("allImports ", allImports)
   };
 
   if (gqlSchema.getMutationType()) {
-    generateCollections(gqlSchema?.getMutationType()?.getFields() || {}, "Mutation");
+    generateCollections(
+      gqlSchema?.getMutationType()?.getFields() || {},
+      "Mutation"
+    );
   }
 
   if (gqlSchema.getQueryType()) {
@@ -110,5 +167,5 @@ export const buildSchemaToTypescript = (gqlSchema: GraphQLSchema, introspection:
 };
 
 function isArray(typeName: string) {
-  return !!typeName.match(/[[a-zA-Z0-9]*]/g)
+  return !!typeName.match(/[[a-zA-Z0-9]*]/g);
 }
