@@ -38,7 +38,8 @@ jobs:
         run: |
           declare -a arr=("DynamoDB (NoSQL)" "Neptune (Graph)" "Aurora Serverless (Relational)")
           for i in "${arr[@]}"
-            mkdir myApi
+            ls
+            mkdir -p myApi
             cd myApi 
             ../bin/run init -t -d="${arr[$i]}"
             yarn build
