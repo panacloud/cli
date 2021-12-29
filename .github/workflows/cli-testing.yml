@@ -1,4 +1,4 @@
-name: CI
+name: Testing CLI
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  API:
+  TESTING:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
