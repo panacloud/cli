@@ -50,5 +50,6 @@ jobs:
             yarn build
             STAGE=dev cdk deploy --ci --require-approval never
             STAGE=dev cdk destroy --force
-            rm -rf myApi
+            cd ..
+            rm -rf code
           done
