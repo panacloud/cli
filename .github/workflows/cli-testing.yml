@@ -34,6 +34,9 @@ jobs:
       - name: Installing AWS-CDK
         run: npm install -g aws-cdk@latest
 
+      - name: Installing Dependencies
+        run: npm i
+
       - name: Test CLI (looping the Database Array)
         run: |
           declare -a arr=("DynamoDB (NoSQL)" "Neptune (Graph)" "Aurora Serverless (Relational)")
