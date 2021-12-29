@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+  workflow_dispatch:
+
+jobs:
+  API:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Installing Nodejs
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "14"
+
+      - name: Installing AWS-CDK
+        run: npm install -g aws-cdk@latest
+
+      - name: Test CLI (looping the Database Array)
+        run: |
+          declare -a arr=("DynamoDB (NoSQL)" "Neptune (Graph)" "Aurora Serverless (Relational)")
+          for i in "${arr[@]}"
+            mkdir myApi
+            cd myApi 
+            ../bin/run init -t -d="${arr[$i]}"
+            yarn build
+            yarn deploy-dev
+            yarn destroy-dev
+          done

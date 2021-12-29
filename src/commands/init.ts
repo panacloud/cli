@@ -28,6 +28,10 @@ export default class Create extends Command {
   static flags = {
     help: flags.help({ char: "h" }),
     test: flags.boolean({ char: "t" }),
+    database: flags.enum({
+      char: "d",
+      options: [DATABASE.dynamoDB, DATABASE.neptuneDB, DATABASE.auroraDB],
+    }),
   };
 
   async run() {
@@ -56,7 +60,7 @@ export default class Create extends Command {
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
-          database: DATABASE.neptuneDB,
+          database: flags.database,
         },
       };
     } else {
