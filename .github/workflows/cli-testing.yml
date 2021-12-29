@@ -37,8 +37,9 @@ jobs:
       - name: Test CLI (looping the Database Array)
         run: |
           declare -a arr=("DynamoDB (NoSQL)" "Neptune (Graph)" "Aurora Serverless (Relational)")
-          for i in "${arr[@]}"
+          for i in 0 1 2
           do
+            echo "$i"
             mkdir myApi
             cd myApi 
             ../bin/run init -t -d="${arr[$i]}"
