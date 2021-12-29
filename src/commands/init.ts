@@ -18,6 +18,8 @@ import {
   APITYPE,
   CLOUDPROVIDER,
   LANGUAGE,
+  NEPTUNEQUERYLANGUAGE,
+  RDBMSENGINE,
 } from "../utils/constants";
 const prettier = require("prettier");
 const exec = require("await-exec");
@@ -54,13 +56,21 @@ export default class Create extends Command {
         api_token: "",
         saasType: SAASTYPE.api,
         api: {
-          nestedResolver: true,
+          nestedResolver: false,
           language: LANGUAGE.typescript,
           cloudprovider: CLOUDPROVIDER.aws,
           apiName: "myApi",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
           database: flags.database,
+          neptuneQueryLanguage:
+            flags.database === DATABASE.neptuneDB
+              ? NEPTUNEQUERYLANGUAGE.gremlin
+              : undefined,
+          rdbmsEngine:
+            flags.database === DATABASE.neptuneDB
+              ? RDBMSENGINE.mysql
+              : undefined,
         },
       };
     } else {
