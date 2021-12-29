@@ -47,6 +47,6 @@ jobs:
             cd myApi 
             ../bin/run init -t -d="${arr[$i]}"
             yarn build
-            yarn deploy-dev
+            STAGE=dev cdk deploy --ci --require-approval never
             yarn destroy-dev
           done
