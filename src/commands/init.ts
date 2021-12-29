@@ -59,7 +59,7 @@ export default class Create extends Command {
           nestedResolver: false,
           language: LANGUAGE.typescript,
           cloudprovider: CLOUDPROVIDER.aws,
-          apiName: "myApi",
+          apiName: "cliTesting",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
           database: flags.database,

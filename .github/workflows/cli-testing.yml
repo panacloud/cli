@@ -43,12 +43,12 @@ jobs:
           for i in 0 1 2
           do
             echo "$i"
-            mkdir myApi -p
-            cd myApi 
+            mkdir code -p
+            cd code 
             ls
             ../bin/run init -t -d="${arr[$i]}"
             yarn build
             STAGE=dev cdk deploy --ci --require-approval never
-            STAGE=dev cdk destroy --ci --require-approval never
+            STAGE=dev cdk destroy --force
             rm -rf myApi
           done
