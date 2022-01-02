@@ -5,13 +5,14 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLSchema,
+  IntrospectionQuery,
   isInterfaceType,
 } from "graphql";
 const fse = require("fs-extra");
 
 export const buildSchemaToTypescript = (
   gqlSchema: GraphQLSchema,
-  introspection: any
+  introspection: IntrospectionQuery
 ) => {
   let includeDeprecatedFields = false;
 
@@ -23,14 +24,14 @@ export const buildSchemaToTypescript = (
 
   let allImports: string[] = [];
   let allEnumImports: string[] = [];
-  let typeStrings: any = {};
+  let typeStrings = {};
 
   const generateCollections = (
     obj: GraphQLFieldMap<any, any>,
     description: "Query" | "Mutation"
   ) => {
     Object.keys(obj).forEach((type: string) => {
-      let typeStr: any = {};
+      let typeStr = {};
       
       const _field = gqlSchema.getType(description) as GraphQLObjectType;
       const field = _field.getFields()[type];
@@ -93,7 +94,7 @@ export const buildSchemaToTypescript = (
               },
             });
 
-        introspection.__schema.types.forEach((v: any) => {
+        introspection.__schema.types.forEach((v: { kind: string; name: string | string[]; }) => {
           if (v.kind === "ENUM") {
             if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
               if (v.name.includes("_")) {

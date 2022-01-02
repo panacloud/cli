@@ -17,9 +17,10 @@ import {
   ApiModel,
   DATABASE,
   NEPTUNEQUERYLANGUAGE,
+  PanacloudconfigFile,
 } from "../../../../utils/constants";
 import { generator } from "../../generators";
-import { introspectionFromSchema, buildSchema } from "graphql";
+import { introspectionFromSchema, buildSchema, GraphQLFieldMap } from "graphql";
 import { buildSchemaToTypescript } from "../../buildSchemaToTypescript";
 import { FieldsAndLambdaForNestedResolver } from "../../helpers";
 import { CreateAspects } from "../../generators/Aspects";
@@ -64,7 +65,7 @@ async function defineYourOwnApi(
 
   const generatingCode = startSpinner("Generating CDK Code...");
   /* copy files from global package dir to cwd */
-  readdirSync(templateDir).forEach((file: any) => {
+  readdirSync(templateDir).forEach((file: string) => {
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         copy(`${templateDir}/${file}`, ".gitignore");
@@ -158,7 +159,7 @@ async function defineYourOwnApi(
   });
   let schema = readFileSync(schemaPath, "utf8");
 
-  let PanacloudConfig: any;
+  let PanacloudConfig: any
 
   if (apiType === APITYPE.graphql) {
     let directivesPath = resolve(
@@ -181,11 +182,11 @@ async function defineYourOwnApi(
     mockObject.write(dummyData);
 
     // Model Config
-    let queriesFields: any = gqlSchema.getQueryType()?.getFields();
-    let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+    let queriesFields = gqlSchema.getQueryType()?.getFields();
+    let mutationsFields = gqlSchema.getMutationType()?.getFields();
     // console.log(mutationsFields)
     let introspection = introspectionFromSchema(gqlSchema);
-    let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+    let subscriptionsFields = gqlSchema.getSubscriptionType()?.getFields();
     // console.log(introspection)
 
     model.api.schema = introspection;
@@ -290,7 +291,7 @@ async function defineYourOwnApi(
   await CreateAspects({ config: model });
 
   // Codegenerator Function
-  await generator(model, PanacloudConfig, "init", dummyData);
+  await generator(model, PanacloudConfig , "init", dummyData);
 
   stopSpinner(generatingCode, "CDK Code Generated", false);
 

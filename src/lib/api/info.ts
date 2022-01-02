@@ -120,10 +120,10 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
 
   let prevItems = Object.keys(configPanacloud.lambdas);
 
-  const prevMicroServices = prevItems.filter((val: any) =>
+  const prevMicroServices = prevItems.filter((val: string) =>
     configPanacloud.lambdas[val].asset_path ? false : true
   );
-  const prevGeneralLambdas = prevItems.filter((val: any) =>
+  const prevGeneralLambdas = prevItems.filter((val: string) =>
     configPanacloud.lambdas[val].asset_path ? true : false
   );
   const newMicroServices = Object.keys(microServiceFields!);
@@ -289,7 +289,7 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
 
   let newItems = Object.keys(panacloudConfigNew.lambdas);
 
-  const newGeneralMutLambdas = newItems.filter((val: any) =>
+  const newGeneralMutLambdas = newItems.filter((val: string) =>
     panacloudConfigNew.lambdas[val].asset_path ? true : false
   );
 

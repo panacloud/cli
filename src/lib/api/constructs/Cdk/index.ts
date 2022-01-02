@@ -16,7 +16,7 @@ export class Cdk {
   constructor(_code: CodeMaker) {
     this.code = _code;
   }
-  public initializeStack(name: string, propsName: string = "StackProps", contents: any, constructProps?: consturctProps[]) {
+  public initializeStack(name: string, propsName: string = "StackProps", contents: ()=>void, constructProps?: consturctProps[]) {
     const ts = new TypeScriptWriter(this.code);
     if (constructProps) {
       this.code.openBlock(`interface ${propsName}`);
@@ -37,7 +37,7 @@ export class Cdk {
   public initializeConstruct(
     constructName: string,
     propsName: string = "StackProps",
-    contents: any,
+    contents: ()=>void,
     constructProps?: consturctProps[],
     properties?: Property[]
   ) {
@@ -71,7 +71,7 @@ export class Cdk {
     this.code.line(`Tags.of(${source}).add("${name}", "${value}");`);
   }
 
-  public initializeTest(description: string, contents: any) {
+  public initializeTest(description: string, contents:()=>void) {
     this.code.openBlock(`test("${description}", () => `);
     this.code.line(`const stack = new cdk.Stack();`);
     this.code.line();

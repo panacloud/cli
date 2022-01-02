@@ -14,7 +14,7 @@ export type classMethodDefinition = {
   visibility: "public" | "private";
   outputType: string;
   props?:string;
-  content?:any;
+  content?:()=>void;
 };
 
 type VariableDefinition = {
@@ -55,7 +55,7 @@ export class TypeScriptWriter {
     classDefinition: ClassDefinition,
     properties?: Property[],
     propsName?:string,
-    contents?: any,
+    contents?: ()=>void,
   ) {
     this.code.openBlock(
       `${classDefinition.export ? "export" : null} class ${
@@ -71,7 +71,7 @@ export class TypeScriptWriter {
     constructor(scope: Construct, id: string, props?: ${propsName}) {
         super(scope, id);
     `);
-    contents();
+    contents&&contents();
     this.code.line(`}`);
     this.code.closeBlock();
   }
@@ -109,7 +109,7 @@ export class TypeScriptWriter {
     classDefinition: ClassDefinition,
     properties?: Property[],
     props?:string,
-    constructorContent?: any,
+    constructorContent?: ()=> void,
     functions?:classMethodDefinition[]
   ) {
     this.code.openBlock(
@@ -129,13 +129,13 @@ export class TypeScriptWriter {
     this.code.line(` 
     constructor(${props? props : ""}) {
     `);
-    constructorContent();
+    constructorContent && constructorContent();
     this.code.line(`}`);
 
     functions?.forEach((fun)=>{
  
       this.code.openBlock(`${fun.visibility} ${fun.name} (${fun.props}): ${fun.outputType}`)
-      fun.content()
+      fun.content&&fun.content()
       this.code.closeBlock();
 })
 
