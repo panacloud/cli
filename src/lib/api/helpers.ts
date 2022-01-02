@@ -1,10 +1,8 @@
 import { Config } from "@oclif/config";
-import { GraphQLNamedType, GraphQLObjectType, GraphQLSchema, IntrospectionQuery } from "graphql";
-import { Maybe } from "graphql/jsutils/Maybe";
-import { IntersectionType } from "typescript";
+import { GraphQLObjectType, GraphQLSchema, IntrospectionQuery } from "graphql";
 import { ApiModel, nestedResolverFieldsAndLambda } from "../../utils/constants";
 
-export const ScalarAndEnumKindFinder = (type: { name?: string; kind?:string; }): boolean  => {
+export const ScalarAndEnumKindFinder = (type: any): boolean | any => {
   switch (type.kind) {
     case "SCALAR":
       return false;
@@ -17,7 +15,7 @@ export const ScalarAndEnumKindFinder = (type: { name?: string; kind?:string; }):
   }
 };
 
-export const EliminateScalarTypes = (type:{name:string}): boolean  => {
+export const EliminateScalarTypes = (type: any): boolean | any => {
   switch (type.name) {
     case "Mutation":
       return false;
@@ -94,7 +92,7 @@ export const FieldsAndLambdaForNestedResolver = (
             EliminateScalarTypes(
               gqlSchema.getType(
                 fieldsInType[type].type.inspect().replace(/[[\]!]/g, "")
-              )as {name:string}
+              )
             )
           ) {
             const typeNode = gqlSchema.getType(allTypes.name)?.astNode  

@@ -50,9 +50,9 @@ async function updateYourOwnApi(config: Config, spinner: any): Promise<void> {
   mockObject.write(dummyData);
 
   // Model Config
-  let queriesFields = gqlSchema.getQueryType()?.getFields();
-  let mutationsFields = gqlSchema.getMutationType()?.getFields();
-  let subscriptionsFields = gqlSchema.getSubscriptionType()?.getFields();
+  let queriesFields: any = gqlSchema.getQueryType()?.getFields();
+  let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+  let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
   let introspection = introspectionFromSchema(gqlSchema);
   model.api.schema = introspection;
   model.api.queiresFields = [...Object.keys(queriesFields||{})];

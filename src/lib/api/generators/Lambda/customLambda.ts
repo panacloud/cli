@@ -96,7 +96,7 @@ class CustomLambda {
           .filter((val) => !prevMicroLambda.includes(val))
           .concat(
             prevMicroLambda.filter(
-              (val:string) => !newMicroServicesLambdas.includes(val)
+              (val: any) => !newMicroServicesLambdas.includes(val)
             )
           );
 

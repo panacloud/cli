@@ -107,7 +107,7 @@ export const userInput = async () => {
       message: "Select Database Engine",
       choices: [RDBMSENGINE.postgresql, RDBMSENGINE.mysql],
       default: RDBMSENGINE.postgresql,
-      when: (answers: { database: DATABASE; }) => answers.database === DATABASE.auroraDB,
+      when: (answers: any) => answers.database === DATABASE.auroraDB,
       validate: Boolean,
     },
     {
@@ -116,7 +116,7 @@ export const userInput = async () => {
       message: "Select Query Language",
       choices: [NEPTUNEQUERYLANGUAGE.gremlin, NEPTUNEQUERYLANGUAGE.cypher],
       default: NEPTUNEQUERYLANGUAGE.gremlin,
-      when: (answers: { database: DATABASE; }) => answers.database === DATABASE.neptuneDB,
+      when: (answers: any) => answers.database === DATABASE.neptuneDB,
       validate: Boolean,
     },
   ]);

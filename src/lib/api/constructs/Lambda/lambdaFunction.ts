@@ -22,7 +22,7 @@ export class LambdaFunction {
   public initializeLambdaFunction(
     apiType: APITYPE,
     apiName: string,
-    content?: ()=>void,
+    content?: any,
     fieldName?: string,
     nestedResolver?: boolean,
     asyncField?: Boolean
@@ -100,7 +100,7 @@ export class LambdaFunction {
         "const requestName = event.path.startsWith('/') ? event.path.substring(1) : event.path;"
       );
       this.code.line("const body = JSON.parse(event.body);");
-      content && content();
+      content();
       this.code.line();
       this.code.line(`}`);
       this.code.line("catch(err) {");
