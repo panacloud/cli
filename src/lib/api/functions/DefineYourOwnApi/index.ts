@@ -64,7 +64,7 @@ async function defineYourOwnApi(
 
   const generatingCode = startSpinner("Generating CDK Code...");
   /* copy files from global package dir to cwd */
-  readdirSync(templateDir).forEach((file: any) => {
+  readdirSync(templateDir).forEach((file: string) => {
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         copy(`${templateDir}/${file}`, ".gitignore");
@@ -181,11 +181,11 @@ async function defineYourOwnApi(
     mockObject.write(dummyData);
 
     // Model Config
-    let queriesFields: any = gqlSchema.getQueryType()?.getFields();
-    let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
+    let queriesFields = gqlSchema.getQueryType()?.getFields();
+    let mutationsFields = gqlSchema.getMutationType()?.getFields();
     // console.log(mutationsFields)
     let introspection = introspectionFromSchema(gqlSchema);
-    let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
+    let subscriptionsFields = gqlSchema.getSubscriptionType()?.getFields();
     // console.log(introspection)
 
     model.api.schema = introspection;
