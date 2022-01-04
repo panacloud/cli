@@ -54,7 +54,7 @@ export const lambdaInitializerForMicroServices = (
   panacloudConfig: PanacloudconfigFile,
   code: CodeMaker
 ) => {
-  let microService_Fields: { [k: string]: any[] } = {};
+  let microService_Fields: { [k: string]: string[] } = {};
   const lambda = new Lambda(code, panacloudConfig);
   const { apiName, database, microServiceFields,asyncFields } = model;
   microService_Fields = microServiceFields!;
@@ -279,7 +279,7 @@ export const lambdaHandlerForAuroradb = (
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer!['asset_path']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       "",
@@ -329,7 +329,7 @@ export const lambdaHandlerForNeptunedb = (
 
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer!['asset_path']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       "",
@@ -362,11 +362,11 @@ export const lambdaHandlerForNeptunedb = (
 export const lambdaProperiesHandlerForAuroraDb = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries?: any
+  mutationsAndQueries?: string[]
 ) => {
   let properties: Property[] = [];
   if (apiType === APITYPE.graphql) {
-    mutationsAndQueries.forEach((key: string, index: number) => {
+    mutationsAndQueries!.forEach((key: string, index: number) => {
       properties[index] = {
         name: `${apiName}_lambdaFn_${key}Arn`,
         typeName: "string",
@@ -400,7 +400,7 @@ export const lambdaProperiesHandlerForNeptuneDb = (
 export const lambdaProperiesHandlerForMockApi = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: string[]
 ) => {
   let properties: Property[] = [];
   if (apiType === APITYPE.graphql) {
@@ -419,7 +419,7 @@ export const lambdaProperiesHandlerForMockApi = (
 export const lambdaProperiesHandlerForDynoDb = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: string[]
 ) => {
   let properties: Property[] = [];
   if (apiType === APITYPE.graphql) {
@@ -451,7 +451,7 @@ export const lambdaHandlerForDynamodb = (
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer['asset_path']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer!['asset_path']);
 
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda("",apiName, undefined, undefined, undefined, [

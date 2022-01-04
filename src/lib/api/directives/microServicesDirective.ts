@@ -1,3 +1,5 @@
+import { GraphQLFieldMap } from "graphql";
+
 export class microServicesDirective {
   constructor() {}
 
@@ -14,18 +16,18 @@ export class microServicesDirective {
     const mutationNames = [...Object.keys(mutationFields||{})];
 
     let allGraphqlFieldNames = [...queryNames,...(mutationNames||[])];
-    let microServiceFields: { [k: string]: any[] } = {};
+    let microServiceFields: { [k: string]: string[] } = {};
     let generalFields: string[] = [];
 
     for (let field of allGraphqlFieldNames) {
       if (queryFields[field]) {
         if (queryFields[field].astNode.directives) {
           const microServiceInfo = queryFields[field].astNode.directives.find(
-            (val: any) => val.name.value === "microService"
+            (val: { name: { value: string; }; }) => val.name.value === "microService"
           );
           if (microServiceInfo) {
             const arg = microServiceInfo.arguments.find(
-              (val: any) => val.name.value === "name"
+              (val: { name: { value: string; }; }) => val.name.value === "name"
             );
             const argValue = arg.value.value;
 
@@ -48,11 +50,11 @@ export class microServicesDirective {
           const microServiceInfo = mutationFields[
             field
           ].astNode.directives.find(
-            (val: any) => val.name.value === "microService"
+            (val: { name: { value: string; }; }) => val.name.value === "microService"
           );
           if (microServiceInfo) {
             const arg = microServiceInfo.arguments.find(
-              (val: any) => val.name.value === "name"
+              (val: { name: { value: string; }; }) => val.name.value === "name"
             );
             const argValue = arg.value.value;
 
@@ -76,8 +78,8 @@ export class microServicesDirective {
 }
 
 export const microServicesDirectiveFieldSplitter = (
-  queryFields: any,
-  mutationFields: any
+  queryFields: GraphQLFieldMap<any, any> | undefined,
+  mutationFields: GraphQLFieldMap<any, any> | undefined
 ): {
   generalFields: string[];
   microServiceFields: {

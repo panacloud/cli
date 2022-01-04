@@ -6,7 +6,7 @@ let startCase = require("lodash/startCase");
 let upperFirst = require("lodash/upperFirst");
 
 type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime" | "AWSJSON" | "AWSPhone" | "AWSIPAddress"
-export type ArgAndResponseType = { arguments?: any; response: any }
+export type ArgAndResponseType = { arguments: any; response: any}
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
 };
@@ -30,7 +30,6 @@ export class RootMockObject extends MockObject {
         const queryMockObject = new QueryMockObject(this.graphQLSchema, queryName, queryFieldObject);
         this.queryMockObjects.push(queryMockObject);
       });
-    // console.log(mutations)
       Object.entries(mutations || []).forEach(([mutationName, mutationFieldObject]) => {
         const mutationMockObject = new MutationMockObject(this.graphQLSchema, mutationName, mutationFieldObject);
         this.mutationMockObjects.push(mutationMockObject);
@@ -636,7 +635,7 @@ class CustomUnionObjectResponse extends ObjectResponse {
     if (isArray) {
       Array(3).fill(null).forEach(() => {
         const objectType = getRandomItem(implementedObjectTypes);
-        const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+        const objectFields = objectType?.getFields() as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
         this.objectResponses.push({
           objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
           objectType: objectType
@@ -683,11 +682,10 @@ class CustomObjectResponse extends ObjectResponse {
     resolvedCustomObjectTypes?.push(type);
     const objectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     try {
-      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      const objectFields = objectType?.getFields()  as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
       this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
     } catch (err) {
-      const error = err as any;
-      // console.log("error: 946", error.message);
+      const error = err as Error;
       if (error.message.includes("objectType.getFields is not a function")) {
         throw Error(objectType.toString() + " type in your graphql schema is not supported in mock data generator");
       }

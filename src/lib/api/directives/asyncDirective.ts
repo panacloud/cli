@@ -11,7 +11,7 @@ export class AsyncDirective {
       if (mutationFields[mutationName].astNode.directives) {
         const asyncDirective = mutationFields[
           mutationName
-        ].astNode.directives.find((val: any) => val.name.value === "async");
+        ].astNode.directives.find((val: { name: { value: string; }; }) => val.name.value === "async");
 
         if (asyncDirective) {
           asyncFields = [...asyncFields, mutationName];

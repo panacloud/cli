@@ -67,8 +67,8 @@ export interface Config {
 }
 
 export interface mockApiData {
-  collections: any;
-  types: any;
+  collections: { fields: any; };
+  types: { [x: string]: { fields: { [x: string]: { arguments: any; }[]; }; }; };
   imports: string[];
   enumImports: string[];
 }
@@ -113,9 +113,9 @@ export enum ARCHITECTURE {
 }
 
 export type PanacloudconfigFile = {
-  lambdas: any;
-  nestedLambdas?: any;
-  mockLambdaLayer?: any;
+  lambdas: Record<string,any>;
+  nestedLambdas?:Record<string,any>;
+  mockLambdaLayer?: Record<string,any>;
   stages: string[];
 };
 
