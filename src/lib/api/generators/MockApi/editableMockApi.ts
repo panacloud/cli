@@ -41,9 +41,7 @@ class EditableMockApiTestCollectionsFile {
               new_config.api.mockApiData?.types[key].fields[key][0]
             )}[]`;
           }
-          // console.log("hello")
           code.openFile("testCollectionsTypes.ts");
-          // console.log("hello")
 
           const allTypes = new_config.api.mockApiData?.imports
             .filter(
@@ -77,11 +75,8 @@ class EditableMockApiTestCollectionsFile {
           let returnType = new_config.api.mockApiData?.types[key];
           let data1 = returnType.fields[key].replace(/\\*/g, "");
           let data2 = JSON.parse(data1.substring(0, data1.length - 2));
-          // console.log(data2)
-          // writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
-          // console.log("Arguments=====>",returnType.fields[key])
+
           if (typeof data2["arguments"] === "string") {
-            // console.log("has arguments")
             data2["arguments"] = data2["arguments"]
               .split("_")
               .reduce(
@@ -91,8 +86,6 @@ class EditableMockApiTestCollectionsFile {
                   index: number,
                   arr: string[]
                 ) => {
-                  // console.log("out_str",out_str)
-                  // console.log("val",val)
 
                   return (out_str += `${transformStr(val)}${
                     arr.length > index + 1 ? "_" : ""
@@ -151,7 +144,6 @@ class EditableMockApiTestCollectionsFile {
           returnType.fields[key] =
             JSON.stringify(data2).replace(/"*\\*/g, "") + "[]";
 
-          // console.log("mean ", JSON.stringify(new_config.api.mockApiData?.types[key].fields[key][0]));
 
           code.indent(`export type TestCollection =
             ${JSON.stringify(returnType).replace(/"*\\*/g, "")}
@@ -182,7 +174,6 @@ class EditableMockApiTestCollectionsFile {
             2
           )}`;
           const matchEnums = mockDataStr.match(enumPattern);
-          // console.log(matchEnums);
 
           matchEnums?.forEach((enumStr) => {
             mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));
@@ -247,17 +238,11 @@ class EditableMockApiTestCollectionsFile {
           let returnType = new_config.api.mockApiData?.types[key];
           let data1 = returnType.fields[key].replace(/\\*/g, "");
           let data2 = JSON.parse(data1.substring(0, data1.length - 2));
-          // writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
-          // console.log("Arguments=====>",returnType.fields[key])
           if (typeof data2["arguments"] === "string") {
-            // console.log("has arguments")
             data2["arguments"] = data2["arguments"]
               .split("_")
               .reduce(
                 (out_str: string, val: string, index: number, arr: string[]) => {
-                  // console.log("out_str",out_str)
-                  // console.log("val",val)
-  
                   return (out_str += `${transformStr(val)}${
                     arr.length > index + 1 ? "_" : ""
                   }`);
@@ -310,7 +295,6 @@ class EditableMockApiTestCollectionsFile {
           
           returnType.fields[key] =
             JSON.stringify(data2).replace(/"*\\*/g, "") + "[]";
-          // console.log("My Return Type ===>",returnType)
           code.indent(`export type TestCollection =
             ${JSON.stringify(returnType).replace(/"*\\*/g, "")}
         `);
@@ -339,7 +323,6 @@ class EditableMockApiTestCollectionsFile {
             2
           )}`;
           const matchEnums = mockDataStr.match(enumPattern);
-          // console.log(matchEnums);
 
           matchEnums?.forEach((enumStr) => {
             mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));

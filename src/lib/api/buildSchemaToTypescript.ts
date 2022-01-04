@@ -141,7 +141,6 @@ export const buildSchemaToTypescript = (
       }
     });
 
-    // console.log("allImports ", allImports)
   };
 
   if (gqlSchema.getMutationType()) {

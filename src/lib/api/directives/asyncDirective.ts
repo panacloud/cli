@@ -29,9 +29,6 @@ export class AsyncDirective {
     asyncFields: string[]
   ) {
     let newSchema = schema;
-    // console.log("In Async ========")
-    // console.log(mutationFields)
-    // console.log(asyncFields)
     let subNames: string[] = subscriptionFields
       ? Object.keys(subscriptionFields)
       : [];
@@ -76,7 +73,6 @@ export class AsyncDirective {
         if (updateSub) {
           newSchema = newSchema.replace(oldSub[0], updateSub);
         }
-        //  console.log(newSchema)
       }
     }
 
@@ -84,7 +80,6 @@ export class AsyncDirective {
       if (mutationFields&&mutationFields[async_response_mutName]) {
         // newSchema = schema.replace(`async_response(input:String!):String!`, '')
 
-        // console.log(newSchema)
 
         //const mutRegex = /type[\s]+Mutation[\s]+{[a-zA-Z\(\)\s:!@\"\#\_]+}/g
 
@@ -108,7 +103,6 @@ export class AsyncDirective {
 
         // newSchema = schema.replace(oldMut[0], newMut)
 
-        // console.log(newSchema)
       }
 
       if (subNames.length === 1 && subNames[0] === async_response_mutName) {
@@ -121,7 +115,6 @@ export class AsyncDirective {
           newSchema = newSchema.replace(oldSub[0], "");
         }
 
-        // console.log(newSchema)
       }
 
       if (subNames.length > 1 && subscriptionFields[async_response_mutName]) {

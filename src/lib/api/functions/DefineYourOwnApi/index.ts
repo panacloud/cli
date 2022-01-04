@@ -176,24 +176,19 @@ async function defineYourOwnApi(
     let scalars = readFileSync(scalarPath, "utf8");
 
     let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-      // console.log(gqlSchema)
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
     // Model Config
     let queriesFields = gqlSchema.getQueryType()?.getFields();
     let mutationsFields = gqlSchema.getMutationType()?.getFields();
-    // console.log(mutationsFields)
     let introspection = introspectionFromSchema(gqlSchema);
     let subscriptionsFields = gqlSchema.getSubscriptionType()?.getFields();
-    // console.log(introspection)
 
     model.api.schema = introspection;
         model.api.queiresFields = [...Object.keys(queriesFields||{})];
         model.api.mutationFields = [...Object.keys(mutationsFields||{})];
-    // console.log("hello")
     // model.api.mutationFields = [...Object.keys(mutationsFields)];
-    //   console.log("hello1")
     const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
       queriesFields,
       mutationsFields

@@ -195,7 +195,6 @@ export class LambdaFunction {
     isService?: boolean,
     gqlSchema?: GraphQLSchema
   ) {
-    // console.log(`${queryName}`,mockData?.types[queryName!])
     let returnType = "";
     const mockObject = new RootMockObject(gqlSchema!);
     const dummyData: TestCollectionType = { fields: {} };
@@ -257,7 +256,6 @@ export class LambdaFunction {
     //          result+=otherStr
     //          result += "Args"
     //         }
-    //         console.log(result)
     //         return result
     // }
     // function checkStr(str:string):boolean{
@@ -268,7 +266,6 @@ export class LambdaFunction {
     //   }else if(str.includes("Args")){
 
     //     result = `${str.replace("Args","").charAt(0).toUpperCase()}${str.replace("Args","").slice(1).toLowerCase()}Args`      }
-    //   console.log("Result",result)
     //   return true
     // }
     // writeFileSync("./data.json",JSON.stringify(mockData?.types[queryName!].fields[queryName!][0]))
