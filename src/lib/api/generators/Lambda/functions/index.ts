@@ -381,7 +381,7 @@ export const lambdaProperiesHandlerForAuroraDb = (
 export const lambdaProperiesHandlerForNeptuneDb = (
   apiName: string,
   apiType: string,
-  mutationsAndQueries: any
+  mutationsAndQueries: string[]
 ) => {
   let properties: Property[] = [];
   if (apiType === APITYPE.graphql) {
