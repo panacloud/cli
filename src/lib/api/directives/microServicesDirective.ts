@@ -9,7 +9,7 @@ export class microServicesDirective {
   ): {
     generalFields: string[];
     microServiceFields: {
-      [k: string]: any[];
+      [k: string]: unknown[];
     };
   } {
     const queryNames = [...Object.keys(queryFields||{})];
@@ -78,12 +78,12 @@ export class microServicesDirective {
 }
 
 export const microServicesDirectiveFieldSplitter = (
-  queryFields: GraphQLFieldMap<any, any> | undefined,
-  mutationFields: GraphQLFieldMap<any, any> | undefined
+  queryFields: GraphQLFieldMap<unknown, unknown> | undefined,
+  mutationFields: GraphQLFieldMap<unknown, unknown> | undefined
 ): {
   generalFields: string[];
   microServiceFields: {
-    [k: string]: any[];
+    [k: string]: unknown[];
   };
 } => {
   const initClass = new microServicesDirective();

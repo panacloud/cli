@@ -17,7 +17,7 @@ export const buildSchemaToTypescript = (
   let includeDeprecatedFields = false;
 
   let collectionsObject: {
-    fields: { [k: string]: { arguments?: any; response: any }[] };
+    fields: { [k: string]: { arguments?: unknown; response: unknown }[] };
   } = {
     fields: {},
   };
@@ -27,7 +27,7 @@ export const buildSchemaToTypescript = (
   let typeStrings = {};
 
   const generateCollections = (
-    obj: GraphQLFieldMap<any, any>,
+    obj: GraphQLFieldMap<unknown, unknown>,
     description: "Query" | "Mutation"
   ) => {
     Object.keys(obj).forEach((type: string) => {

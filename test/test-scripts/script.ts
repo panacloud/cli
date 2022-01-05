@@ -29,7 +29,7 @@ const { exec, execSync } = require("child_process");
 
 async function runCommand(cmd: string): Promise<void> {
   return new Promise(function (resolve) {
-    exec(cmd, async (err: any, stdout: any, stderr: any) => {
+    exec(cmd, async (err: Error, stdout: string, stderr: string) => {
       if (err) {
         console.log(stdout);
         console.log(stderr);

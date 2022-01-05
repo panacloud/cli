@@ -115,7 +115,7 @@ export enum ARCHITECTURE {
 export type PanacloudconfigFile = {
   lambdas: Record<string,any>;
   nestedLambdas?:Record<string,any>;
-  mockLambdaLayer?: Record<string,any>;
+  mockLambdaLayer?: Record<string,string>;
   stages: string[];
 };
 
