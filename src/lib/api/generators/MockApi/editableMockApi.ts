@@ -251,7 +251,10 @@ class EditableMockApiTestCollectionsFile {
               );
           }
           if (typeof data2["response"] === "string") {
-            data2["response"] = data2["response"]
+            if(data2["response"]==="ID"){
+              data2["response"] = "String"
+            }else{
+              data2["response"] = data2["response"]
               .split("_")
               .reduce(
                 (out_str: string, val: string, index: number, arr: string[]) => {
@@ -291,6 +294,8 @@ class EditableMockApiTestCollectionsFile {
                 },
                 ""
               );
+            }
+
           }
           
           returnType.fields[key] =
