@@ -5,7 +5,7 @@ import { writeJsonSync, readFileSync, writeFileSync } from "fs-extra";
 import { greenBright } from "chalk";
 import * as globby from "globby";
 import { startSpinner, stopSpinner } from "../lib/spinner";
-import { basicApi, defineYourOwnApi } from "../lib/api/functions";
+import { basicApi, defineYourOwnApi, todoApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
 import {
   checkEmptyDirectoy,
@@ -108,13 +108,15 @@ export default class Create extends Command {
       }
     }
 
-    writeJsonSync(`./codegenconfig.json`, {
-      ...config,
-      api: {
-        ...config.api,
-        schemaPath: "./editable_src/graphql/schema/schema.graphql",
-      },
-    });
+    if (config.api.template !== TEMPLATE.todoApi) {
+      writeJsonSync(`./codegenconfig.json`, {
+        ...config,
+        api: {
+          ...config.api,
+          schemaPath: "./editable_src/graphql/schema/schema.graphql",
+        },
+      });
+    }
 
     stopSpinner(validating, "Everything's fine", false);
 
@@ -124,6 +126,8 @@ export default class Create extends Command {
           await basicApi(config, templateDir!);
         } else if (config.api.template === TEMPLATE.defineApi) {
           await defineYourOwnApi(config, templateDir!);
+        } else {
+          await todoApi(config);
         }
       }
     }
