@@ -50,7 +50,7 @@ export class Lambda {
         return false
       }else{
         if(nestedResolver){
-          if(this.panacloudConfig.nestedLambdas[`${functionName}`].is_mock === true){
+          if(this.panacloudConfig.nestedLambdas![`${functionName}`].is_mock === true){
             return true
           }
           return false
@@ -76,9 +76,9 @@ export class Lambda {
       else{
         if(nestedResolver){
           const {nestedLambdas} = this.panacloudConfig;
-          const handlerfile = nestedLambdas[functionName].asset_path.split("/")[nestedLambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
+          const handlerfile = nestedLambdas![functionName].asset_path.split("/")[nestedLambdas![functionName].asset_path.split("/").length - 1].split('.')[0];
           handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-          const splitPath = nestedLambdas[functionName].asset_path.split("/");
+          const splitPath = nestedLambdas![functionName].asset_path.split("/");
           splitPath.pop();
           handlerAsset = functionName? splitPath.join("/") : "lambda";
         }

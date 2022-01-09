@@ -1,5 +1,5 @@
 import { Command, flags } from "@oclif/command";
-import { printSchema } from "graphql";
+import { GraphQLSchema, printSchema } from "graphql";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { startSpinner, stopSpinner } from "../lib/spinner";
 import { writeFileAsync, mkdirRecursiveAsync } from "../lib/fs";
@@ -23,16 +23,16 @@ export default class Merge extends Command {
     if (config.api_type === APITYPE.graphql) {
       tools
         .mergeGQLSchemas(config.schema)
-        .then((schema: any) => {
+        .then((schema: GraphQLSchema) => {
           let data = "";
           data = printSchema(schema);
 
           if (
-            schema.getQueryType().toString() === "Query" &&
+            schema.getQueryType()!.toString() === "Query" &&
             (!schema.getMutationType() ||
-              schema.getMutationType().toString() === "Mutation") &&
+              schema.getMutationType()!.toString() === "Mutation") &&
             (!schema.getSubscriptionType() ||
-              schema.getSubscriptionType().toString() === "Subscription")
+              schema.getSubscriptionType()!.toString() === "Subscription")
           ) {
             const typeDefs = `schema { \n  query: Query ${
               schema.getMutationType() ? "\n  mutation: Mutation" : ""
@@ -56,7 +56,7 @@ export default class Merge extends Command {
           stopSpinner(mergeSpinner, `Done`, false);
         })
 
-        .catch((error: any) => {
+        .catch((error:Error) => {
           stopSpinner(
             mergeSpinner,
             `schema files were merged, and the valid schema is: ${error}`,

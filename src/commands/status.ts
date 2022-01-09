@@ -110,7 +110,7 @@ export default class Status extends Command {
     }else{
       let data= JSON.parse(readFileSync(`./cdk-${stage}-outputs.json`).toString())
     const values:string[] =Object.values(
-      Object.entries(data)[0][1] as any
+      Object.entries(data)[0][1] as Record<string,string>
     );
     if(values.length === 0){
       this.log(chalk.red(`${apiName}'s ${stage} stage is currently not deployed, give the command npm run deploy-${stage} to deploy it.`))

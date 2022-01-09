@@ -5,32 +5,33 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   GraphQLSchema,
+  IntrospectionQuery,
   isInterfaceType,
 } from "graphql";
 const fse = require("fs-extra");
 
 export const buildSchemaToTypescript = (
   gqlSchema: GraphQLSchema,
-  introspection: any
+  introspection: IntrospectionQuery
 ) => {
   let includeDeprecatedFields = false;
 
   let collectionsObject: {
-    fields: { [k: string]: { arguments?: any; response: any }[] };
+    fields: { [k: string]: { arguments?: unknown; response: unknown }[] };
   } = {
     fields: {},
   };
 
   let allImports: string[] = [];
   let allEnumImports: string[] = [];
-  let typeStrings: any = {};
+  let typeStrings = {};
 
   const generateCollections = (
-    obj: GraphQLFieldMap<any, any>,
+    obj: GraphQLFieldMap<unknown, unknown>,
     description: "Query" | "Mutation"
   ) => {
     Object.keys(obj).forEach((type: string) => {
-      let typeStr: any = {};
+      let typeStr = {};
       
       const _field = gqlSchema.getType(description) as GraphQLObjectType;
       const field = _field.getFields()[type];
@@ -93,7 +94,7 @@ export const buildSchemaToTypescript = (
               },
             });
 
-        introspection.__schema.types.forEach((v: any) => {
+        introspection.__schema.types.forEach((v) => {
           if (v.kind === "ENUM") {
             if (v.name !== "__TypeKind" && v.name !== "__DirectiveLocation") {
               if (v.name.includes("_")) {
@@ -140,7 +141,6 @@ export const buildSchemaToTypescript = (
       }
     });
 
-    // console.log("allImports ", allImports)
   };
 
   if (gqlSchema.getMutationType()) {

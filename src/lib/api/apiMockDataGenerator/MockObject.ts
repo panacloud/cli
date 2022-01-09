@@ -6,7 +6,7 @@ let startCase = require("lodash/startCase");
 let upperFirst = require("lodash/upperFirst");
 
 type ScalarType = "Int" | "Float" | "ID" | "String" | "Boolean" | "Custom" | "AWSURL" | "AWSTimestamp" | "AWSEmail" | "AWSDate" | "AWSTime" | "AWSDateTime" | "AWSJSON" | "AWSPhone" | "AWSIPAddress"
-export type ArgAndResponseType = { arguments?: any; response: any }
+export type ArgAndResponseType = { arguments: any; response: any}
 export type TestCollectionType = {
   fields: { [k: string]: ArgAndResponseType[] };
 };
@@ -30,7 +30,6 @@ export class RootMockObject extends MockObject {
         const queryMockObject = new QueryMockObject(this.graphQLSchema, queryName, queryFieldObject);
         this.queryMockObjects.push(queryMockObject);
       });
-    // console.log(mutations)
       Object.entries(mutations || []).forEach(([mutationName, mutationFieldObject]) => {
         const mutationMockObject = new MutationMockObject(this.graphQLSchema, mutationName, mutationFieldObject);
         this.mutationMockObjects.push(mutationMockObject);
@@ -51,7 +50,7 @@ class QueryMockObject extends MockObject {
   private queryName: string;
   private objectRequests: ObjectRequest[] = [];
   private objectResponses: ObjectResponse[] = [];
-  constructor(graphQLSchema: GraphQLSchema, queryName: string, queryFieldObject: GraphQLField<any, any, any>,) {
+  constructor(graphQLSchema: GraphQLSchema, queryName: string, queryFieldObject: GraphQLField<unknown, unknown>,) {
     super(graphQLSchema);
     this.queryName = queryName;
     this.objectRequests.push(new RootObjectRequest(graphQLSchema, queryFieldObject.args, 0))
@@ -76,7 +75,7 @@ class MutationMockObject extends MockObject {
   private mutationName: string;
   private objectRequests: ObjectRequest[] = [];
   private objectResponses: ObjectResponse[] = [];
-  constructor(graphQLSchema: GraphQLSchema, mutationName: string, mutationFieldObject: GraphQLField<any, any, any>) {
+  constructor(graphQLSchema: GraphQLSchema, mutationName: string, mutationFieldObject: GraphQLField<unknown, unknown>) {
     super(graphQLSchema);
     this.mutationName = mutationName;
     this.objectRequests.push(new RootObjectRequest(graphQLSchema, mutationFieldObject.args, 0))
@@ -114,7 +113,7 @@ class RootObjectResponse extends ObjectResponse {
   private resolvedCustomObjectTypes: string[] = [];
   private objectResponses: Array<ObjectResponse> = [];
   private childNumber: number
-  constructor(graphQLSchema: GraphQLSchema, fieldResponses: Array<GraphQLField<any, any, { [key: string]: any }>>, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+  constructor(graphQLSchema: GraphQLSchema, fieldResponses: Array<GraphQLField<unknown, unknown, { [key: string]: unknown }>>, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
     this.resolvedCustomObjectTypes = resolvedCustomObjectTypes || [];
     this.childNumber = childNumber + 1;
@@ -277,9 +276,9 @@ class RootObjectRequest extends ObjectRequest {
 }
 
 class StringObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>;
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     // this.objectArgs = objectArgs;
     this.responseField = responseField;
@@ -296,9 +295,9 @@ class StringObjectResponse extends ObjectResponse {
 
 }
 class IntObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>;
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -313,9 +312,9 @@ class IntObjectResponse extends ObjectResponse {
   }
 }
 class IdObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private responseField: GraphQLField<unknown, unknown, { [key: string]:unknown }>;
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -330,9 +329,9 @@ class IdObjectResponse extends ObjectResponse {
   }
 }
 class FloatObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>;
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -347,9 +346,9 @@ class FloatObjectResponse extends ObjectResponse {
   }
 }
 class BoolObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]:unknown }>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -364,9 +363,9 @@ class BoolObjectResponse extends ObjectResponse {
   }
 }
 class AWSURLObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -381,9 +380,9 @@ class AWSURLObjectResponse extends ObjectResponse {
   }
 }
 class AWSTimeStampObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -398,9 +397,9 @@ class AWSTimeStampObjectResponse extends ObjectResponse {
   }
 }
 class AWSEmailObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown}>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -415,9 +414,9 @@ class AWSEmailObjectResponse extends ObjectResponse {
   }
 }
 class AWSDateObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown}>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]:unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -432,9 +431,9 @@ class AWSDateObjectResponse extends ObjectResponse {
   }
 }
 class AWSTimeObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -449,9 +448,9 @@ class AWSTimeObjectResponse extends ObjectResponse {
   }
 }
 class AWSDateTimeObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown}>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -466,9 +465,9 @@ class AWSDateTimeObjectResponse extends ObjectResponse {
   }
 }
 class AWSJsonObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown}>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -487,9 +486,9 @@ class AWSJsonObjectResponse extends ObjectResponse {
   }
 }
 class AWSPhoneObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -504,9 +503,9 @@ class AWSPhoneObjectResponse extends ObjectResponse {
   }
 }
 class AWSIPAddressObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -521,11 +520,11 @@ class AWSIPAddressObjectResponse extends ObjectResponse {
   }
 }
 class EnumObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>
   private isArray?: boolean;
   private enumType: string;
   private enumList: string[];
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -554,9 +553,9 @@ class EnumObjectResponse extends ObjectResponse {
   }
 }
 class NestedCustomObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>;
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean) {
     super(graphQLSchema);
     this.isArray = isArray;
     this.responseField = responseField;
@@ -570,10 +569,10 @@ class NestedCustomObjectResponse extends ObjectResponse {
   }
 }
 class CustomInterfaceObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
-  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<any, any> }[] = [];
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown}>;
+  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<unknown, unknown> }[] = [];
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -585,7 +584,7 @@ class CustomInterfaceObjectResponse extends ObjectResponse {
     if (isArray) {
       Array(3).fill(null).forEach(() => {
         const objectType = getRandomItem(implementedObjectTypes);
-        const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+        const objectFields = objectType?.getFields() as { [key: string]: GraphQLField<unknown, unknown, { [key: string]: unknown }> };
         this.objectResponses.push({
           objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
           objectType: objectType
@@ -593,7 +592,7 @@ class CustomInterfaceObjectResponse extends ObjectResponse {
       })
     } else {
       const objectType = getRandomItem(implementedObjectTypes);
-      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      const objectFields = objectType?.getFields()  as { [key: string]: GraphQLField<unknown, unknown, { [key: string]: unknown }> };
       this.objectResponses.push({
         objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
         objectType: objectType
@@ -621,10 +620,10 @@ class CustomInterfaceObjectResponse extends ObjectResponse {
 
 }
 class CustomUnionObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
-  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<any, any> }[] = [];
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>;
+  private objectResponses: { objectResponse: ObjectResponse, objectType: GraphQLObjectType<unknown, unknown> }[] = [];
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -636,7 +635,7 @@ class CustomUnionObjectResponse extends ObjectResponse {
     if (isArray) {
       Array(3).fill(null).forEach(() => {
         const objectType = getRandomItem(implementedObjectTypes);
-        const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+        const objectFields = objectType?.getFields() as { [key: string]: GraphQLField<unknown, unknown, { [key: string]: unknown }> };
         this.objectResponses.push({
           objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
           objectType: objectType
@@ -644,7 +643,7 @@ class CustomUnionObjectResponse extends ObjectResponse {
       })
     } else {
       const objectType = getRandomItem(implementedObjectTypes);
-      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      const objectFields = objectType?.getFields()  as { [key: string]: GraphQLField<unknown, unknown, { [key: string]: unknown }> };
       this.objectResponses.push({
         objectResponse: new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes),
         objectType: objectType
@@ -672,10 +671,10 @@ class CustomUnionObjectResponse extends ObjectResponse {
 
 }
 class CustomObjectResponse extends ObjectResponse {
-  private responseField: GraphQLField<any, any, { [key: string]: any }>;
+  private responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>;
   private objectResponses: ObjectResponse[] = []
   private isArray?: boolean;
-  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<any, any, { [key: string]: any }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
+  constructor(graphQLSchema: GraphQLSchema, responseField: GraphQLField<unknown, unknown, { [key: string]: unknown }>, isArray: boolean, childNumber: number, resolvedCustomObjectTypes?: string[]) {
     super(graphQLSchema);
     this.responseField = responseField;
     this.isArray = isArray;
@@ -683,11 +682,10 @@ class CustomObjectResponse extends ObjectResponse {
     resolvedCustomObjectTypes?.push(type);
     const objectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     try {
-      const objectFields = objectType?.getFields() as any as { [key: string]: GraphQLField<any, any, { [key: string]: any }> };
+      const objectFields = objectType?.getFields()  as { [key: string]: GraphQLField<unknown, unknown, { [key: string]: unknown }> };
       this.objectResponses.push(new RootObjectResponse(graphQLSchema, Object.values(objectFields), childNumber, resolvedCustomObjectTypes))
     } catch (err) {
-      const error = err as any;
-      // console.log("error: 946", error.message);
+      const error = err as Error;
       if (error.message.includes("objectType.getFields is not a function")) {
         throw Error(objectType.toString() + " type in your graphql schema is not supported in mock data generator");
       }
@@ -1022,10 +1020,10 @@ class CustomObjectRequest extends ObjectRequest {
     resolvedCustomObjectTypes?.push(type)
     const inputObjectType = this.graphQLSchema.getType(type) as GraphQLObjectType;
     try {
-      const inputObjectFields = inputObjectType?.getFields() as any as { [key: string]: GraphQLArgument };
+      const inputObjectFields = inputObjectType?.getFields()as unknown as { [key: string]: GraphQLArgument };
       this.objectRequests.push(new RootObjectRequest(graphQLSchema, Object.values(inputObjectFields), childNumber, resolvedCustomObjectTypes))
     } catch (err) {
-      const error = err as any;
+      const error = err as any
       console.log("error: 946", error.toString())
       throw Error(error)
     }

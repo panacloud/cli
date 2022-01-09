@@ -1,7 +1,8 @@
-import { Command, flags } from "@oclif/command";
+import { Command } from "@oclif/command";
 import { isLogin } from "../lib/configStore";
 import { startSpinner, stopSpinner } from "../lib/spinner";
-const express = require("express");
+import express = require("express");
+import { NextFunction, Request, Response } from 'express';
 const open = require("open");
 const ConfigStore = require("configstore");
 const { dotenv } = require("../index");
@@ -30,7 +31,7 @@ export default class Login extends Command {
 
     app.use(express.json());
 
-    app.use((req: any, res: any, next: any) => {
+    app.use((req: Request, res: Response, next:NextFunction) => {
       res.header("Access-Control-Allow-Origin", "*");
       res.header("Access-Control-Allow-Headers", "Content-Type");
       next();
@@ -39,7 +40,7 @@ export default class Login extends Command {
     const ExpressServer = async () => {
       const server = await app.listen(port);
 
-      app.post("/oauth", (req: any, res: any) => {
+      app.post("/oauth", (req: Request, res: Response) => {
         const { id, token } = req.body;
         config.set("id", id);
         config.set("token", token);

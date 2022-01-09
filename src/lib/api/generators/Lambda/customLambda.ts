@@ -51,7 +51,7 @@ class CustomLambda {
     if (apiType === APITYPE.graphql) {
       const microServices = Object.keys(microServiceFields!);
 
-      let microservice_files: any = {};
+      let microservice_files: Record<string,any> = {};
       fs.readdirSync(`${process.cwd()}/editable_src/lambda_stubs`).forEach(
         (file: string) => {
           if (microServices.includes(file)) {
@@ -96,7 +96,7 @@ class CustomLambda {
           .filter((val) => !prevMicroLambda.includes(val))
           .concat(
             prevMicroLambda.filter(
-              (val: any) => !newMicroServicesLambdas.includes(val)
+              (val: string) => !newMicroServicesLambdas.includes(val)
             )
           );
 
