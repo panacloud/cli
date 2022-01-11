@@ -118,7 +118,7 @@ class APITests {
           ts.writeAllImports("supertest", "supertest");
           ts.writeImports("./AppSyncAPI", ["AppsyncAPI"]);
           ts.writeImports(
-            `../../${panacloudConfig.mockLambdaLayer["asset_path"].replace(
+            `../../${panacloudConfig.mockLambdaLayer!["asset_path"].replace(
               /^\/|\/$/g,
               ""
             )}/mockData/${key}/testCollections`,
