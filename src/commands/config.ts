@@ -1,6 +1,11 @@
 import { Command, flags } from "@oclif/command";
-import { Input } from "@oclif/parser/lib/args";
-import { writeJsonSync, readJsonSync } from "fs-extra";
+import {
+  writeJsonSync,
+  readJsonSync,
+  readFileSync,
+  writeFileSync,
+} from "fs-extra";
+import { startSpinner, stopSpinner } from "../lib/spinner";
 import { PanacloudconfigFile } from "../utils/constants";
 const prettier = require("prettier");
 
@@ -18,16 +23,22 @@ export default class Config extends Command {
 
   async run() {
     const { flags, args } = this.parse(Config);
+    const spinner = startSpinner("Updating Panacloud Config");
 
     if (!flags.false && !flags.true && !args.queryName && !flags.all) {
-      this.log("Please use panacloud config -h to get more about the command");
+      stopSpinner(
+        spinner,
+        "Please use panacloud config -h to get more info about the command",
+        true
+      );
       process.exit(1);
     }
 
     const panacloudConfig: PanacloudconfigFile = readJsonSync(
       "editable_src/panacloudconfig.json"
     );
-    let keys = Object.keys(panacloudConfig.lambdas);
+
+    const keys = Object.keys(panacloudConfig.lambdas);
 
     if (flags.all) {
       if (flags.true) {
@@ -39,28 +50,59 @@ export default class Config extends Command {
           (v: string) => (panacloudConfig.lambdas[v].is_mock = false)
         );
       } else {
-        this.log("panacloud config -a -t | --true  -f | --false");
+        stopSpinner(
+          spinner,
+          "panacloud config -a -t | --true  -f | --false",
+          true
+        );
+        process.exit(1);
       }
     }
 
     if (args.queryName) {
       if (!keys.includes(args.queryName)) {
         this.log(`${args.queryName} not found`);
+        stopSpinner(spinner, `${args.queryName} not found`, true);
         process.exit(1);
       }
 
       if (flags.true) {
-        panacloudConfig.lambdas[args.queryName].is_mock = true;
+        if (panacloudConfig.lambdas[args.queryName].is_mock) {
+          stopSpinner(spinner, `${args.queryName} already set to true`, true);
+          process.exit(1);
+        } else {
+          panacloudConfig.lambdas[args.queryName].is_mock = true;
+        }
       } else if (flags.false) {
-        panacloudConfig.lambdas[args.queryName].is_mock = false;
+        if (!panacloudConfig.lambdas[args.queryName].is_mock) {
+          stopSpinner(spinner, `${args.queryName} already set to false`, true);
+          process.exit(1);
+        } else {
+          panacloudConfig.lambdas[args.queryName].is_mock = false;
+        }
       } else {
-        this.log("panacloud config query_name -t | --true  -f | --false");
+        stopSpinner(
+          spinner,
+          "panacloud config query_name -t | --true  -f | --false",
+          true
+        );
+        process.exit(1);
       }
     }
 
-    // const formattedConfigFile = prettier.format(panacloudConfig, {
-    //   parser: ".json",
-    // });
     writeJsonSync("editable_src/panacloudconfig.json", panacloudConfig);
+
+    // Formating Data
+    const data = readFileSync("editable_src/panacloudconfig.json", "utf8");
+    const formattedConfigFile = prettier.format(data, {
+      parser: "json",
+    });
+    writeFileSync(
+      "editable_src/panacloudconfig.json",
+      formattedConfigFile,
+      "utf8"
+    );
+
+    stopSpinner(spinner, "Updated Panacloud Config", false);
   }
 }
