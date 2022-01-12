@@ -121,10 +121,10 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
   let prevItems = Object.keys(configPanacloud.lambdas);
 
   const prevMicroServices = prevItems.filter((val: string) =>
-    configPanacloud.lambdas[val].asset_path ? false : true
+    configPanacloud.lambdas[val].is_mock !== undefined ? false : true
   );
   const prevGeneralLambdas = prevItems.filter((val: string) =>
-    configPanacloud.lambdas[val].asset_path ? true : false
+    configPanacloud.lambdas[val].is_mock !== undefined ? true : false
   );
 
   const newMicroServices = Object.keys(microServiceFields!);
@@ -223,9 +223,13 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
       //if (isMutation && !panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`]){
 
       if (asyncFields?.includes(mutLambda)) {
-        if(!Object.keys(panacloudConfigNew.lambdas[service]).includes(`${mutLambda}_consumer`)){
+        if (
+          !Object.keys(panacloudConfigNew.lambdas[service]).includes(
+            `${mutLambda}_consumer`
+          )
+        ) {
           panacloudConfigNew.lambdas[service][`${mutLambda}_consumer`] =
-          {} as PanacloudConfiglambdaParams;
+            {} as PanacloudConfiglambdaParams;
           panacloudConfigNew.lambdas[service][
             `${mutLambda}_consumer`
           ].asset_path = `mock_lambda/${service}/${mutLambda}_consumer/index.ts`;
