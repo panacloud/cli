@@ -120,6 +120,6 @@ export type PanacloudconfigFile = {
 };
 
 export type PanacloudConfiglambdaParams = {
-  asset_path: string;
+  // asset_path: string;
   is_mock: boolean;
 };
