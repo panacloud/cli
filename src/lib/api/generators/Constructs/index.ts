@@ -1,18 +1,6 @@
 import { CodeMaker } from "codemaker";
-import { Property } from "../../../../utils/typescriptWriter";
-import { CONSTRUCTS, ApiModel } from "../../../../utils/constants";
 import { Cdk } from "../../constructs/Cdk";
-import { Imports } from "../../constructs/ConstructsImports";
-import { DynamoDB } from "../../constructs/Dynamodb";
 
-type StackBuilderProps = {
-  config: ApiModel;
-};
-
-// interface ConstructPropsType {
-//     name: string;
-//     type: string;
-//   }
   interface CustomConstructPropsType {
     name: string;
     type: string;
@@ -31,8 +19,6 @@ export class Constructs {
   async ConstructFile() {
     this.code.openFile(this.outputFile);
     const cdk = new Cdk(this.code);
-    const imp = new Imports(this.code);
-    // imports for dynamodb constructs
     
     let ConstructProps: CustomConstructPropsType[] = [];
 
