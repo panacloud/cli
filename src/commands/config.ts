@@ -42,13 +42,25 @@ export default class Config extends Command {
 
     if (flags.all) {
       if (flags.true) {
-        keys.forEach(
-          (v: string) => (panacloudConfig.lambdas[v].is_mock = true)
-        );
+        keys.forEach((e) => {
+          if (panacloudConfig.lambdas[e].is_mock === undefined) {
+            Object.keys(panacloudConfig.lambdas[e]).forEach(
+              (v) => (panacloudConfig.lambdas[e][v].is_mock = true)
+            );
+          } else {
+            panacloudConfig.lambdas[e].is_mock = true;
+          }
+        });
       } else if (flags.false) {
-        keys.forEach(
-          (v: string) => (panacloudConfig.lambdas[v].is_mock = false)
-        );
+        keys.forEach((e) => {
+          if (panacloudConfig.lambdas[e].is_mock === undefined) {
+            Object.keys(panacloudConfig.lambdas[e]).forEach(
+              (v) => (panacloudConfig.lambdas[e][v].is_mock = false)
+            );
+          } else {
+            panacloudConfig.lambdas[e].is_mock = false;
+          }
+        });
       } else {
         stopSpinner(
           spinner,
