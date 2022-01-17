@@ -38,6 +38,7 @@ export class Lambda {
 
     let handlerName: string;
     let handlerAsset: string;
+    let lambdaMemorySize:number;
     let lambdaConstructName: string = functionName
       ? `${apiName}Lambda${functionName}`
       : `${apiName}Lambda`;
@@ -76,15 +77,15 @@ export class Lambda {
         }
       }
     };
-    
+    const { lambdas } = this.panacloudConfig;
+
     if (functionName) {
-      const { lambdas } = this.panacloudConfig;
       if (microServiceName) {
         handlerAsset =
           lambdas[microServiceName][functionName].is_mock === true
             ? `mock_lambda/${microServiceName}/${functionName}`
             : `editable_src/lambda_studs/${microServiceName}/${functionName}`;
-
+        lambdaMemorySize = lambdas[microServiceName][functionName].memory_size
         // const handlerfile = lambdas[microServiceName][functionName].asset_path
         //   .split("/")
         //   [
@@ -115,7 +116,7 @@ export class Lambda {
             lambdas[functionName].is_mock === true
               ? `mock_lambda/${functionName}`
               : `editable_src/lambda_studs/${functionName}`;
-
+          lambdaMemorySize = lambdas[functionName].memory_size
           // const handlerfile = lambdas[functionName].asset_path
           //   .split("/")
           //   [lambdas[functionName].asset_path.split("/").length - 1].split(
@@ -155,6 +156,7 @@ export class Lambda {
         functionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
+        memorySize:${lambdaMemorySize},
         code: lambda.Code.fromAsset("${handlerAsset}"),
         ${lambdaLayer}
         ${role}
