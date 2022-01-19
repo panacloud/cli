@@ -39,6 +39,8 @@ export class Lambda {
     let handlerName: string;
     let handlerAsset: string;
     let lambdaMemorySize:number;
+    let lambdaTimeout:number;
+
     let lambdaConstructName: string = functionName
       ? `${apiName}Lambda${functionName}`
       : `${apiName}Lambda`;
@@ -86,6 +88,8 @@ export class Lambda {
             ? `mock_lambda/${microServiceName}/${functionName}`
             : `editable_src/lambda_studs/${microServiceName}/${functionName}`;
         lambdaMemorySize = lambdas[microServiceName][functionName].memory_size
+        lambdaTimeout = lambdas[microServiceName][functionName].timeout
+
         // const handlerfile = lambdas[microServiceName][functionName].asset_path
         //   .split("/")
         //   [
@@ -117,6 +121,8 @@ export class Lambda {
               ? `mock_lambda/${functionName}`
               : `editable_src/lambda_studs/${functionName}`;
           lambdaMemorySize = lambdas[functionName].memory_size
+          lambdaTimeout = lambdas[functionName].timeout
+
           // const handlerfile = lambdas[functionName].asset_path
           //   .split("/")
           //   [lambdas[functionName].asset_path.split("/").length - 1].split(
@@ -157,6 +163,7 @@ export class Lambda {
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
         memorySize:${lambdaMemorySize},
+        timeout:Duration.seconds(${lambdaTimeout}),
         code: lambda.Code.fromAsset("${handlerAsset}"),
         ${lambdaLayer}
         ${role}
