@@ -23,7 +23,6 @@ export default class Config extends Command {
     memory:flags.integer(),
     timeout:flags.integer()
   };
-
   async run() {
     const { flags, args } = this.parse(Config);
     const spinner = startSpinner("Updating Panacloud Config");
