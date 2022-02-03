@@ -75,7 +75,7 @@ USAGE
 
 ## `panacloud client [FILE]`
 
-describe the command here
+Run Graphiql Explorer locally
 
 ```
 USAGE
@@ -142,12 +142,6 @@ _See code: [src/commands/init.ts](https://github.com/panacloud/cli/blob/v0.0.9/s
 Login into your Panacloud Portal Account
 
 ```
-USAGE
-  $ panacloud login
-```
-
-_See code: [src/commands/login.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/login.ts)_
-
 ## `panacloud merge`
 
 Merge multiple GraphQL schema in one
@@ -164,7 +158,7 @@ _See code: [src/commands/merge.ts](https://github.com/panacloud/cli/blob/v0.0.9/
 
 ## `panacloud status`
 
-describe the command here
+Displays status of the Api(Mock Lambdas,Deployed url)
 
 ```
 USAGE
