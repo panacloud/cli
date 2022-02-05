@@ -44,8 +44,6 @@ GraphQL Schema File Path? ../user.graphql
 
 API Name? MyUserAPI
 
-Nested Resolver? No
-
 Select Database? Neptune (Graph) 
 
 Select Query Language? Gremlin
