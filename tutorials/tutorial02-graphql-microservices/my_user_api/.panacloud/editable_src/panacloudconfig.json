@@ -1,0 +1,12 @@
+{
+  "lambdas": {
+    "todo": {
+      "getTodos": { "is_mock": true, "memory_size": 128, "timeout": 6 },
+      "addTodo": { "is_mock": true, "memory_size": 128, "timeout": 6 },
+      "updateTodo": { "is_mock": true, "memory_size": 128, "timeout": 6 },
+      "deleteTodo": { "is_mock": true, "memory_size": 128, "timeout": 6 }
+    }
+  },
+  "mockLambdaLayer": { "asset_path": "mock_lambda_layer" },
+  "stages": ["prd", "dev"]
+}
