@@ -1,0 +1,48 @@
+{
+  "name": "tutorial_00_getting_started_graphql",
+  "version": "0.1.0",
+  "bin": "bin/tutorial_00_getting_started_graphql.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy-dev": "tsc && cross-env STAGE=dev cdk deploy --outputs-file ./cdk-dev-outputs.json",
+    "deploy-prd": "tsc && cross-env STAGE=prd cdk deploy --outputs-file ./cdk-prd-outputs.json",
+    "codegen": "graphql-codegen",
+    "destroy-dev": "cross-env STAGE=dev cdk destroy && del-cli --force ./cdk-dev-outputs.json",
+    "destroy-prd": "cross-env STAGE=prd cdk destroy && del-cli --force ./cdk-prd-outputs.json"
+  },
+  "devDependencies": {
+    "@aws-cdk/assert": "^2.1.0",
+    "@graphql-codegen/cli": "^2.2.0",
+    "@graphql-codegen/typescript": "^2.2.2",
+    "@types/aws-lambda": "^8.10.84",
+    "@types/aws-sdk": "^2.7.0",
+    "@types/jest": "^27.0.1",
+    "@types/chai": "^4.2.22",
+    "@types/fs-extra": "^9.0.13",
+    "@types/node": "16.7.5",
+    "@types/supertest": "^2.0.11",
+    "aws-cdk": "^2.1.0",
+    "aws-lambda": "^1.0.6",
+    "chai": "^4.3.4",
+    "del-cli": "^4.0.1",
+    "cross-env": "^7.0.3",
+    "graphql": "^15.6.0",
+    "jest": "^27.0.6",
+    "mocha": "^9.1.3",
+    "supertest": "^6.1.6",
+    "ts-jest": "^27.0.5",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "@types/valid-url": "^1.0.3",
+    "aws-cdk-lib": "^2.1.0",
+    "constructs": "10.0.0",
+    "fs-extra": "^10.0.0",
+    "gql-generator": "^1.0.13",
+    "source-map-support": "^0.5.19",
+    "valid-url": "^1.0.9"
+  }
+}
