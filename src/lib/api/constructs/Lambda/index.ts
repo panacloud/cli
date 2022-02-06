@@ -199,7 +199,7 @@ export class Lambda {
       "const"
     );
   }
-  public mockLambdaLayer(apiName: string, path: string) {
+  public mockLambdaLayer(apiName: string, isCustom: boolean) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -208,7 +208,7 @@ export class Lambda {
         initializer: () => {
           this.code
             .line(`new lambda.LayerVersion(this, "${apiName}MockLambdaLayer", {
-          code: lambda.Code.fromAsset("${path}"),
+          code: lambda.Code.fromAsset("${isCustom===true?"editable_src/customMockLambdaLayer":"mock_lambda_layer"}"),
         })`);
         },
       },
