@@ -1,1 +1,1 @@
-# GraphQL Todo API using Relational Database
+# GraphQL Todo API using AWS Aurora Relational Database
