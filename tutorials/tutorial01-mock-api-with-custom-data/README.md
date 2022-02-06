@@ -1,4 +1,4 @@
-# Custom Mock API for your Multi-Tenant Serverless API CDK TypeScript Project!
+# Mock API with custom data for your Multi-Tenant Serverless API CDK TypeScript Project!
 
 ## Getting Started
 
