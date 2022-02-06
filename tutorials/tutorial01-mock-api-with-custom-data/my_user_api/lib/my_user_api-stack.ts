@@ -30,7 +30,7 @@ export class MyUserApiStack extends Stack {
     );
     const myUserApi_mock_lambdaLayer: lambda.LayerVersion =
       new lambda.LayerVersion(this, "myUserApiMockLambdaLayer", {
-        code: lambda.Code.fromAsset("mock_lambda_layer"),
+        code: lambda.Code.fromAsset("editable_src/customMockLambda"),
       });
     const myUserApi_lambdaFn_user: lambda.Function = new lambda.Function(
       this,

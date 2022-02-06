@@ -3,6 +3,6 @@
     "user": { "is_mock": true, "memory_size": 128, "timeout": 6 },
     "addUser": { "is_mock": true, "memory_size": 128, "timeout": 6 }
   },
-  "mockLambdaLayer": { "asset_path": "mock_lambda_layer" },
+  "mockLambdaLayer": { "asset_path": "editable_src/customMockLambda" },
   "stages": ["prd", "dev"]
 }
