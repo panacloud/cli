@@ -1,4 +1,4 @@
-# Custom Mock API for your Multi-Tenant Serverless API CDK TypeScript Project!
+# Mock API with custom data for your Multi-Tenant Serverless API CDK TypeScript Project!
 
 ## Getting Started
 
@@ -24,7 +24,7 @@ Now the MyUserAPI code is generated and available in the `my_user_api` directory
 
 The `mock_lambda` directory, which is produced automatically by the Panacloud CLI, will be visible. If you perform the `panacloud update` command, this mock_lambda will update automatically.
 
-If you want to write a custom lambda layer, Panacloud CLI allows you to do so under the `editable src/customMockLambdaLayer/mockData/*` directory, which will not be automatically updated after executing the `panacloud update` command.
+Initially `mock_lambda_layer` directory is set as lambda layer it contains all the data that mock lambda returns and it is automatically updated whenever `panacloud update` command runs.If you want to add custom data for mock api, Panacloud CLI allows you to do so under the `editable src/customMockLambdaLayer/mockData/*` directory, which will not be automatically updated after executing the `panacloud update` command.
 
 Follow the steps below to use custom mock lambda in your CLI app.
 
