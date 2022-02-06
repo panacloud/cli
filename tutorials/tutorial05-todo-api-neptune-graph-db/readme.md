@@ -1,1 +1,1 @@
-# GraphQL Todo API using Graph Database
+# GraphQL Todo API using AWS Neptune Graph Database

@@ -1,1 +1,1 @@
-# GraphQL Todo API using DynamoDB Non Relational Database
+# GraphQL Todo API using AWS DynamoDB Non Relational Database
