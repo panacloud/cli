@@ -5,6 +5,7 @@ export class DefaultVisitor implements IAspect {
   constructor() {}
   public visit(node: IConstruct): void {
     if (node instanceof lambda.Function) {
+      node.addEnvironment("name","xyz")
     }
   }
 }
