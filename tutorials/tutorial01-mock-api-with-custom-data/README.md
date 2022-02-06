@@ -29,7 +29,7 @@ Initially `mock_lambda_layer` directory is set as lambda layer it contains all t
 Follow the steps below to use custom mock lambda in your CLI app.
 
 * Change the `mockLambdaLayer` asset path property in editable src/panacloudconfig.json from `mock_lambda_layer` to `editable/src/customMockLambdaLayer`
-* Run the `panacloud update` command (This will update all mock lambda imports in CLI generated code including test cases)
+* Run the `panacloud update` command (This will update all mock lambda imports in CLI generated code)
 
 #### Caution!
 If you make a change to the graphql schema in `editable/src/graphql/schema/schema.graphql` and then execute the command `panacloud update`, your custom customMockLambdaLayer will not be updated. Instead, it will only change `types` inside `types/index.ts`, and the user will need to update his code accordingly.
