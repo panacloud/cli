@@ -60,8 +60,8 @@ scalar AWSIPAddress
   type Mutation {
     createToDo(toDoInput: ToDoInput): ToDo
     updateToDo(toDoId: ID!, toDoInput: ToDoInput): ToDo
-    deleteToDo(toDoId: ID!): ToDo
-    deleteToDos: [ToDo!]!
+    deleteToDo(toDoId: ID!): String
+    deleteToDos: String
   }`,
         }
       );

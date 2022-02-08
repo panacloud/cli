@@ -30,8 +30,8 @@ export interface Scalars {
 export interface Mutation {
   __typename?: "Mutation";
   createToDo?: Maybe<ToDo>;
-  deleteToDo?: Maybe<ToDo>;
-  deleteToDos: Array<ToDo>;
+  deleteToDo?: Maybe<Scalars["String"]>;
+  deleteToDos?: Maybe<Scalars["String"]>;
   updateToDo?: Maybe<ToDo>;
 }
 

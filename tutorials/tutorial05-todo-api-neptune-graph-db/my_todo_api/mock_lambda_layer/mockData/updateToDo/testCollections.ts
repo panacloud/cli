@@ -7,14 +7,14 @@ export const testCollections: TestCollection = {
         arguments: {
           toDoId: "01",
           toDoInput: {
-            title: "Florenza",
-            description: "Tedi",
+            title: "Maren",
+            description: "Malory",
           },
         },
         response: {
           id: "01",
-          title: "Casandra",
-          description: "Riannon",
+          title: "Melitta",
+          description: "Loleta",
         },
       },
     ],

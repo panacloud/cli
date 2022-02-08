@@ -19,33 +19,6 @@ async function deleteToDo(
   args: MutationDeleteToDoArgs,
   g: gprocess.GraphTraversalSource
 ) {
-  // Write your buisness logic here
-
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  //  await g.addV('user').property('name', 'John').property('age', 20)
-
-  // return args.user.name;
-  return { id: "01", title: "Aurie", description: "Alfi" };
+  await g.V(args.toDoId).drop().iterate();
+  return "todo deleted";
 }

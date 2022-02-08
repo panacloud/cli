@@ -8,6 +8,6 @@ import {
 
 export type TestCollection = {
   fields: {
-    deleteToDo: { arguments: MutationDeleteToDoArgs; response: ToDo }[];
+    deleteToDo: { arguments: MutationDeleteToDoArgs; response: String }[];
   };
 };

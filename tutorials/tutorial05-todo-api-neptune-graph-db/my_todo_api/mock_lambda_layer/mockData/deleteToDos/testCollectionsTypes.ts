@@ -7,5 +7,5 @@ import {
 } from "../types";
 
 export type TestCollection = {
-  fields: { deleteToDos: { arguments: {}; response: ToDo[] }[] };
+  fields: { deleteToDos: { arguments: {}; response: String }[] };
 };

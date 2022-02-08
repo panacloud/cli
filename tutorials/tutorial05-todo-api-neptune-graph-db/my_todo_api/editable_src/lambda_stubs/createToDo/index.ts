@@ -19,33 +19,14 @@ async function createToDo(
   args: MutationCreateToDoArgs,
   g: gprocess.GraphTraversalSource
 ) {
-  // Write your buisness logic here
-
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  //  await g.addV('user').property('name', 'John').property('age', 20)
-
-  // return args.user.name;
-  return { id: "01", title: "Elene", description: "Tabbie" };
+  const data = await g
+    .addV("todo")
+    .property("title", args.toDoInput?.title)
+    .property("description", args.toDoInput?.description)
+    .next();
+  return {
+    id: data.value.id,
+    title: args.toDoInput?.title,
+    description: args.toDoInput?.description,
+  };
 }

@@ -5,23 +5,7 @@ export const testCollections: TestCollection = {
     deleteToDos: [
       {
         arguments: {},
-        response: [
-          {
-            id: "01",
-            title: "Frances",
-            description: "Prue",
-          },
-          {
-            id: "01",
-            title: "Dyanna",
-            description: "Rosa",
-          },
-          {
-            id: "01",
-            title: "Pandora",
-            description: "Joellyn",
-          },
-        ],
+        response: "Camille",
       },
     ],
   },

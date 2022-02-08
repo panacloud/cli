@@ -13,53 +13,7 @@ exports.handler = async (event: AppSyncResolverEvent<null>) => {
 };
 
 async function getToDos(g: gprocess.GraphTraversalSource) {
-  // Write your buisness logic here
+  let data = await g.V().hasLabel("todo").elementMap().toList();
 
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  // try {
-  //   let data = await g.V().hasLabel('user').toList()
-  //   let users = Array()
-
-  //   for (const v of data) {
-  //     const _properties = await g.V(v.id).properties().toList()
-  //     let user = _properties.reduce((acc, next) => {
-  //       acc[next.label] = next.value
-  //       return acc
-  //     }, {})
-  //     user.id = v.id
-  //     users.push(post)
-  //   }
-  //   return users
-  // } catch (err) {
-  //     console.log('ERROR', err)
-  //     return null
-  // }
-
-  return [
-    { id: "01", title: "Shina", description: "Alexi" },
-    { id: "01", title: "Aubree", description: "Lynde" },
-    { id: "01", title: "Concordia", description: "Dael" },
-  ];
+  return data;
 }
