@@ -23,7 +23,8 @@ export default class Config extends Command {
     memory:flags.integer(),
     timeout:flags.integer(),
     customData:flags.string(),
-    addStage:flags.string()
+    addStage:flags.string(),
+    deleteStage:flags.string()
   };
   async run() {
     const { flags, args } = this.parse(Config);
@@ -31,7 +32,7 @@ export default class Config extends Command {
 
     if (
       // !flags.false && !flags.true &&!flags.all&&
-       !args.queryName  && !flags.mock && !flags.customData) {
+       !args.queryName  && !flags.mock && !flags.customData && !flags.addStage && !flags.deleteStage) {
       stopSpinner(
         spinner,
         "Please use panacloud config -h to get more info about the command",
@@ -125,18 +126,29 @@ export default class Config extends Command {
         }
     }
     if(flags.addStage){
-      if(flags.addStage){
+      if(panacloudConfig.stages.includes(flags.addStage)){
         stopSpinner(
           spinner,
-          "Invalid Timeout",
+          `${flags.addStage} stage already exists!`,
           true
         );
         process.exit(1);
       }else{
-        panacloudConfig.lambdas[args.queryName].timeout = flags.timeout
+        panacloudConfig.stages=[...panacloudConfig.stages,flags.addStage]
       }
   }
-
+  if(flags.deleteStage){
+    if(!panacloudConfig.stages.includes(flags.deleteStage)){
+      stopSpinner(
+        spinner,
+        `${flags.deleteStage} stage does not exist!`,
+        true
+      );
+      process.exit(1);
+    }else{
+      panacloudConfig.stages=panacloudConfig.stages.filter((stage:string)=>stage!==flags.deleteStage)
+    }
+}
     // if (flags.all) {
     //   if (flags.true) {
     //     keys.forEach((e) => {
