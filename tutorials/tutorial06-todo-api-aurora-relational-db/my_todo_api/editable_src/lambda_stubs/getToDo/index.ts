@@ -13,39 +13,10 @@ exports.handler = async (event: AppSyncResolverEvent<QueryGetToDoArgs>) => {
 };
 
 async function getToDo(args: QueryGetToDoArgs) {
-  // Write your buisness logic here
-
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  // try{
-  // const query = `SELECT * FROM users`;
-  // const data = await db.query(query)
-  // return data
-  // }
-  // catch (err)  {
-  // console.log('ERROR', err)
-  // return null
-  // }
-  return { id: "01", title: "Page", description: "Leanora" };
+  
+  await db.query(
+    `CREATE TABLE IF NOT EXISTS todos (id serial, title TEXT,description TEXT, PRIMARY KEY (id))`
+  );
+  const todo = await db.query(`SELECT * FROM todos WHERE id = :id RETURNING *`,{ id:args.toDoId});
+  return todo.records[0];
 }

@@ -12,43 +12,11 @@ exports.handler = async (event: AppSyncResolverEvent<null>) => {
 };
 
 async function deleteToDos() {
-  // Write your buisness logic here
-
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  // try{
-  // const query = `INSERT INTO users (name,age) VALUES(:name,:age)`;
-  // await db.query(query, { name:'John', age:20 })
-  //return args.user.name
-  // }
-  // catch (err)  {
-  // console.log('ERROR', err)
-  // return null
-  // }
-  return [
-    { id: "01", title: "Lelah", description: "Addy" },
-    { id: "01", title: "Danila", description: "Val" },
-    { id: "01", title: "Clarice", description: "Latisha" },
-  ];
+  await db.query(
+    `CREATE TABLE IF NOT EXISTS todos (id serial, text TEXT,completed BOOLEAN, PRIMARY KEY (id))`
+  );
+  const todo = await db.query(`DELETE FROM todos RETURNING *`);
+  console.log(todo)
+  return todo.records[0];
+ 
 }
