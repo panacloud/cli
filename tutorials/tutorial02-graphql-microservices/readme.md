@@ -16,12 +16,14 @@ Answer the following question on the command prompt:
 
 * API Name? MyUserAPI
 
-* Select Database? DynamoDB (NoSQL) 
+* Select Database? Neptune (Graph) 
+
+* Select Query Language? Gremlin
 
 Now the MyUserAPI code is generated and available in the `my_user_api` directory.
 
 # Short Summary (You must read) 
-#### Mirco services directives can be used in the panacloud cli. By using these directives you can assemble all the related lambdas in on folder. Generally with panaclound cli you editable lambdas lies in editable_src/lambda_stubs folder but if you use Micro services Directives then inside lambda_stubs new folders will be created each named on the name you gave in the Micro Servies Directive. And all the related lambda lies in those folders.
+#### Mirco services directives can be used in the panacloud cli. By using these directives you can assemble all the related lambdas in one folder. Generally with panaclound cli you editable lambdas lies in editable_src/lambda_stubs folder but if you use Micro services Directives then inside lambda_stubs new folders will be created each named on the name you gave in the Micro Servies Directive. And all the related lambda lies in those folders.
 
 #### Caution!
 If you make a change to the graphql schema in `editable_src/graphql/schema/schema.graphql`(add more micro services directives) and then execute the command `panacloud update`, editable_src/lambda_stubs folder will be updated. Changes will be according to users update in schema if user added lambdas in existing micro servie directive then lambda will be added in that directory inside editable_src/lambda_stubs, if user removes some queries/mutation form existing micro servie directives then lambda will also be removed from that directory inside editable_src/lambda_stubs and adding and remove new micro service directive is viceversa.  

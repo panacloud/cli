@@ -9,8 +9,10 @@
     "deploy-dev": "tsc && cross-env STAGE=dev cdk deploy --outputs-file ./cdk-dev-outputs.json",
     "deploy-prd": "tsc && cross-env STAGE=prd cdk deploy --outputs-file ./cdk-prd-outputs.json",
     "codegen": "graphql-codegen",
+    "destroy-prd": "cross-env STAGE=prd cdk destroy && del-cli --force ./cdk-prd-outputs.json",
     "destroy-dev": "cross-env STAGE=dev cdk destroy && del-cli --force ./cdk-dev-outputs.json",
-    "destroy-prd": "cross-env STAGE=prd cdk destroy && del-cli --force ./cdk-prd-outputs.json"
+    "deploy-test": "tsc && cross-env STAGE=test cdk deploy --outputs-file ./cdk-test-outputs.json",
+    "destroy-test": "cross-env STAGE=test cdk destroy && del-cli --force ./cdk-test-outputs.json"
   },
   "devDependencies": {
     "@aws-cdk/assert": "^2.1.0",

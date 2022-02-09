@@ -4,5 +4,5 @@
     "addUser": { "is_mock": true, "memory_size": 128, "timeout": 6 }
   },
   "mockLambdaLayer": { "asset_path": "mock_lambda_layer" },
-  "stages": ["prd", "dev"]
+  "stages": ["prd", "dev", "test"]
 }
