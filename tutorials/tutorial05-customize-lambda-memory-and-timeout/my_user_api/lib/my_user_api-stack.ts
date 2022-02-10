@@ -41,7 +41,7 @@ export class MyUserApiStack extends Stack {
           : "myUserApiLambdauser",
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "index.handler",
-        memorySize: 128,
+        memorySize: 1024,
         timeout: Duration.seconds(6),
         code: lambda.Code.fromAsset("mock_lambda/user"),
         layers: [myUserApi_mock_lambdaLayer],
@@ -64,7 +64,7 @@ export class MyUserApiStack extends Stack {
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "index.handler",
         memorySize: 128,
-        timeout: Duration.seconds(6),
+        timeout: Duration.seconds(3),
         code: lambda.Code.fromAsset("mock_lambda/addUser"),
         layers: [myUserApi_mock_lambdaLayer],
 
