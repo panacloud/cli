@@ -1,10 +1,4 @@
-import {
-  ToDo,
-  MutationCreateToDoArgs,
-  MutationUpdateToDoArgs,
-  MutationDeleteToDoArgs,
-  QueryGetToDoArgs,
-} from "../types";
+import { ToDo, MutationCreateToDoArgs, MutationDeleteToDoArgs } from "../types";
 
 export type TestCollection = {
   fields: {

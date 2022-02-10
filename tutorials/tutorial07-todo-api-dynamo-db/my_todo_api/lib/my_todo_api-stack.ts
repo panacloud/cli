@@ -29,23 +29,6 @@ export class MyTodoApiStack extends Stack {
       new lambda.LayerVersion(this, "myTodoApiMockLambdaLayer", {
         code: lambda.Code.fromAsset("mock_lambda_layer"),
       });
-    const myTodoApi_lambdaFn_getToDo: lambda.Function = new lambda.Function(
-      this,
-      "myTodoApiLambdagetToDo",
-      {
-        functionName: props?.prod
-          ? props?.prod + "-myTodoApiLambdagetToDo"
-          : "myTodoApiLambdagetToDo",
-        runtime: lambda.Runtime.NODEJS_12_X,
-        handler: "index.handler",
-        memorySize: 128,
-        timeout: Duration.seconds(6),
-        code: lambda.Code.fromAsset("mock_lambda/getToDo"),
-        layers: [myTodoApi_mock_lambdaLayer],
-
-        environment: { TableName: myTodoApi_table.table.tableName },
-      }
-    );
     const myTodoApi_lambdaFn_getToDos: lambda.Function = new lambda.Function(
       this,
       "myTodoApiLambdagetToDos",
@@ -57,8 +40,8 @@ export class MyTodoApiStack extends Stack {
         handler: "index.handler",
         memorySize: 128,
         timeout: Duration.seconds(6),
-        code: lambda.Code.fromAsset("mock_lambda/getToDos"),
-        layers: [myTodoApi_mock_lambdaLayer],
+        code: lambda.Code.fromAsset("editable_src/lambda_stubs/getToDos"),
+        layers: [myTodoApi_lambdaLayer],
 
         environment: { TableName: myTodoApi_table.table.tableName },
       }
@@ -74,25 +57,8 @@ export class MyTodoApiStack extends Stack {
         handler: "index.handler",
         memorySize: 128,
         timeout: Duration.seconds(6),
-        code: lambda.Code.fromAsset("mock_lambda/createToDo"),
-        layers: [myTodoApi_mock_lambdaLayer],
-
-        environment: { TableName: myTodoApi_table.table.tableName },
-      }
-    );
-    const myTodoApi_lambdaFn_updateToDo: lambda.Function = new lambda.Function(
-      this,
-      "myTodoApiLambdaupdateToDo",
-      {
-        functionName: props?.prod
-          ? props?.prod + "-myTodoApiLambdaupdateToDo"
-          : "myTodoApiLambdaupdateToDo",
-        runtime: lambda.Runtime.NODEJS_12_X,
-        handler: "index.handler",
-        memorySize: 128,
-        timeout: Duration.seconds(6),
-        code: lambda.Code.fromAsset("mock_lambda/updateToDo"),
-        layers: [myTodoApi_mock_lambdaLayer],
+        code: lambda.Code.fromAsset("editable_src/lambda_stubs/createToDo"),
+        layers: [myTodoApi_lambdaLayer],
 
         environment: { TableName: myTodoApi_table.table.tableName },
       }
@@ -108,50 +74,25 @@ export class MyTodoApiStack extends Stack {
         handler: "index.handler",
         memorySize: 128,
         timeout: Duration.seconds(6),
-        code: lambda.Code.fromAsset("mock_lambda/deleteToDo"),
-        layers: [myTodoApi_mock_lambdaLayer],
+        code: lambda.Code.fromAsset("editable_src/lambda_stubs/deleteToDo"),
+        layers: [myTodoApi_lambdaLayer],
 
         environment: { TableName: myTodoApi_table.table.tableName },
       }
     );
-    const myTodoApi_lambdaFn_deleteToDos: lambda.Function = new lambda.Function(
-      this,
-      "myTodoApiLambdadeleteToDos",
-      {
-        functionName: props?.prod
-          ? props?.prod + "-myTodoApiLambdadeleteToDos"
-          : "myTodoApiLambdadeleteToDos",
-        runtime: lambda.Runtime.NODEJS_12_X,
-        handler: "index.handler",
-        memorySize: 128,
-        timeout: Duration.seconds(6),
-        code: lambda.Code.fromAsset("mock_lambda/deleteToDos"),
-        layers: [myTodoApi_mock_lambdaLayer],
-
-        environment: { TableName: myTodoApi_table.table.tableName },
-      }
-    );
-    myTodoApi_table.table.grantFullAccess(myTodoApi_lambdaFn_getToDo);
     myTodoApi_table.table.grantFullAccess(myTodoApi_lambdaFn_getToDos);
     myTodoApi_table.table.grantFullAccess(myTodoApi_lambdaFn_createToDo);
-    myTodoApi_table.table.grantFullAccess(myTodoApi_lambdaFn_updateToDo);
     myTodoApi_table.table.grantFullAccess(myTodoApi_lambdaFn_deleteToDo);
-    myTodoApi_table.table.grantFullAccess(myTodoApi_lambdaFn_deleteToDos);
 
     const myTodoApi: AppsyncConstruct = new AppsyncConstruct(
       this,
       "myTodoApiAppsyncConstruct",
       {
-        myTodoApi_lambdaFn_getToDoArn: myTodoApi_lambdaFn_getToDo.functionArn,
         myTodoApi_lambdaFn_getToDosArn: myTodoApi_lambdaFn_getToDos.functionArn,
         myTodoApi_lambdaFn_createToDoArn:
           myTodoApi_lambdaFn_createToDo.functionArn,
-        myTodoApi_lambdaFn_updateToDoArn:
-          myTodoApi_lambdaFn_updateToDo.functionArn,
         myTodoApi_lambdaFn_deleteToDoArn:
           myTodoApi_lambdaFn_deleteToDo.functionArn,
-        myTodoApi_lambdaFn_deleteToDosArn:
-          myTodoApi_lambdaFn_deleteToDos.functionArn,
         prod: props?.prod,
       }
     );

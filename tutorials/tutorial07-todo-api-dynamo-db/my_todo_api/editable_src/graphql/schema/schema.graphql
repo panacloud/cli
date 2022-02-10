@@ -19,13 +19,10 @@ scalar AWSIPAddress
     description: String!
   }
   type Query {
-    getToDo(toDoId: ID!): ToDo!
     getToDos: [ToDo!]!
   }
 
   type Mutation {
     createToDo(toDoInput: ToDoInput): ToDo
-    updateToDo(toDoId: ID!, toDoInput: ToDoInput): ToDo
-    deleteToDo(toDoId: ID!): ToDo
-    deleteToDos: [ToDo!]!
+    deleteToDo(toDoId: ID!): String
   }

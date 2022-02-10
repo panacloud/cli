@@ -2,12 +2,9 @@ import { aws_appsync as appsync, CfnOutput } from "aws-cdk-lib";
 import { aws_iam as iam } from "aws-cdk-lib";
 import { Construct } from "constructs";
 interface AppsyncProps {
-  myTodoApi_lambdaFn_getToDoArn: string;
   myTodoApi_lambdaFn_getToDosArn: string;
   myTodoApi_lambdaFn_createToDoArn: string;
-  myTodoApi_lambdaFn_updateToDoArn: string;
   myTodoApi_lambdaFn_deleteToDoArn: string;
-  myTodoApi_lambdaFn_deleteToDosArn: string;
   prod?: string;
 }
 
@@ -53,15 +50,12 @@ scalar AWSIPAddress
     description: String!
   }
   type Query {
-    getToDo(toDoId: ID!): ToDo!
     getToDos: [ToDo!]!
   }
 
   type Mutation {
     createToDo(toDoInput: ToDoInput): ToDo
-    updateToDo(toDoId: ID!, toDoInput: ToDoInput): ToDo
-    deleteToDo(toDoId: ID!): ToDo
-    deleteToDos: [ToDo!]!
+    deleteToDo(toDoId: ID!): String
   }`,
         }
       );
@@ -104,24 +98,6 @@ scalar AWSIPAddress
           serviceRoleArn: myTodoApi_serviceRole.roleArn,
         }
       );
-    const ds_myTodoApi_updateToDo: appsync.CfnDataSource =
-      new appsync.CfnDataSource(
-        this,
-        props?.prod
-          ? props?.prod + "myTodoApidataSourceGraphqlupdateToDo"
-          : "myTodoApidataSourceGraphqlupdateToDo",
-        {
-          name: props?.prod
-            ? props?.prod + "myTodoApi_dataSource_updateToDo"
-            : "myTodoApi_dataSource_updateToDo",
-          apiId: myTodoApi_appsync.attrApiId,
-          type: "AWS_LAMBDA",
-          lambdaConfig: {
-            lambdaFunctionArn: props!.myTodoApi_lambdaFn_updateToDoArn,
-          },
-          serviceRoleArn: myTodoApi_serviceRole.roleArn,
-        }
-      );
     const ds_myTodoApi_deleteToDo: appsync.CfnDataSource =
       new appsync.CfnDataSource(
         this,
@@ -136,42 +112,6 @@ scalar AWSIPAddress
           type: "AWS_LAMBDA",
           lambdaConfig: {
             lambdaFunctionArn: props!.myTodoApi_lambdaFn_deleteToDoArn,
-          },
-          serviceRoleArn: myTodoApi_serviceRole.roleArn,
-        }
-      );
-    const ds_myTodoApi_deleteToDos: appsync.CfnDataSource =
-      new appsync.CfnDataSource(
-        this,
-        props?.prod
-          ? props?.prod + "myTodoApidataSourceGraphqldeleteToDos"
-          : "myTodoApidataSourceGraphqldeleteToDos",
-        {
-          name: props?.prod
-            ? props?.prod + "myTodoApi_dataSource_deleteToDos"
-            : "myTodoApi_dataSource_deleteToDos",
-          apiId: myTodoApi_appsync.attrApiId,
-          type: "AWS_LAMBDA",
-          lambdaConfig: {
-            lambdaFunctionArn: props!.myTodoApi_lambdaFn_deleteToDosArn,
-          },
-          serviceRoleArn: myTodoApi_serviceRole.roleArn,
-        }
-      );
-    const ds_myTodoApi_getToDo: appsync.CfnDataSource =
-      new appsync.CfnDataSource(
-        this,
-        props?.prod
-          ? props?.prod + "myTodoApidataSourceGraphqlgetToDo"
-          : "myTodoApidataSourceGraphqlgetToDo",
-        {
-          name: props?.prod
-            ? props?.prod + "myTodoApi_dataSource_getToDo"
-            : "myTodoApi_dataSource_getToDo",
-          apiId: myTodoApi_appsync.attrApiId,
-          type: "AWS_LAMBDA",
-          lambdaConfig: {
-            lambdaFunctionArn: props!.myTodoApi_lambdaFn_getToDoArn,
           },
           serviceRoleArn: myTodoApi_serviceRole.roleArn,
         }
@@ -194,19 +134,6 @@ scalar AWSIPAddress
           serviceRoleArn: myTodoApi_serviceRole.roleArn,
         }
       );
-    const getToDo_resolver: appsync.CfnResolver = new appsync.CfnResolver(
-      this,
-      "getToDo_resolver",
-      {
-        apiId: myTodoApi_appsync.attrApiId,
-        typeName: "Query",
-        fieldName: "getToDo",
-        dataSourceName: ds_myTodoApi_getToDo.name,
-      }
-    );
-    getToDo_resolver.node.addDependency(myTodoApi_schema);
-    getToDo_resolver.node.addDependency(ds_myTodoApi_getToDo);
-
     const getToDos_resolver: appsync.CfnResolver = new appsync.CfnResolver(
       this,
       "getToDos_resolver",
@@ -233,19 +160,6 @@ scalar AWSIPAddress
     createToDo_resolver.node.addDependency(myTodoApi_schema);
     createToDo_resolver.node.addDependency(ds_myTodoApi_createToDo);
 
-    const updateToDo_resolver: appsync.CfnResolver = new appsync.CfnResolver(
-      this,
-      "updateToDo_resolver",
-      {
-        apiId: myTodoApi_appsync.attrApiId,
-        typeName: "Mutation",
-        fieldName: "updateToDo",
-        dataSourceName: ds_myTodoApi_updateToDo.name,
-      }
-    );
-    updateToDo_resolver.node.addDependency(myTodoApi_schema);
-    updateToDo_resolver.node.addDependency(ds_myTodoApi_updateToDo);
-
     const deleteToDo_resolver: appsync.CfnResolver = new appsync.CfnResolver(
       this,
       "deleteToDo_resolver",
@@ -258,19 +172,6 @@ scalar AWSIPAddress
     );
     deleteToDo_resolver.node.addDependency(myTodoApi_schema);
     deleteToDo_resolver.node.addDependency(ds_myTodoApi_deleteToDo);
-
-    const deleteToDos_resolver: appsync.CfnResolver = new appsync.CfnResolver(
-      this,
-      "deleteToDos_resolver",
-      {
-        apiId: myTodoApi_appsync.attrApiId,
-        typeName: "Mutation",
-        fieldName: "deleteToDos",
-        dataSourceName: ds_myTodoApi_deleteToDos.name,
-      }
-    );
-    deleteToDos_resolver.node.addDependency(myTodoApi_schema);
-    deleteToDos_resolver.node.addDependency(ds_myTodoApi_deleteToDos);
 
     this.api_url = myTodoApi_appsync.attrGraphQlUrl;
     this.api_key = myTodoApi_apiKey.attrApiKey;

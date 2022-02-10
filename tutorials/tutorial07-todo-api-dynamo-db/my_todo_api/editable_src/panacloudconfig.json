@@ -1,12 +1,9 @@
 {
   "lambdas": {
-    "getToDo": { "is_mock": true, "memory_size": 128, "timeout": 6 },
-    "getToDos": { "is_mock": true, "memory_size": 128, "timeout": 6 },
-    "createToDo": { "is_mock": true, "memory_size": 128, "timeout": 6 },
-    "updateToDo": { "is_mock": true, "memory_size": 128, "timeout": 6 },
-    "deleteToDo": { "is_mock": true, "memory_size": 128, "timeout": 6 },
-    "deleteToDos": { "is_mock": true, "memory_size": 128, "timeout": 6 }
+    "getToDos": { "is_mock": false, "memory_size": 128, "timeout": 6 },
+    "createToDo": { "is_mock": false, "memory_size": 128, "timeout": 6 },
+    "deleteToDo": { "is_mock": false, "memory_size": 128, "timeout": 6 }
   },
-  "mockLambdaLayer": { "asset_path": "mock_lambda_layer" },
+  "mockData": { "is_custom": false },
   "stages": ["prd", "dev"]
 }

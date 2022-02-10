@@ -8,18 +8,18 @@ export const testCollections: TestCollection = {
         response: [
           {
             id: "01",
-            title: "Ilise",
-            description: "Merola",
+            title: "Meghan",
+            description: "Sophey",
           },
           {
             id: "01",
-            title: "Reggie",
-            description: "Minette",
+            title: "Josselyn",
+            description: "Domeniga",
           },
           {
             id: "01",
-            title: "Simonette",
-            description: "Ted",
+            title: "Melodee",
+            description: "Lynna",
           },
         ],
       },

@@ -30,9 +30,7 @@ export interface Scalars {
 export interface Mutation {
   __typename?: "Mutation";
   createToDo?: Maybe<ToDo>;
-  deleteToDo?: Maybe<ToDo>;
-  deleteToDos: Array<ToDo>;
-  updateToDo?: Maybe<ToDo>;
+  deleteToDo?: Maybe<Scalars["String"]>;
 }
 
 export interface MutationCreateToDoArgs {
@@ -43,19 +41,9 @@ export interface MutationDeleteToDoArgs {
   toDoId: Scalars["ID"];
 }
 
-export interface MutationUpdateToDoArgs {
-  toDoId: Scalars["ID"];
-  toDoInput?: InputMaybe<ToDoInput>;
-}
-
 export interface Query {
   __typename?: "Query";
-  getToDo: ToDo;
   getToDos: Array<ToDo>;
-}
-
-export interface QueryGetToDoArgs {
-  toDoId: Scalars["ID"];
 }
 
 export interface ToDo {

@@ -14,8 +14,7 @@ exports.handler = async (event: AppSyncResolverEvent<null>) => {
 };
 
 async function getToDos() {
-  
-  const params = {TableName:process.env.TableName}
-    const data = await docClient.scan(params).promise()
-  return data.Items
+  const params = { TableName: process.env.TableName };
+  const data = await docClient.scan(params).promise();
+  return data.Items;
 }

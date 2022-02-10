@@ -17,11 +17,13 @@ exports.handler = async (
 };
 
 async function deleteToDo(args: MutationDeleteToDoArgs) {
-  const params = {TableName:process.env.TableName,
+  const params = {
+    TableName: process.env.TableName,
     Key: {
-     id:args.toDoId
- }}
-  const data = await docClient.delete(params).promise()
-        console.log(data)
+      id: args.toDoId,
+    },
+  };
+  const data = await docClient.delete(params).promise();
+  console.log(data);
   return { id: "01", title: "Berna", description: "Doreen" };
 }
