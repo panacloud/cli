@@ -28,7 +28,7 @@ Initially `mock_lambda_layer` directory is set as lambda layer it contains all t
 
 Follow the steps below to use custom mock lambda in your CLI app.
 
-* Change the `mockLambdaLayer` asset path property in editable src/panacloudconfig.json from `mock_lambda_layer` to `editable/src/customMockLambdaLayer`
+* Change the `mockData` is_custom property in editable src/panacloudconfig.json from `false` to `true` or run `panacloud config --customData true` command(doing through command is recommended)
 * Run the `panacloud update` command (This will update all mock lambda imports in CLI generated code)
 
 #### Caution!
@@ -86,4 +86,3 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
  5. Monitor your APIs and do multi-tenant billing and clearing on the Ethereum blockchain using smart contracts. 
  6. Issue tokens to your API early adopters and users to incentivize them to subscribe and use your APIs and become a participant in the [Owership Economy](https://variant.fund/writing/the-ownership-economy-crypto-and-consumer-software).
  8. Cash out whenever you require liquidity by selling your API tokens.
-
