@@ -14,43 +14,8 @@ exports.handler = async (event: AppSyncResolverEvent<null>) => {
 };
 
 async function getToDos() {
-  // Write your buisness logic here
-
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  // try{
-  // const params = {TableName:process.env.TableName}
-  //   const data = await docClient.scan(params).promise()
-  // return data.Items
-  // }
-  // catch (err)  {
-  // console.log('ERROR', err)
-  // return null
-  // }
-  return [
-    { id: "01", title: "Adena", description: "Lanna" },
-    { id: "01", title: "Alisha", description: "Nannette" },
-    { id: "01", title: "Susi", description: "Xylia" },
-  ];
+  
+  const params = {TableName:process.env.TableName}
+    const data = await docClient.scan(params).promise()
+  return data.Items
 }

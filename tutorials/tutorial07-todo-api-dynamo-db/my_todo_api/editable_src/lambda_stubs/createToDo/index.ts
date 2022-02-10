@@ -2,6 +2,8 @@ var axios = require("axios");
 import * as AWS from "aws-sdk";
 import { AppSyncResolverEvent } from "aws-lambda";
 import { MutationCreateToDoArgs } from "../../customMockLambdaLayer/mockData/types";
+import { v4 as uuidv4 } from 'uuid';
+
 const docClient = new AWS.DynamoDB.DocumentClient();
 declare var process: {
   env: {
@@ -17,39 +19,17 @@ exports.handler = async (
 };
 
 async function createToDo(args: MutationCreateToDoArgs) {
-  // Write your buisness logic here
-
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  // try{
-  // const params = {TableName:process.env.TableName, Item: args.user}
-  // await docClient.put(params).promise()
-  //return args.user.name
-  // }
-  // catch (err)  {
-  // console.log('ERROR', err)
-  // return null
-  // }
+  
+  
+  const params = {TableName:process.env.TableName,
+     Item: {
+      id:uuidv4(),
+      title:args.toDoInput?.title,
+      description:args.toDoInput?.description
+  }}
+  const data = await docClient.put(params).promise()
+  console.log(data)
+  // return args.user.name
+  
   return { id: "01", title: "Marsha", description: "Letti" };
 }

@@ -17,39 +17,11 @@ exports.handler = async (
 };
 
 async function deleteToDo(args: MutationDeleteToDoArgs) {
-  // Write your buisness logic here
-
-  // Example Schema:
-
-  // type User {
-  //   id: ID!
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // input userInput {
-  //   name: String!
-  //   age: Int!
-  // }
-
-  // type Query {
-  //   listUsers: [User!]
-  // }
-
-  // type Mutation {
-  //   createUser(user: userInput!): String
-  // }
-
-  // Example Code:
-
-  // try{
-  // const params = {TableName:process.env.TableName, Item: args.user}
-  // await docClient.put(params).promise()
-  //return args.user.name
-  // }
-  // catch (err)  {
-  // console.log('ERROR', err)
-  // return null
-  // }
+  const params = {TableName:process.env.TableName,
+    Key: {
+     id:args.toDoId
+ }}
+  const data = await docClient.delete(params).promise()
+        console.log(data)
   return { id: "01", title: "Berna", description: "Doreen" };
 }
