@@ -102,7 +102,7 @@ export const userInput = async () => {
     {
       type: "list",
       name: "database",
-      message: "Select Database Engine",
+      message: "Select Database",
       choices: [
         DATABASE.dynamoDB,
         DATABASE.neptuneDB,

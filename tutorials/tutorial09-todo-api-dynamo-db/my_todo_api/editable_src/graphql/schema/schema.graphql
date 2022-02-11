@@ -1,0 +1,28 @@
+scalar AWSDate
+scalar AWSTime
+scalar AWSDateTime
+scalar AWSTimestamp
+scalar AWSEmail
+scalar AWSJSON
+scalar AWSURL
+scalar AWSPhone
+scalar AWSIPAddress
+
+  type ToDo {
+    id: ID!
+    title: String!
+    description: String!
+  }
+
+  input ToDoInput {
+    title: String!
+    description: String!
+  }
+  type Query {
+    getToDos: [ToDo!]!
+  }
+
+  type Mutation {
+    createToDo(toDoInput: ToDoInput): ToDo
+    deleteToDo(toDoId: ID!): String
+  }

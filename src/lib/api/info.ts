@@ -31,7 +31,7 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
   } = model;
   let configJson: PanacloudconfigFile = {
     lambdas: {},
-    mockLambdaLayer: {},
+    mockData: {},
     stages: ["prd", "dev"],
   };
   const microServices = Object.keys(microServiceFields!);
@@ -99,7 +99,7 @@ export const generatePanacloudConfig = async (model: ApiModel) => {
     }
   }
 
-  configJson.mockLambdaLayer!["asset_path"] = `mock_lambda_layer`;
+  configJson.mockData!["is_custom"] = false;
 
   await fse.writeJson(`./editable_src/panacloudconfig.json`, configJson);
 
@@ -223,7 +223,7 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
         // ].asset_path = `mock_lambda/${service}/${diff}/index.ts`;
         panacloudConfigNew.lambdas[service][diff].is_mock = true;
         panacloudConfigNew.lambdas[service][diff].memory_size = 128;
-        panacloudConfigNew.lambdas[service][diff].timeout = 128;
+        panacloudConfigNew.lambdas[service][diff].timeout = 6;
 
       } else {
         delete panacloudConfigNew.lambdas[service][diff];
@@ -354,7 +354,7 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
       // ] = `mock_lambda/nestedResolvers/${key}/index.ts`;
       nestedLambda["is_mock"] = true;
       nestedLambda["memory_size"] = 128;
-      nestedLambda["timeout"] = 128;
+      nestedLambda["timeout"] = 6;
 
 
     }
@@ -362,10 +362,10 @@ export const updatePanacloudConfig = async (model: ApiModel, spinner: any) => {
     panacloudConfigNew.nestedLambdas && delete panacloudConfigNew.nestedLambdas;
   }
 
-  if (configPanacloud.mockLambdaLayer!["asset_path"])
-    panacloudConfigNew.mockLambdaLayer!["asset_path"] =
-      configPanacloud.mockLambdaLayer!["asset_path"];
-  else panacloudConfigNew.mockLambdaLayer!["asset_path"] = "mock_lambda_layer";
+  if (configPanacloud.mockData!["is_custom"])
+    panacloudConfigNew.mockData!["is_custom"] =
+      configPanacloud.mockData!["is_custom"];
+  else panacloudConfigNew.mockData!["is_custom"] = false;
 
   fse.removeSync("editable_src/panacloudconfig.json");
   fse.writeJson(
