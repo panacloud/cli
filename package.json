@@ -33,7 +33,7 @@
     "graphql-to-json-converter": "^1.2.0",
     "hidefile": "^3.0.0",
     "inquirer": "^8.1.2",
-    "isomorphic-git": "^1.10.0",
+    "isomorphic-git": "^1.10.3",
     "lodash": "^4.17.21",
     "log-symbols": "^4.0.0",
     "make-dir": "^3.1.0",
