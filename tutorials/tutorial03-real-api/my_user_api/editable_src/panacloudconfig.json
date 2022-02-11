@@ -1,6 +1,6 @@
 {
   "lambdas": {
-    "user": { "is_mock": false, "memory_size": 128, "timeout": 6 },
+    "user": { "is_mock": true, "memory_size": 128, "timeout": 6 },
     "addUser": { "is_mock": false, "memory_size": 128, "timeout": 6 }
   },
   "mockData": { "is_custom": false },

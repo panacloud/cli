@@ -43,8 +43,8 @@ export class MyUserApiStack extends Stack {
         handler: "index.handler",
         memorySize: 128,
         timeout: Duration.seconds(6),
-        code: lambda.Code.fromAsset("editable_src/lambda_stubs/user"),
-        layers: [myUserApi_lambdaLayer],
+        code: lambda.Code.fromAsset("mock_lambda/user"),
+        layers: [myUserApi_mock_lambdaLayer],
 
         vpc: myUserApi_neptunedb.VPCRef,
         securityGroups: [myUserApi_neptunedb.SGRef],
