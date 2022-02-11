@@ -3,7 +3,7 @@ import {
   APITYPE,
   CONSTRUCTS,
   DATABASE,
-  PanacloudconfigFile
+  PanacloudconfigFile,
 } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
 const fse = require("fs-extra");
@@ -13,19 +13,17 @@ interface Environment {
   value: string;
 }
 
-
 export class Lambda {
   code: CodeMaker;
-  panacloudConfig: PanacloudconfigFile
+  panacloudConfig: PanacloudconfigFile;
   // configPanacloud: PanacloudconfigFile = fse.readJsonSync('editable_src/panacloudconfig.json')
   constructor(_code: CodeMaker, panacloudConfig: PanacloudconfigFile) {
     this.code = _code;
     this.panacloudConfig = panacloudConfig;
-
   }
 
   public initializeLambda(
-    database:string,
+    database: string,
     apiName: string,
     functionName?: string,
     vpcName?: string,
@@ -33,64 +31,113 @@ export class Lambda {
     environments?: Environment[],
     vpcSubnets?: string,
     roleName?: string,
-    microServiceName?:string,
-    nestedResolver?:boolean,
+    microServiceName?: string,
+    nestedResolver?: boolean
   ) {
     const ts = new TypeScriptWriter(this.code);
-    let handlerName: string
-    let handlerAsset: string
-    let lambdaConstructName: string = functionName? `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
-    let lambdaVariable: string = functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn`;
-    let funcName: string = functionName?  `${apiName}Lambda${functionName}` : `${apiName}Lambda`;
-    const checkIsMock = ():boolean=>{
-      if(microServiceName){
-        if(this.panacloudConfig.lambdas[microServiceName][`${functionName}`].is_mock === true){
-          return true
+
+    let handlerName: string;
+    let handlerAsset: string;
+    let lambdaMemorySize:number;
+    let lambdaTimeout:number;
+
+    let lambdaConstructName: string = functionName
+      ? `${apiName}Lambda${functionName}`
+      : `${apiName}Lambda`;
+    let lambdaVariable: string = functionName
+      ? `${apiName}_lambdaFn_${functionName}`
+      : `${apiName}_lambdaFn`;
+    let funcName: string = functionName
+      ? `${apiName}Lambda${functionName}`
+      : `${apiName}Lambda`;
+
+    const checkIsMock = (): boolean => {
+      if (microServiceName) {
+        if (
+          this.panacloudConfig.lambdas[microServiceName][`${functionName}`]
+            .is_mock === true
+        ) {
+          return true;
         }
-        return false
-      }else{
-        if(nestedResolver){
-          if(this.panacloudConfig.nestedLambdas![`${functionName}`].is_mock === true){
-            return true
+        return false;
+      } else {
+        if (nestedResolver) {
+          if (
+            this.panacloudConfig.nestedLambdas![`${functionName}`].is_mock ===
+            true
+          ) {
+            return true;
           }
-          return false
-        }else{
-          if(this.panacloudConfig.lambdas[`${functionName}`].is_mock === true){
-            return true
+          return false;
+        } else {
+          if (
+            this.panacloudConfig.lambdas[`${functionName}`].is_mock === true
+          ) {
+            return true;
           }
-          return false
+          return false;
         }
       }
-      
+    };
+    const { lambdas } = this.panacloudConfig;
+
+    if (functionName) {
+      if (microServiceName) {
+        handlerAsset =
+          lambdas[microServiceName][functionName].is_mock === true
+            ? `mock_lambda/${microServiceName}/${functionName}`
+            : `editable_src/lambda_studs/${microServiceName}/${functionName}`;
+        lambdaMemorySize = lambdas[microServiceName][functionName].memory_size
+        lambdaTimeout = lambdas[microServiceName][functionName].timeout
+
+        // const handlerfile = lambdas[microServiceName][functionName].asset_path
+        //   .split("/")
+        //   [
+        //     lambdas[microServiceName][functionName].asset_path.split("/")
+        //       .length - 1
+        //   ].split(".")[0];
+
+        handlerName = functionName ? `index.handler` : "main.handler";
+        // const splitPath =
+        //   lambdas[microServiceName][functionName].asset_path.split("/");
+        // splitPath.pop();
+        // handlerAsset = functionName ? splitPath.join("/") : "lambda";
+      } else {
+        if (nestedResolver) {
+          const { nestedLambdas } = this.panacloudConfig;
+          // const handlerfile = nestedLambdas![functionName].asset_path
+          //   .split("/")
+          //   [
+          //     nestedLambdas![functionName].asset_path.split("/").length - 1
+          //   ].split(".")[0];
+
+          handlerName = functionName ? `index.handler` : "main.handler";
+          // const splitPath = nestedLambdas![functionName].asset_path.split("/");
+          // splitPath.pop();
+          // handlerAsset = functionName ? splitPath.join("/") : "lambda";
+        } else {
+          handlerAsset =
+            lambdas[functionName].is_mock === true
+              ? `mock_lambda/${functionName}`
+              : `editable_src/lambda_studs/${functionName}`;
+          lambdaMemorySize = lambdas[functionName].memory_size
+          lambdaTimeout = lambdas[functionName].timeout
+
+          // const handlerfile = lambdas[functionName].asset_path
+          //   .split("/")
+          //   [lambdas[functionName].asset_path.split("/").length - 1].split(
+          //     "."
+          //   )[0];
+
+          handlerName = functionName ? `index.handler` : "main.handler";
+
+          // const splitPath = lambdas[functionName].asset_path.split("/");
+          // splitPath.pop();
+          // handlerAsset = functionName ? splitPath.join("/") : "lambda";
+        }
+      }
     }
-    if(functionName){  
-      
-      const {lambdas} = this.panacloudConfig;
-      if (microServiceName){
-        const handlerfile = lambdas[microServiceName][functionName].asset_path.split("/")[lambdas[microServiceName][functionName].asset_path.split("/").length - 1].split('.')[0];
-        handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-        const splitPath = lambdas[microServiceName][functionName].asset_path.split("/");
-        splitPath.pop();
-        handlerAsset = functionName? splitPath.join("/") : "lambda";
-      }
-      else{
-        if(nestedResolver){
-          const {nestedLambdas} = this.panacloudConfig;
-          const handlerfile = nestedLambdas![functionName].asset_path.split("/")[nestedLambdas![functionName].asset_path.split("/").length - 1].split('.')[0];
-          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-          const splitPath = nestedLambdas![functionName].asset_path.split("/");
-          splitPath.pop();
-          handlerAsset = functionName? splitPath.join("/") : "lambda";
-        }
-        else{
-          const handlerfile = lambdas[functionName].asset_path.split("/")[lambdas[functionName].asset_path.split("/").length - 1].split('.')[0];
-          handlerName = functionName? `${handlerfile}.handler` : "main.handler";
-          const splitPath = lambdas[functionName].asset_path.split("/");
-          splitPath.pop();
-          handlerAsset = functionName? splitPath.join("/") : "lambda";
-        }
-      }
-    }
+
     let vpc = vpcName ? `vpc: ${vpcName},` : "";
     let securityGroups = securityGroupsName
       ? `securityGroups: [${securityGroupsName}],`
@@ -102,7 +149,9 @@ export class Lambda {
       ? `vpcSubnets: { subnetType: ${vpcSubnets} },`
       : "";
     let role = roleName ? `role: ${roleName},` : "";
-    let lambdaLayer = `layers:[${apiName}${checkIsMock()?"_mock_":"_"}lambdaLayer],`;
+    let lambdaLayer = `layers:[${apiName}${
+      checkIsMock() ? "_mock_" : "_"
+    }lambdaLayer],`;
 
     ts.writeVariableDeclaration(
       {
@@ -113,6 +162,8 @@ export class Lambda {
         functionName: props?.prod ? props?.prod+"-${funcName}" : "${funcName}",
         runtime: lambda.Runtime.NODEJS_12_X,
         handler: "${handlerName}",
+        memorySize:${lambdaMemorySize},
+        timeout:Duration.seconds(${lambdaTimeout}),
         code: lambda.Code.fromAsset("${handlerAsset}"),
         ${lambdaLayer}
         ${role}
@@ -125,8 +176,10 @@ export class Lambda {
       },
       "const"
     );
-    if(database === DATABASE.auroraDB){
-      this.code.line(`${apiName}_auroradb.db_cluster.grantDataApiAccess(${lambdaVariable})`)
+    if (database === DATABASE.auroraDB) {
+      this.code.line(
+        `${apiName}_auroradb.db_cluster.grantDataApiAccess(${lambdaVariable})`
+      );
     }
   }
 
@@ -198,10 +251,7 @@ export class Lambda {
     );
   }
 
-  public lambdaTestConstructInitializer(
-    database: string,
-    code: CodeMaker
-  ) {
+  public lambdaTestConstructInitializer(database: string, code: CodeMaker) {
     const ts = new TypeScriptWriter(code);
     ts.writeVariableDeclaration(
       {
@@ -245,10 +295,9 @@ export class Lambda {
     value: string,
     functionName: string
   ) {
-      this.code.line(
-        `${lambda}_lambdaFn_${functionName}.addEnvironment("${envName}", ${value});`
-      );
-    
+    this.code.line(
+      `${lambda}_lambdaFn_${functionName}.addEnvironment("${envName}", ${value});`
+    );
   }
 
   public initializeTestForLambdaWithDynamoDB(
@@ -330,26 +379,13 @@ export class Lambda {
   });`);
   }
 
+  public addLambdaVar(lambdaName: string, env: Environment, apiName: string) {
+    //   functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn
 
-  
-  public addLambdaVar(
-    lambdaName:string, env:Environment, apiName:string
-    ) {
-      
-   //   functionName? `${apiName}_lambdaFn_${functionName}` : `${apiName}_lambdaFn
-   
-   const functionName = lambdaName? `${apiName}_lambdaFn_${lambdaName}` : `${apiName}_lambdaFn`
+    const functionName = lambdaName
+      ? `${apiName}_lambdaFn_${lambdaName}`
+      : `${apiName}_lambdaFn`;
 
-   this.code.line(`${functionName}.addEnvironment(${env.name},${env.value})`)
-
-      
-    }
-  
-
-
-
-
-
+    this.code.line(`${functionName}.addEnvironment(${env.name},${env.value})`);
+  }
 }
-
-

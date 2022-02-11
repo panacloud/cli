@@ -61,7 +61,7 @@ export class Imports {
 
   public importLambda() {
     const ts = new TypeScriptWriter(this.code);
-    ts.writeImports("aws-cdk-lib", ["aws_lambda as lambda"]);
+    ts.writeImports("aws-cdk-lib", ["aws_lambda as lambda","Duration"]);
   }
   public importNeptune() {
     const ts = new TypeScriptWriter(this.code);

@@ -127,6 +127,8 @@ export type PanacloudconfigFile = {
 };
 
 export type PanacloudConfiglambdaParams = {
-  asset_path: string;
+  // asset_path: string;
+  timeout:number;
+  memory_size:number;
   is_mock: boolean;
 };
