@@ -279,7 +279,7 @@ export const lambdaHandlerForAuroradb = (
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer!['asset_path']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!['is_custom']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       "",
@@ -329,7 +329,7 @@ export const lambdaHandlerForNeptunedb = (
 
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer!['asset_path']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!['is_custom']);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       "",
@@ -451,7 +451,7 @@ export const lambdaHandlerForDynamodb = (
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockLambdaLayer!['asset_path']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!['is_custom']);
 
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda("",apiName, undefined, undefined, undefined, [

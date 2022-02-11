@@ -1,0 +1,31 @@
+scalar AWSDate
+scalar AWSTime
+scalar AWSDateTime
+scalar AWSTimestamp
+scalar AWSEmail
+scalar AWSJSON
+scalar AWSURL
+scalar AWSPhone
+scalar AWSIPAddress
+
+type Todo {
+  id: ID!
+  title: String!
+  done: Boolean!
+}
+
+input TodoInput {
+  id: ID!
+  title: String!
+  done: Boolean!
+}
+
+type Query {
+  getTodos: [Todo] @microService(name:"todo")
+}
+
+type Mutation {
+  addTodo(todo: TodoInput!): Todo   @microService(name:"todo") 
+  updateTodo(todo: TodoInput!): Todo   @microService(name:"todo")
+  deleteTodo(todoId: String!): String  @microService(name:"todo")
+}

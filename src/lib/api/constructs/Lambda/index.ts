@@ -86,7 +86,7 @@ export class Lambda {
         handlerAsset =
           lambdas[microServiceName][functionName].is_mock === true
             ? `mock_lambda/${microServiceName}/${functionName}`
-            : `editable_src/lambda_studs/${microServiceName}/${functionName}`;
+            : `editable_src/lambda_stubs/${microServiceName}/${functionName}`;
         lambdaMemorySize = lambdas[microServiceName][functionName].memory_size
         lambdaTimeout = lambdas[microServiceName][functionName].timeout
 
@@ -119,7 +119,7 @@ export class Lambda {
           handlerAsset =
             lambdas[functionName].is_mock === true
               ? `mock_lambda/${functionName}`
-              : `editable_src/lambda_studs/${functionName}`;
+              : `editable_src/lambda_stubs/${functionName}`;
           lambdaMemorySize = lambdas[functionName].memory_size
           lambdaTimeout = lambdas[functionName].timeout
 
@@ -199,7 +199,7 @@ export class Lambda {
       "const"
     );
   }
-  public mockLambdaLayer(apiName: string, path: string) {
+  public mockLambdaLayer(apiName: string, isCustom: boolean) {
     const ts = new TypeScriptWriter(this.code);
     ts.writeVariableDeclaration(
       {
@@ -208,7 +208,7 @@ export class Lambda {
         initializer: () => {
           this.code
             .line(`new lambda.LayerVersion(this, "${apiName}MockLambdaLayer", {
-          code: lambda.Code.fromAsset("${path}"),
+          code: lambda.Code.fromAsset("${isCustom===true?"editable_src/customMockLambdaLayer":"mock_lambda_layer"}"),
         })`);
         },
       },
