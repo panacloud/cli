@@ -16,8 +16,8 @@ export default class Stage extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
-    add: flags.boolean({ description: "Add New Stage" }),
-    remove: flags.boolean({ description: "Remove Stage" }),
+    add: flags.boolean({ char: "a", description: "Add New Stage" }),
+    remove: flags.boolean({ char: "r", description: "Remove Stage" }),
   };
 
   async run() {

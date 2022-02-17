@@ -16,8 +16,8 @@ export default class Mock extends Command {
 
   static flags = {
     help: flags.help({ char: "h" }),
-    true: flags.boolean({ description: "Set is_mock true" }),
-    false: flags.boolean({ description: "Set is_mock false" }),
+    true: flags.boolean({ char: "t", description: "Set is_mock true" }),
+    false: flags.boolean({ char: "f", description: "Set is_mock false" }),
   };
 
   checkValExists(

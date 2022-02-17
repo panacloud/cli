@@ -12,16 +12,14 @@ const prettier = require("prettier");
 export default class CustomData extends Command {
   static description = "Upate panacloudconfig.json";
 
-  static args = [{ name: "stage_name" }];
-
   static flags = {
     help: flags.help({ char: "h" }),
-    true: flags.boolean({ description: "Set is_custom true" }),
-    false: flags.boolean({ description: "Set is_custom false" }),
+    true: flags.boolean({ char: "t", description: "Set is_custom true" }),
+    false: flags.boolean({ char: "f", description: "Set is_custom false" }),
   };
 
   async run() {
-    const { flags, args } = this.parse(CustomData);
+    const { flags } = this.parse(CustomData);
     const spinner = startSpinner("Updating Panacloud Config");
 
     if (!flags.false && !flags.true) {
@@ -39,17 +37,15 @@ export default class CustomData extends Command {
 
     if (flags.true) {
       if (panacloudConfig.mockData!["is_custom"]) {
-        stopSpinner(spinner, `${args.queryName} already set to true`, true);
+        stopSpinner(spinner, `is_custom already set to true`, true);
         process.exit(1);
       } else {
         panacloudConfig.mockData!["is_custom"] = true;
       }
     } else if (flags.false) {
       if (!panacloudConfig.mockData!["is_custom"]) {
-        stopSpinner(spinner, `${args.queryName} already set to false`, true);
+        stopSpinner(spinner, `is_custom already set to false`, true);
         process.exit(1);
-      } else {
-        panacloudConfig.mockData!["is_custom"] = false;
       }
     }
 
