@@ -43,7 +43,7 @@ export const LambdaConstructFile = async (
 
   if (database === DATABASE.none) {
     lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-    lambda.mockLambdaLayer(apiName, "editable_src/mock_lambda_layer");
+    lambda.mockLambdaLayer(apiName, false);
     lambdaInitializerForMicroServices(config.api,panacloudConfig,code)
     lambdaInitializerForGeneralFields(config.api,panacloudConfig,code,general_Fields)
     if(nestedResolver){

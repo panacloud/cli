@@ -117,13 +117,13 @@ class APITests {
           ts.writeImports("chai", ["expect"]);
           ts.writeAllImports("supertest", "supertest");
           ts.writeImports("./AppSyncAPI", ["AppsyncAPI"]);
-          ts.writeImports(
-            `../../${panacloudConfig.mockLambdaLayer!["asset_path"].replace(
-              /^\/|\/$/g,
-              ""
-            )}/mockData/${key}/testCollections`,
-            ["testCollections"]
-          );
+          // ts.writeImports(
+          //   `../../${panacloudConfig.mockLambdaLayer!["asset_path"].replace(
+          //     /^\/|\/$/g,
+          //     ""
+          //   )}/mockData/${key}/testCollections`,
+          //   ["testCollections"]
+          // );
           ts.writeVariableDeclaration(
             {
               name: "{API_KEY,API_URL}",
