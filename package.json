@@ -1,6 +1,6 @@
 {
   "name": "@panacloud/cli",
-  "version": "0.0.10",
+  "version": "0.0.9",
   "description": "panacloud cli",
   "author": "Muhammad Hasan @muh_hasan",
   "bin": {
