@@ -59,6 +59,7 @@ export class CdkStack {
       const { queiresFields, mutationFields,asyncFields } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
+
     const cdk = new Cdk(this.code);
     // const manager = new apiManager(this.code);
     const dynamodb = new DynamoDB(this.code);
@@ -70,6 +71,7 @@ export class CdkStack {
     const eventBridge = new EventBridge(this.code);
     importHandlerForStack(database, apiType, this.code, this.config.api.asyncFields);
     imp.importLambda();
+    this.code.line(`import {AddConstruct} from '../editable_src/CustomConstructs/AddConstructs';`)
     database !== DATABASE.dynamoDB && imp.importEc2()
     this.code.line();
 
@@ -128,6 +130,7 @@ export class CdkStack {
           eventBridge.eventBridgeConstructInitializer(this.config.api);
         }
 
+        this.code.line(`new AddConstruct(this,"${this.config.workingDir}Construct",props);`)
         this.code.line(`new AspectController(this, props?.prod)`)
 
 

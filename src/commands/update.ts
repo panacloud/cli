@@ -104,7 +104,6 @@ export default class Create extends Command {
     let scriptKeys = Object.keys(stackPackageJson.scripts).filter(
       (v) => v.includes("deploy")  || v.includes("destroy")
     );
-
     scriptKeys.forEach((v) => delete stackPackageJson.scripts[v]);
 
     stages?.forEach((v) => {

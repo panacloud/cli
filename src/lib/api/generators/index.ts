@@ -17,6 +17,7 @@ import { mockApiTestCollections } from "./MockApi";
 import { EditableMockApiTestCollections } from "./MockApi/editableMockApi";
 import { neptuneDBConstruct } from "./Neptune";
 import { CdkStackClass } from "./Stack";
+import { AddConstruct } from "./Constructs";
 import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
 import { apiTests } from "./ApiTests";
@@ -33,6 +34,7 @@ export const generator = async (
 
   // stack
   await CdkStackClass({ config, panacloudConfig });
+  await AddConstruct();
 
   // Appsync or Apigateway && Lambda Files
   if (config.api.apiType === APITYPE.graphql) {
