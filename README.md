@@ -65,7 +65,11 @@ USAGE
 
 <!-- commands -->
 * [`panacloud client [FILE]`](#panacloud-client-file)
-* [`panacloud config [QUERYNAME]`](#panacloud-config-queryname)
+* [`panacloud config:customData`](#panacloud-configcustomdata)
+* [`panacloud config:memory [QUERY_NAME] [MEMORY_SIZE]`](#panacloud-configmemory-query_name-memory_size)
+* [`panacloud config:mock [QUERY_NAME]`](#panacloud-configmock-query_name)
+* [`panacloud config:stage [STAGE_NAME]`](#panacloud-configstage-stage_name)
+* [`panacloud config:timeout [QUERY_NAME] [TIMEOUT]`](#panacloud-configtimeout-query_name-timeout)
 * [`panacloud help [COMMAND]`](#panacloud-help-command)
 * [`panacloud init`](#panacloud-init)
 * [`panacloud login`](#panacloud-login)
@@ -75,7 +79,7 @@ USAGE
 
 ## `panacloud client [FILE]`
 
-Run Graphiql Explorer locally
+describe the command here
 
 ```
 USAGE
@@ -87,22 +91,81 @@ OPTIONS
 
 _See code: [src/commands/client.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/client.ts)_
 
-## `panacloud config [QUERYNAME]`
+## `panacloud config:customData`
 
 Upate panacloudconfig.json
 
 ```
 USAGE
-  $ panacloud config [QUERYNAME]
+  $ panacloud config:customData
 
 OPTIONS
-  -h, --help         show CLI help
-  --memory=memory
-  --mock=mock
-  --timeout=timeout
+  -f, --false  Set is_custom false
+  -h, --help   show CLI help
+  -t, --true   Set is_custom true
 ```
 
-_See code: [src/commands/config.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config.ts)_
+_See code: [src/commands/config/customData.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/customData.ts)_
+
+## `panacloud config:memory [QUERY_NAME] [MEMORY_SIZE]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:memory [QUERY_NAME] [MEMORY_SIZE]
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/config/memory.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/memory.ts)_
+
+## `panacloud config:mock [QUERY_NAME]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:mock [QUERY_NAME]
+
+OPTIONS
+  -f, --false  Set is_mock false
+  -h, --help   show CLI help
+  -t, --true   Set is_mock true
+```
+
+_See code: [src/commands/config/mock.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/mock.ts)_
+
+## `panacloud config:stage [STAGE_NAME]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:stage [STAGE_NAME]
+
+OPTIONS
+  -a, --add     Add New Stage
+  -h, --help    show CLI help
+  -r, --remove  Remove Stage
+```
+
+_See code: [src/commands/config/stage.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/stage.ts)_
+
+## `panacloud config:timeout [QUERY_NAME] [TIMEOUT]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:timeout [QUERY_NAME] [TIMEOUT]
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/config/timeout.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/timeout.ts)_
 
 ## `panacloud help [COMMAND]`
 
@@ -142,6 +205,12 @@ _See code: [src/commands/init.ts](https://github.com/panacloud/cli/blob/v0.0.9/s
 Login into your Panacloud Portal Account
 
 ```
+USAGE
+  $ panacloud login
+```
+
+_See code: [src/commands/login.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/login.ts)_
+
 ## `panacloud merge`
 
 Merge multiple GraphQL schema in one
@@ -158,7 +227,7 @@ _See code: [src/commands/merge.ts](https://github.com/panacloud/cli/blob/v0.0.9/
 
 ## `panacloud status`
 
-Displays status of the Api(Mock Lambdas,Deployed url)
+describe the command here
 
 ```
 USAGE
