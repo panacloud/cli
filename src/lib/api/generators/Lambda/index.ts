@@ -30,7 +30,7 @@ export const LambdaConstructFile = async (
   } = config;
   let mutationsAndQueries: string[] = [];
   let general_Fields: string[] = [];
-  let microService_Fields: { [k: string]: any[] } = {};
+  let microService_Fields: { [k: string]: unknown[] } = {};
 
   if (apiType === APITYPE.graphql) {
     const { queiresFields, mutationFields, generalFields, microServiceFields} = config.api;

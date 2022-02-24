@@ -1,1 +1,0 @@
-# GraphQL Todo API using Relational Database

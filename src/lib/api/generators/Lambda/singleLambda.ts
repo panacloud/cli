@@ -27,7 +27,7 @@ class SingleLambda {
     if (apiType === APITYPE.rest) {
       SwaggerParser.validate(
         this.config.api.schemaPath,
-        async (err: any, api: any) => {
+        async (err: unknown, api: { paths: { [x: string]: { [x: string]: { [x: string]: string; }; }; }; }) => {
           if (err) {
             console.error(err);
           } else {

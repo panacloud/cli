@@ -2,6 +2,12 @@ import { GraphQLSchema, IntrospectionQuery } from "graphql";
 
 export const async_response_mutName = "async_response";
 
+export enum TEMPLATE {
+  basicApi = "Basic Multi-Tenant Serverless API Scaffolding",
+  todoApi = "Todo CRUD Multi-Tenant Serverless API",
+  defineApi = "Generate Multi-Tenant Serverless API Scaffolding from Schema",
+}
+
 export enum APITYPE {
   graphql = "GraphQL",
   rest = "REST OpenAPI",
@@ -67,8 +73,8 @@ export interface Config {
 }
 
 export interface mockApiData {
-  collections: any;
-  types: any;
+  collections: { fields: any; };
+  types: { [x: string]: { fields: { [x: string]: { arguments: any; }[]; }; }; };
   imports: string[];
   enumImports: string[];
 }
@@ -80,10 +86,11 @@ export type nestedResolverFieldsAndLambda = {
   nestedResolverLambdas: string[];
 };
 export interface API {
+  template: TEMPLATE;
   multitenancy?: boolean;
   language?: LANGUAGE;
   cloudprovider?: CLOUDPROVIDER;
-  mySchema?:GraphQLSchema;
+  mySchema?: GraphQLSchema;
   apiName: string;
   schemaPath: string;
   schema?: IntrospectionQuery | string;
@@ -113,13 +120,15 @@ export enum ARCHITECTURE {
 }
 
 export type PanacloudconfigFile = {
-  lambdas: any;
-  nestedLambdas?: any;
-  mockLambdaLayer?: any;
+  lambdas: Record<string,any>;
+  nestedLambdas?:Record<string,any>;
+  mockData?: Record<string,boolean>;
   stages: string[];
 };
 
 export type PanacloudConfiglambdaParams = {
-  asset_path: string;
+  // asset_path: string;
+  timeout:number;
+  memory_size:number;
   is_mock: boolean;
 };

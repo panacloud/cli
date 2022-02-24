@@ -41,9 +41,10 @@ Now Globally Install Panacloud CLI:
 npm install @panacloud/cli -g 
 
 <!-- toc -->
-* [Panacloud Command Line Interface](#panacloud-command-line-interface)
+* [Panacloud Command Line Interface (CLI)](#panacloud-command-line-interface-cli)
 * [Usage](#usage)
-* [Commands](#commands)
+* [Panacloud Commands](#panacloud-commands)
+* [Project NPM Commands](#project-npm-commands)
 <!-- tocstop -->
 
 # Usage
@@ -54,7 +55,7 @@ $ npm install -g @panacloud/cli
 $ panacloud COMMAND
 running command...
 $ panacloud (-v|--version|version)
-@panacloud/cli/0.0.3 win32-x64 node-v14.16.1
+@panacloud/cli/0.0.9 darwin-arm64 node-v16.13.2
 $ panacloud --help [COMMAND]
 USAGE
   $ panacloud COMMAND
@@ -65,12 +66,108 @@ USAGE
 # Panacloud Commands
 
 <!-- commands -->
+* [`panacloud client [FILE]`](#panacloud-client-file)
+* [`panacloud config:customData`](#panacloud-configcustomdata)
+* [`panacloud config:memory [QUERY_NAME] [MEMORY_SIZE]`](#panacloud-configmemory-query_name-memory_size)
+* [`panacloud config:mock [QUERY_NAME]`](#panacloud-configmock-query_name)
+* [`panacloud config:stage [STAGE_NAME]`](#panacloud-configstage-stage_name)
+* [`panacloud config:timeout [QUERY_NAME] [TIMEOUT]`](#panacloud-configtimeout-query_name-timeout)
 * [`panacloud help [COMMAND]`](#panacloud-help-command)
 * [`panacloud init`](#panacloud-init)
-* [`panacloud update`](#panacloud-update)
-* [`panacloud status`](#panacloud-status)
-* [`panacloud client`](#panacloud-client)
+* [`panacloud login`](#panacloud-login)
 * [`panacloud merge`](#panacloud-merge)
+* [`panacloud status`](#panacloud-status)
+* [`panacloud update`](#panacloud-update)
+
+## `panacloud client [FILE]`
+
+describe the command here
+
+```
+USAGE
+  $ panacloud client [FILE]
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/client.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/client.ts)_
+
+## `panacloud config:customData`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:customData
+
+OPTIONS
+  -f, --false  Set is_custom false
+  -h, --help   show CLI help
+  -t, --true   Set is_custom true
+```
+
+_See code: [src/commands/config/customData.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/customData.ts)_
+
+## `panacloud config:memory [QUERY_NAME] [MEMORY_SIZE]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:memory [QUERY_NAME] [MEMORY_SIZE]
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/config/memory.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/memory.ts)_
+
+## `panacloud config:mock [QUERY_NAME]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:mock [QUERY_NAME]
+
+OPTIONS
+  -f, --false  Set is_mock false
+  -h, --help   show CLI help
+  -t, --true   Set is_mock true
+```
+
+_See code: [src/commands/config/mock.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/mock.ts)_
+
+## `panacloud config:stage [STAGE_NAME]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:stage [STAGE_NAME]
+
+OPTIONS
+  -a, --add     Add New Stage
+  -h, --help    show CLI help
+  -r, --remove  Remove Stage
+```
+
+_See code: [src/commands/config/stage.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/stage.ts)_
+
+## `panacloud config:timeout [QUERY_NAME] [TIMEOUT]`
+
+Upate panacloudconfig.json
+
+```
+USAGE
+  $ panacloud config:timeout [QUERY_NAME] [TIMEOUT]
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/config/timeout.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/config/timeout.ts)_
 
 ## `panacloud help [COMMAND]`
 
@@ -91,58 +188,34 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3
 
 ## `panacloud init`
 
-Generates CDK code, mock lambdas, and actual lambdas based on the given schema
+Generates CDK code based on the given schema
 
 ```
 USAGE
   $ panacloud init
 
 OPTIONS
-  -h, --help  show CLI help
+  -d, --database=(DynamoDB (NoSQL)|Neptune (Graph)|Aurora Serverless (Relational))
+  -h, --help                                                                        show CLI help
+  -t, --test
 ```
 
-_See code: [src/commands/init.ts](https://github.com/panacloud/cli/commands/init.ts)_
-<!-- commandsstop -->
+_See code: [src/commands/init.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/init.ts)_
 
+## `panacloud login`
 
-## `panacloud update`
-
-Update CDK code and mock lambdas based on the updated schema. This command doesnot overwrite code in the editiable_src directory.
-
-```
-USAGE
-  $ panacloud update
-
-OPTIONS
-  -h, --help  show CLI help
-```
-
-_See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/update.ts)_
-<!-- commandsstop -->
-
-
-
-
-## `panacloud client`
-
-Open a API explorer in the browser to query the API.
+Login into your Panacloud Portal Account
 
 ```
 USAGE
-  $ panacloud client
-
-OPTIONS
-  -h, --help  show CLI help
+  $ panacloud login
 ```
 
-_See code: [src/commands/client.ts](https://github.com/panacloud/cli/src/commands/client.ts)_
-<!-- commandsstop -->
-
-
+_See code: [src/commands/login.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/login.ts)_
 
 ## `panacloud merge`
 
-Merges GraphQL schema files.
+Merge multiple GraphQL schema in one
 
 ```
 USAGE
@@ -152,7 +225,35 @@ OPTIONS
   -h, --help  show CLI help
 ```
 
-_See code: [src/commands/update.ts](https://github.com/panacloud/cli/src/commands/merge.ts)_
+_See code: [src/commands/merge.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/merge.ts)_
+
+## `panacloud status`
+
+describe the command here
+
+```
+USAGE
+  $ panacloud status
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/status.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/status.ts)_
+
+## `panacloud update`
+
+Updates the Generated Code.
+
+```
+USAGE
+  $ panacloud update
+
+OPTIONS
+  -h, --help  show CLI help
+```
+
+_See code: [src/commands/update.ts](https://github.com/panacloud/cli/blob/v0.0.9/src/commands/update.ts)_
 <!-- commandsstop -->
 
 # Project NPM Commands
@@ -245,8 +346,4 @@ Multi-Tenant monetering and billing data live streamed to Amazon Timestream Data
 
 Expected Date: March 1, 2022
 
-Functionality: Basic OpenAPI speficication support. 
-
-
-
-
+Functionality: Basic OpenAPI speficication support.

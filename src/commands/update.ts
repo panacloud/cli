@@ -45,7 +45,7 @@ export default class Create extends Command {
 
     if (
       !isEqual(fileOneJson.lambdas, fileTwoJson.lambdas) ||
-      !isEqual(fileOneJson.mockLambdaLayer, fileTwoJson.mockLambdaLayer) ||
+      !isEqual(fileOneJson.mockData, fileTwoJson.mockData) ||
       !isEqual(fileOneJson.nestedLambdas, fileTwoJson.nestedLambdas) ||
       !isEqual(fileOneJson.stages, fileTwoJson.stages)
     ) {
@@ -54,7 +54,7 @@ export default class Create extends Command {
 
     if (
       !isEqual(fileOneJson.lambdas, fileTwoJson.lambdas) ||
-      !isEqual(fileOneJson.mockLambdaLayer, fileTwoJson.mockLambdaLayer) ||
+      !isEqual(fileOneJson.mockData, fileTwoJson.mockData) ||
       !isEqual(fileOneJson.nestedLambdas, fileTwoJson.nestedLambdas)
     ) {
       panacloudConfigChangedExceptStages = true;
@@ -204,7 +204,7 @@ export default class Create extends Command {
       }
     );
 
-    files.forEach(async (file: any) => {
+    files.forEach(async (file:string) => {
       const data = readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
         parser: extname(file) === ".json" ? "json" : "typescript",

@@ -50,7 +50,7 @@ export default class Open extends Command {
       } else {
         let data = JSON.parse(readFileSync(`./cdk-${userInput.stage}-outputs.json`).toString());
         const values: string[] = Object.values(
-          Object.entries(data)[0][1] as any
+          Object.entries(data)[0][1] as Record<string,string>
         );
         if (values.length === 0) {
           this.log(

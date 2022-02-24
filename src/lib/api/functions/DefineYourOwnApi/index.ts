@@ -64,7 +64,7 @@ async function defineYourOwnApi(
 
   const generatingCode = startSpinner("Generating CDK Code...");
   /* copy files from global package dir to cwd */
-  readdirSync(templateDir).forEach((file: any) => {
+  readdirSync(templateDir).forEach((file: string) => {
     if (file !== "package.json" && file !== "cdk.json") {
       if (file === "gitignore") {
         copy(`${templateDir}/${file}`, ".gitignore");
@@ -176,24 +176,19 @@ async function defineYourOwnApi(
     let scalars = readFileSync(scalarPath, "utf8");
 
     let gqlSchema = buildSchema(`${scalars}\n${directives}\n${schema}`);
-      // console.log(gqlSchema)
     const mockObject = new RootMockObject(gqlSchema);
     mockObject.write(dummyData);
 
     // Model Config
-    let queriesFields: any = gqlSchema.getQueryType()?.getFields();
-    let mutationsFields: any = gqlSchema.getMutationType()?.getFields();
-    // console.log(mutationsFields)
+    let queriesFields = gqlSchema.getQueryType()?.getFields();
+    let mutationsFields = gqlSchema.getMutationType()?.getFields();
     let introspection = introspectionFromSchema(gqlSchema);
-    let subscriptionsFields: any = gqlSchema.getSubscriptionType()?.getFields();
-    // console.log(introspection)
+    let subscriptionsFields = gqlSchema.getSubscriptionType()?.getFields();
 
     model.api.schema = introspection;
         model.api.queiresFields = [...Object.keys(queriesFields||{})];
         model.api.mutationFields = [...Object.keys(mutationsFields||{})];
-    // console.log("hello")
     // model.api.mutationFields = [...Object.keys(mutationsFields)];
-    //   console.log("hello1")
     const fieldSplitterOutput = microServicesDirectiveFieldSplitter(
       queriesFields,
       mutationsFields

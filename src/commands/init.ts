@@ -5,7 +5,7 @@ import { writeJsonSync, readFileSync, writeFileSync } from "fs-extra";
 import { greenBright } from "chalk";
 import * as globby from "globby";
 import { startSpinner, stopSpinner } from "../lib/spinner";
-import { defineYourOwnApi } from "../lib/api/functions";
+import { basicApi, defineYourOwnApi, todoApi } from "../lib/api/functions";
 import { userInput } from "../lib/inquirer";
 import {
   checkEmptyDirectoy,
@@ -18,6 +18,9 @@ import {
   APITYPE,
   CLOUDPROVIDER,
   LANGUAGE,
+  NEPTUNEQUERYLANGUAGE,
+  RDBMSENGINE,
+  TEMPLATE,
 } from "../utils/constants";
 const prettier = require("prettier");
 const exec = require("await-exec");
@@ -28,6 +31,10 @@ export default class Create extends Command {
   static flags = {
     help: flags.help({ char: "h" }),
     test: flags.boolean({ char: "t" }),
+    database: flags.enum({
+      char: "d",
+      options: [DATABASE.dynamoDB, DATABASE.neptuneDB, DATABASE.auroraDB],
+    }),
   };
 
   async run() {
@@ -50,13 +57,22 @@ export default class Create extends Command {
         api_token: "",
         saasType: SAASTYPE.api,
         api: {
-          nestedResolver: true,
+          template: TEMPLATE.defineApi,
+          nestedResolver: false,
           language: LANGUAGE.typescript,
           cloudprovider: CLOUDPROVIDER.aws,
-          apiName: "myApi",
+          apiName: "cliTesting",
           schemaPath: "../test/test-schemas/todo.graphql",
           apiType: APITYPE.graphql,
-          database: DATABASE.neptuneDB,
+          database: flags.database,
+          neptuneQueryLanguage:
+            flags.database === DATABASE.neptuneDB
+              ? NEPTUNEQUERYLANGUAGE.gremlin
+              : undefined,
+          rdbmsEngine:
+            flags.database === DATABASE.neptuneDB
+              ? RDBMSENGINE.mysql
+              : undefined,
         },
       };
     } else {
@@ -66,6 +82,7 @@ export default class Create extends Command {
         // api_token: "",
         saasType: SAASTYPE.api,
         api: {
+          template: usrInput.template,
           multitenancy: false,
           nestedResolver: false,
           language: LANGUAGE.typescript,
@@ -86,21 +103,33 @@ export default class Create extends Command {
     if (config!.saasType === SAASTYPE.api) {
       templateDir = resolve(__dirname, "../lib/api/template");
       checkEmptyDirectoy(validating);
-      validateGraphqlSchemaFile(config!.api?.schemaPath, validating, "init");
+      if (config.api.template === TEMPLATE.defineApi) {
+        validateGraphqlSchemaFile(config!.api?.schemaPath, validating, "init");
+      }
     }
 
-    writeJsonSync(`./codegenconfig.json`, {
-      ...config,
-      api: {
-        ...config.api,
-        schemaPath: "./editable_src/graphql/schema/schema.graphql",
-      },
-    });
+    if (config.api.template !== TEMPLATE.todoApi) {
+      writeJsonSync(`./codegenconfig.json`, {
+        ...config,
+        api: {
+          ...config.api,
+          schemaPath: "./editable_src/graphql/schema/schema.graphql",
+        },
+      });
+    }
 
     stopSpinner(validating, "Everything's fine", false);
 
     if (config.saasType === SAASTYPE.api) {
-      await defineYourOwnApi(config, templateDir!);
+      if (config.api.apiType === APITYPE.graphql) {
+        if (config.api.template === TEMPLATE.basicApi) {
+          await basicApi(config, templateDir!);
+        } else if (config.api.template === TEMPLATE.defineApi) {
+          await defineYourOwnApi(config, templateDir!);
+        } else {
+          await todoApi(config);
+        }
+      }
     }
 
     // const setUpForTest = startSpinner("Setup For Test");
@@ -116,16 +145,21 @@ export default class Create extends Command {
 
     // stopSpinner(setUpForTest, "Setup For Test", false);
 
-    const generatingTypes = startSpinner("Generating Types");
+    if (
+      config.api.apiType === APITYPE.graphql &&
+      config.api.template === TEMPLATE.defineApi
+    ) {
+      const generatingTypes = startSpinner("Generating Types");
 
-    try {
-      await exec(`npx graphql-codegen`);
-    } catch (error) {
-      stopSpinner(generatingTypes, `Error: ${error}`, true);
-      process.exit(1);
+      try {
+        await exec(`npx graphql-codegen`);
+      } catch (error) {
+        stopSpinner(generatingTypes, `Error: ${error}`, true);
+        process.exit(1);
+      }
+
+      stopSpinner(generatingTypes, "Generated Types", false);
     }
-
-    stopSpinner(generatingTypes, "Generated Types", false);
 
     const formatting = startSpinner("Formatting Code");
     // Formatting files.
@@ -148,7 +182,7 @@ export default class Create extends Command {
       }
     );
 
-    files.forEach(async (file: any) => {
+    files.forEach(async (file: string) => {
       const data = readFileSync(file, "utf8");
       const nextData = prettier.format(data, {
         parser: extname(file) === ".json" ? "json" : "typescript",

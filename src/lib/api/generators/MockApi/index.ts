@@ -1,11 +1,9 @@
 import { CodeMaker } from "codemaker";
 import { ApiModel, async_response_mutName } from "../../../../utils/constants";
 import { TypeScriptWriter } from "../../../../utils/typescriptWriter";
-import fse = require("fs-extra");
 import { RootMockObject, TestCollectionType } from "../../apiMockDataGenerator";
 import { transformStr } from "../../constructs/Lambda/utills";
-import lodash = require("lodash");
-import { writeFileSync } from "../../../fs";
+import { transformArgumentType, transformResponseType } from "./utills";
 
 type StackBuilderProps = {
   config: ApiModel;
@@ -63,11 +61,7 @@ class MockApiTestCollectionsFile {
                 ""
               );
           });
-        // console.log("old Types ====>",new_config.api.mockApiData?.imports.filter((val:string)=> val !== `Mutation${async_response_mutName.charAt(0).toUpperCase()}${async_response_mutName.slice(1)}Args`))
-
-        // console.log("new Types ====>",allTypes)
-
-        // console.log(allTypes)
+       
         if (new_config.api.mockApiData?.imports) {
           ts.writeImports("../types", allTypes);
         }
@@ -75,73 +69,22 @@ class MockApiTestCollectionsFile {
         let returnType = new_config.api.mockApiData?.types[key];
         let data1 = returnType.fields[key].replace(/\\*/g, "");
         let data2 = JSON.parse(data1.substring(0, data1.length - 2));
-        // writeFileSync(`${key}_data.json`,data1.substring(0,data1.length -2))
-        // console.log("Arguments=====>",returnType.fields[key])
         if (typeof data2["arguments"] === "string") {
-          // console.log("has arguments")
-          data2["arguments"] = data2["arguments"]
-            .split("_")
-            .reduce(
-              (out_str: string, val: string, index: number, arr: string[]) => {
-                // console.log("out_str",out_str)
-                // console.log("val",val)
-
-                return (out_str += `${transformStr(val)}${
-                  arr.length > index + 1 ? "_" : ""
-                }`);
-              },
-              ""
-            );
+          data2["arguments"] = transformArgumentType(data2["arguments"])
         }
         if (typeof data2["response"] === "string") {
-          data2["response"] = data2["response"]
-            .split("_")
-            .reduce(
-              (out_str: string, val: string, index: number, arr: string[]) => {
-                if (val.includes("|")) {
-                  let commaStr = val
-                    .split("|")
-                    .reduce((outStr, val, index: number, arr: string[]) => {
-                      val = val.replace(" ", "");
-
-                      return (outStr += `${val
-                        .charAt(0)
-                        .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                        arr.length > index + 1 ? "|" : ""
-                      }`);
-                    }, "");
-                  return (out_str += commaStr);
-                }
-                if (val.includes("[]")) {
-                  let commaStr = val
-                    .split("[]")
-                    .reduce((outStr, val, index: number, arr: string[]) => {
-                      val = val.replace(" ", "");
-
-                      return (outStr += `${val
-                        .charAt(0)
-                        .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                        arr.length > index + 1 ? "[]" : ""
-                      }`);
-                    }, "");
-                  return (out_str += commaStr);
-                }
-                return (out_str += `${val
-                  .charAt(0)
-                  .toUpperCase()}${lodash.camelCase(val.slice(1))}${
-                  arr.length > index + 1 ? "_" : ""
-                }`);
-              },
-              ""
-            );
+          if(data2["response"]==="ID"){
+            data2["response"] = "String"
+          }else{
+            data2["response"] = transformResponseType(data2["response"])
+          }
+          
         }
         returnType.fields[key] =
           JSON.stringify(data2).replace(/"*\\*/g, "") + "[]";
-        // console.log("My Return Type ===>",returnType)
         code.indent(`export type TestCollection =
           ${JSON.stringify(returnType).replace(/"*\\*/g, "")}
       `);
-        // console.log(`${JSON.stringify(new_config.api.mockApiData?.types[key]).replace(/"*\\*/g, '')}`)
 
         code.closeFile("testCollectionsTypes.ts");
         await code.save(`mock_lambda_layer/mockData/${key}`);
@@ -169,7 +112,6 @@ class MockApiTestCollectionsFile {
           2
         )}`;
         const matchEnums = mockDataStr.match(enumPattern);
-        // console.log(matchEnums);
 
         matchEnums?.forEach((enumStr) => {
           mockDataStr = mockDataStr.replace(enumStr, enumStr.slice(1, -1));

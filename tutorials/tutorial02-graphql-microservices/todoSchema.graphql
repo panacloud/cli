@@ -15,7 +15,7 @@ type Query {
 }
 
 type Mutation {
-  addTodo(todo: TodoInput!): Todo  @async @microService(name:"todo") 
-  updateTodo(todo: TodoInput!): Todo  @async @microService(name:"todo")
-  deleteTodo(todoId: String!): String @async @microService(name:"todo")
+  addTodo(todo: TodoInput!): Todo   @microService(name:"todo") 
+  updateTodo(todo: TodoInput!): Todo   @microService(name:"todo")
+  deleteTodo(todoId: String!): String  @microService(name:"todo")
 }

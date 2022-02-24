@@ -6,6 +6,7 @@ import {
   SAASTYPE,
   NEPTUNEQUERYLANGUAGE,
   RDBMSENGINE,
+  TEMPLATE,
 } from "../utils/constants";
 import { fileExistsAsync } from "./fs";
 const inquirer = require("inquirer");
@@ -59,12 +60,21 @@ export const userInput = async () => {
     //   validate: Boolean,
     // },
     {
+      type: "list",
+      name: "template",
+      message: "Which Kind of Mutli-Tenant Serverless API?",
+      choices: [TEMPLATE.basicApi, TEMPLATE.todoApi, TEMPLATE.defineApi],
+      default: TEMPLATE.basicApi,
+      validate: Boolean,
+    },
+    {
       type: "string",
       name: "schema_path",
       message: "GraphQL Schema File Path",
       // when: (answers: any) =>
       //   answers.api_type === APITYPE.graphql,
       validate: (val: string) => fileExistsAsync(val),
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
     },
     // {
     //   type: "string",
@@ -80,6 +90,7 @@ export const userInput = async () => {
       message: "API Name",
       default: "MyApi",
       validate: Boolean,
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
     },
     // {
     //   type: "confirm",
@@ -91,7 +102,7 @@ export const userInput = async () => {
     {
       type: "list",
       name: "database",
-      message: "Select Database Engine",
+      message: "Select Database",
       choices: [
         DATABASE.dynamoDB,
         DATABASE.neptuneDB,
@@ -100,6 +111,7 @@ export const userInput = async () => {
       ],
       default: DATABASE.dynamoDB,
       validate: Boolean,
+      when: (answers: any) => answers.template === TEMPLATE.defineApi,
     },
     {
       type: "list",
@@ -107,7 +119,7 @@ export const userInput = async () => {
       message: "Select Database Engine",
       choices: [RDBMSENGINE.postgresql, RDBMSENGINE.mysql],
       default: RDBMSENGINE.postgresql,
-      when: (answers: any) => answers.database === DATABASE.auroraDB,
+      when: (answers: { database: DATABASE; }) => answers.database === DATABASE.auroraDB,
       validate: Boolean,
     },
     {
@@ -116,7 +128,7 @@ export const userInput = async () => {
       message: "Select Query Language",
       choices: [NEPTUNEQUERYLANGUAGE.gremlin, NEPTUNEQUERYLANGUAGE.cypher],
       default: NEPTUNEQUERYLANGUAGE.gremlin,
-      when: (answers: any) => answers.database === DATABASE.neptuneDB,
+      when: (answers: { database: DATABASE; }) => answers.database === DATABASE.neptuneDB,
       validate: Boolean,
     },
   ]);
