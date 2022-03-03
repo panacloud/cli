@@ -23,6 +23,59 @@ The `editable_src/aspects` directory contains all the CDK code which the develop
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
+## Deploying the Serverless API Mocks in the AWS Cloud
+
+Note: The official documentation of CDK version 2 is available [here](https://docs.aws.amazon.com/cdk/api/v2/)
+
+Before we proceed to deploy the project lets first understand what it contains. 
+
+If you have already not done so, you need to [bootstrap](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html) the cdk by using this command:
+
+     cdk bootstrap
+
+Once we are done with bootstrapping we want to deploy the Mock Serverless APIs. 
+
+The project is already generated for you, you just have to compile it:
+
+     npm run build
+
+You may now deploy the project for development stage:
+
+     npm run deploy-dev
+
+After deploying check out the `cdk-dev-outputs.json` file in the project root it contains the URL and Key of the deployed APIs.
+
+You may now deploy the project for production stage:
+
+     npm run deploy-prd
+
+After deploying check out the `cdk-prd-outputs.json` file in the project root it contains the URL and Key of the deployed APIs.
+
+After a deployment of dev stage is successuful you can run the automated tests on the deployed API:
+
+     npm run test-dev
+
+After a deployment of production stage is successuful you can run the automated tests on the deployed API:
+
+     npm run test-prd
+
+
+You can call the APIs by using this command which will open an client for your API:
+
+     panacloud client
+
+Note: Right now you are running mock APIs therefore it will only give you responses to mock queries with fixed data.
+For example, the mock data for the user query is in the `mock_lambda_layer/mockData/user` file of your generated project. Therefore, only those queries will be successful which will use this mock data.
+
+
+Now you may destroy the deployed development stage just give this command:
+
+     npm run destroy-dev
+
+Now you may destroy the deployed production stage just give this command:
+
+     npm run destroy-dev
+
 ## Useful commands
 
  * `panacloud update` updates the generated code and is run after updating the schema in the `editable_src/graphql/schema/` directory 
