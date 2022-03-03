@@ -28,7 +28,7 @@ Initially `mock_lambda_layer` directory is set as lambda layer it contains all t
 
 Follow the steps below to use custom mock lambda in your CLI app.
 
-* Change the `mockData` is_custom property in editable src/panacloudconfig.json from `false` to `true` or run `panacloud config --customData true` command(doing through command is recommended)
+* Change the `mockData` is_custom property in editable src/panacloudconfig.json from `false` to `true` or run `panacloud config:customData -t` command(doing through command is recommended)
 * Run the `panacloud update` command (This will update all mock lambda imports in CLI generated code)
 
 #### Caution!
