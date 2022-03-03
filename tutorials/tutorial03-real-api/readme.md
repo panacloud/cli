@@ -24,7 +24,7 @@ Now the MyUserAPI code is generated and available in the `my_user_api` directory
 
 The `mock_lambda` directory, which is produced automatically by the Panacloud CLI, will be visible. If you perform the `panacloud update` command, this mock_lambda will update automatically.Initially it is set as defautlt datasource if you want to move to real implementations from mock lambdas to real lambdas located in `editable_src/lambda_stubs`you can do so by following steps:
 
-* Change the `is_mock` property of your respective lambda in editable src/panacloudconfig.json from `true` to `false` or run `panacloud config:mock queryname -t` command(doing through command is recommended).In this example we will only change addUser query.
+* Change the `is_mock` property of your respective lambda in editable src/panacloudconfig.json from `true` to `false` or run `panacloud config:mock queryname -f` command(doing through command is recommended).In this example we will only change addUser query.
 * Run the `panacloud update` command (This will update all mock lambda imports in CLI generated code)
 * Now addUser query is using real lambdas from `ediatable_src/lambda_stubs/addUser` directory.
 
