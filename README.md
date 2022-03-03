@@ -61,13 +61,13 @@ You can learn how to develop GraphQL schemas from [the schema official documenta
 
 1.  Now we will generate an AWS CDK project using the panacloud cli.
 
-    ```
-    mkdir my_user_api
+  ```
+  mkdir my_user_api
 
-    cd my_user_api
+  cd my_user_api
 
-    panacloud init
-    ```
+  panacloud init
+  ```
 2. On the command promt answer the question:
   ```
   GraphQL Schema File Path? ../user.graphql
