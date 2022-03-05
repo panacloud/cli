@@ -114,7 +114,7 @@ class CustomLambda {
           const isMutation = mutationFields?.includes(diff);
           code.openFile(this.outputFile);
 
-          imp.importAxios();
+          // imp.importAxios();
           code.line();
 
           lambda.emptyLambdaFunction(
@@ -203,7 +203,7 @@ class CustomLambda {
           if(key.split("_").pop() === "consumer"){
             lambda.appsyncMutationInvokeFunction()
           }else{
-            imp.importAxios();
+            // imp.importAxios();
             lambda.emptyLambdaFunction(
               undefined,
               database,
@@ -268,7 +268,7 @@ class CustomLambda {
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
             code.line();
-            imp.importAxios();
+            // imp.importAxios();
 
             // lambda.emptyLambdaFunction(
             //   true,
@@ -298,7 +298,7 @@ class CustomLambda {
             this.outputFile = "index.ts";
             code.openFile(this.outputFile);
             code.line();
-            imp.importAxios();
+            // imp.importAxios();
             lambda.helloWorldFunction(
               apiName,
               database,
