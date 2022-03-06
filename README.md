@@ -5,6 +5,8 @@
 
 # Panacloud Command Line Interface (CLI)
 
+[Panacloud CLI Discord Channel](https://discord.gg/uQ7vPXuu5v)
+
 In a recent [report](https://venturebeat.com/2021/12/09/report-75-of-devs-indicate-that-participating-in-api-economy-is-top-priority/) 75% of developers indicate that participating in API economy is ‘top priority’. Panacloud is an unified API development, fundraising, and ownership economy platform.  It provides services, libraries, tools, and frameworks for developing totally open multi-tenant, serverless cloud services with integrated multi-tenant billing, crowdfunding, and ownership economy constructs.  This allows developers to concentrate solely on creating specialised code related to their domain, leaving the rest to the Panacloud platform and services. This model has the potential to disrupt both the software and venture investment industries and making the API developers rich and owners of their own destiny and unicorn startups.
 
 Panacloud CLI accelerates the building of modern multi-tenant serverless SaaS APIs. The CLI applies the design-first paradigm and implements the best practices for designing GraphQL APIs using public cloud serverless and infrastructure as code technologies. The CLI takes a [GraphQL API](https://graphql.org/) [schema](https://graphql.org/learn/schema/) that has been augmented with Panacloud directives and creates [infrastructure as code (IaC)](https://acloudguru.com/blog/engineering/cloudformation-terraform-or-cdk-guide-to-iac-on-aws), mock lambdas, tests, and scaffolding for genuine lambdas that include business logic and database requests. It makes use of [AWS CDK](https://aws.amazon.com/cdk/) for IaC. It now only supports AWS, TypeScript and GraphQL, but future versions will also support Azure and Google Cloud, OpenAPI and other languages as well.
@@ -59,13 +61,13 @@ You can learn how to develop GraphQL schemas from [the schema official documenta
 
 1.  Now we will generate an AWS CDK project using the panacloud cli.
 
-    ```
-       mkdir my_user_api
+  ```
+  mkdir my_user_api
 
-      cd my_user_api
+  cd my_user_api
 
-      panacloud init
-    ```
+  panacloud init
+  ```
 2. On the command promt answer the question:
   ```
   GraphQL Schema File Path? ../user.graphql
