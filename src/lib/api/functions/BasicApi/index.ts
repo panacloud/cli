@@ -63,23 +63,24 @@ async function basicApi(config: Config, templateDir: string): Promise<void> {
 
   await mkdirRecursiveAsync(`lib`);
 
-  await CreateAspects({ config: model });
+  // await CreateAspects({ config: model });
   await CdkAppClass({ config: model });
 
   writeFileSync(
     `./lib/${model.workingDir}-stack.ts`,
     `import { Stack, StackProps } from "aws-cdk-lib";
-    import { Constructs } from "constructs";
+    import { Construct } from "constructs";
 
-  import { AspectController } from '../editable_src/aspects/AspectController';
+    interface EnvProps {
+      prod?: string;
+    }
  
   export class ${upperFirst(
     camelCase(basename(process.cwd()))
-  )}Stack extends cdk.Stack {
-     constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
-        super(scope, id, props);
+  )}Stack extends Stack {
+     constructor(scope: Construct, id: string, props?: EnvProps) {
+        super(scope, id);
  
-     new AspectController(this, props?.prod)
    }
  }`
   );
