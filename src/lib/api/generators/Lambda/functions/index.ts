@@ -1,6 +1,14 @@
 import { CodeMaker } from "codemaker";
-import { API, ApiModel, APITYPE, ARCHITECTURE, async_response_mutName, DATABASE, PanacloudconfigFile} from "../../../../../utils/constants";
-import {Property} from "../../../../../utils/typescriptWriter";
+import {
+  API,
+  ApiModel,
+  APITYPE,
+  ARCHITECTURE,
+  async_response_mutName,
+  DATABASE,
+  PanacloudconfigFile,
+} from "../../../../../utils/constants";
+import { Property } from "../../../../../utils/typescriptWriter";
 import { Lambda } from "../../../constructs/Lambda";
 interface Environment {
   name: string;
@@ -12,30 +20,45 @@ export const lambdaInitializerForNestedResolvers = (
   panacloudConfig: PanacloudconfigFile,
   code: CodeMaker
 ) => {
-  const { nestedResolverFieldsAndLambdas, apiName,database,asyncFields } = model;
+  const { nestedResolverFieldsAndLambdas, apiName, database, asyncFields } =
+    model;
   const { nestedResolverLambdas } = nestedResolverFieldsAndLambdas!;
   const lambda = new Lambda(code, panacloudConfig);
 
   let lambdaEnv: Environment[] | undefined;
-  let vpcRef:string | undefined;
-  let securityGroupsRef : string | undefined;
-  let vpcSubnets : string | undefined;
-  let serviceRole : string | undefined;
+  let vpcRef: string | undefined;
+  let securityGroupsRef: string | undefined;
+  let vpcSubnets: string | undefined;
+  let serviceRole: string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
+    lambdaEnv = [
+      { name: "TableName", value: `${apiName}_table.table.tableName` },
+    ];
   } else if (database === DATABASE.neptuneDB) {
-    lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
+    lambdaEnv = [
+      {
+        name: "NEPTUNE_ENDPOINT",
+        value: `${apiName}_neptunedb.neptuneReaderEndpoint`,
+      },
+    ];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
-    vpcRef = `${apiName}_neptunedb.VPCRef`
-    securityGroupsRef = `${apiName}_neptunedb.SGRef`
+    vpcRef = `${apiName}_neptunedb.VPCRef`;
+    securityGroupsRef = `${apiName}_neptunedb.SGRef`;
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
-    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
-    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
-  ] 
+    lambdaEnv = [
+      { name: "SECRET_ARN", value: `${apiName}_auroradb.SECRET_ARN` },
+      { name: "CLUSTER_ARN", value: `${apiName}_auroradb.CLUSTER_ARN` },
+      { name: "DB_NAME", value: `${apiName}_auroradb.DB_NAME` },
+    ];
+  } else if (database === DATABASE.rds) {
+    vpcRef = `${apiName}_rds.VPCRef`;
+    serviceRole = `${apiName}_rds.serviceRole`;
+    lambdaEnv = [
+      { name: "INSTANCE_CREDENTIALS", value: `${apiName}_rds.SECRET_ARN` },
+    ];
   }
 
   for (let i = 0; i < nestedResolverLambdas.length; i++) {
@@ -43,7 +66,18 @@ export const lambdaInitializerForNestedResolvers = (
     if (asyncFields && asyncFields.includes(key)) {
       lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
     }
-    lambda.initializeLambda(database,apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,undefined,true);
+    lambda.initializeLambda(
+      database,
+      apiName,
+      key,
+      vpcRef,
+      securityGroupsRef,
+      lambdaEnv,
+      vpcSubnets,
+      serviceRole,
+      undefined,
+      true
+    );
     code.line();
     code.line();
   }
@@ -56,29 +90,43 @@ export const lambdaInitializerForMicroServices = (
 ) => {
   let microService_Fields: { [k: string]: string[] } = {};
   const lambda = new Lambda(code, panacloudConfig);
-  const { apiName, database, microServiceFields,asyncFields } = model;
+  const { apiName, database, microServiceFields, asyncFields } = model;
   microService_Fields = microServiceFields!;
   const microServices = Object.keys(microService_Fields);
   let lambdaEnv: Environment[] | undefined;
-  let vpcRef:string | undefined;
-  let securityGroupsRef : string | undefined;
-  let vpcSubnets : string | undefined;
-  let serviceRole : string | undefined;
+  let vpcRef: string | undefined;
+  let securityGroupsRef: string | undefined;
+  let vpcSubnets: string | undefined;
+  let serviceRole: string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
+    lambdaEnv = [
+      { name: "TableName", value: `${apiName}_table.table.tableName` },
+    ];
   } else if (database === DATABASE.neptuneDB) {
-    lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
+    lambdaEnv = [
+      {
+        name: "NEPTUNE_ENDPOINT",
+        value: `${apiName}_neptunedb.neptuneReaderEndpoint`,
+      },
+    ];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
-    vpcRef = `${apiName}_neptunedb.VPCRef`
-    securityGroupsRef = `${apiName}_neptunedb.SGRef`
+    vpcRef = `${apiName}_neptunedb.VPCRef`;
+    securityGroupsRef = `${apiName}_neptunedb.SGRef`;
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
-    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
-    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
-  ] 
+    lambdaEnv = [
+      { name: "SECRET_ARN", value: `${apiName}_auroradb.SECRET_ARN` },
+      { name: "CLUSTER_ARN", value: `${apiName}_auroradb.CLUSTER_ARN` },
+      { name: "DB_NAME", value: `${apiName}_auroradb.DB_NAME` },
+    ];
+  } else if (database === DATABASE.rds) {
+    vpcRef = `${apiName}_rds.VPCRef`;
+    serviceRole = `${apiName}_rds.serviceRole`;
+    lambdaEnv = [
+      { name: "INSTANCE_CREDENTIALS", value: `${apiName}_rds.SECRET_ARN` },
+    ];
   }
 
   for (let i = 0; i < microServices.length; i++) {
@@ -86,30 +134,29 @@ export const lambdaInitializerForMicroServices = (
       const key = microService_Fields[microServices[i]][j];
       const microService = microServices[i];
 
-      if (key !== async_response_mutName){
-      if (asyncFields && asyncFields.includes(key)) {
-        lambdaInitializerForEventDriven(
-          model,
-          panacloudConfig,
+      if (key !== async_response_mutName) {
+        if (asyncFields && asyncFields.includes(key)) {
+          lambdaInitializerForEventDriven(
+            model,
+            panacloudConfig,
+            key,
+            code,
+            microService
+          );
+        }
+        lambda.initializeLambda(
+          database,
+          apiName,
           key,
-          code,
+          vpcRef,
+          securityGroupsRef,
+          lambdaEnv,
+          vpcSubnets,
+          serviceRole,
           microService
-        );     
+        );
+        code.line();
       }
-      lambda.initializeLambda(
-        database,
-        apiName,
-        key,
-        vpcRef,
-        securityGroupsRef,
-        lambdaEnv,
-        vpcSubnets,
-        serviceRole,
-        microService
-      );
-      code.line();
-
-    }
     }
   }
 };
@@ -120,43 +167,65 @@ export const lambdaInitializerForGeneralFields = (
   code: CodeMaker,
   general_Fields: string[]
 ) => {
-  const { database, apiName,asyncFields } = model;
+  const { database, apiName, asyncFields } = model;
   const lambda = new Lambda(code, panacloudConfig);
-  
+
   let lambdaEnv: Environment[] | undefined;
-  let vpcRef:string | undefined;
-  let securityGroupsRef : string | undefined;
-  let vpcSubnets : string | undefined;
-  let serviceRole : string | undefined;
+  let vpcRef: string | undefined;
+  let securityGroupsRef: string | undefined;
+  let vpcSubnets: string | undefined;
+  let serviceRole: string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
+    lambdaEnv = [
+      { name: "TableName", value: `${apiName}_table.table.tableName` },
+    ];
   } else if (database === DATABASE.neptuneDB) {
-    lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
+    lambdaEnv = [
+      {
+        name: "NEPTUNE_ENDPOINT",
+        value: `${apiName}_neptunedb.neptuneReaderEndpoint`,
+      },
+    ];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
-    vpcRef = `${apiName}_neptunedb.VPCRef`
-    securityGroupsRef = `${apiName}_neptunedb.SGRef`
+    vpcRef = `${apiName}_neptunedb.VPCRef`;
+    securityGroupsRef = `${apiName}_neptunedb.SGRef`;
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
-    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
-    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
-  ]   }
+    lambdaEnv = [
+      { name: "SECRET_ARN", value: `${apiName}_auroradb.SECRET_ARN` },
+      { name: "CLUSTER_ARN", value: `${apiName}_auroradb.CLUSTER_ARN` },
+      { name: "DB_NAME", value: `${apiName}_auroradb.DB_NAME` },
+    ];
+  } else if (database === DATABASE.rds) {
+    vpcRef = `${apiName}_rds.VPCRef`;
+    serviceRole = `${apiName}_rds.serviceRole`;
+    lambdaEnv = [
+      { name: "INSTANCE_CREDENTIALS", value: `${apiName}_rds.SECRET_ARN` },
+    ];
+  }
 
   for (let i = 0; i < general_Fields.length; i++) {
     const key = general_Fields[i];
 
-    if (key !== async_response_mutName){
-
-    if (asyncFields && asyncFields.includes(key)) {
-      lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
+    if (key !== async_response_mutName) {
+      if (asyncFields && asyncFields.includes(key)) {
+        lambdaInitializerForEventDriven(model, panacloudConfig, key, code);
+      }
+      lambda.initializeLambda(
+        database,
+        apiName,
+        key,
+        vpcRef,
+        securityGroupsRef,
+        lambdaEnv,
+        vpcSubnets,
+        serviceRole
+      );
+      code.line();
+      code.line();
     }
-    lambda.initializeLambda(database,apiName,key,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole);
-    code.line();
-    code.line();
-
-  }
   }
 };
 
@@ -167,30 +236,49 @@ export const lambdaInitializerForEventDriven = (
   code: CodeMaker,
   microService?: string
 ) => {
-  const { apiName,database } = model;
+  const { apiName, database } = model;
   const lambda = new Lambda(code, panacloudConfig);
   let lambdaEnv: Environment[] | undefined;
-  let vpcRef:string | undefined;
-  let securityGroupsRef : string | undefined;
-  let vpcSubnets : string | undefined;
-  let serviceRole : string | undefined;
+  let vpcRef: string | undefined;
+  let securityGroupsRef: string | undefined;
+  let vpcSubnets: string | undefined;
+  let serviceRole: string | undefined;
 
   if (database && database === DATABASE.dynamoDB) {
-    lambdaEnv = [{ name: "TableName", value: `${apiName}_table.table.tableName` }];
+    lambdaEnv = [
+      { name: "TableName", value: `${apiName}_table.table.tableName` },
+    ];
   } else if (database === DATABASE.neptuneDB) {
-    lambdaEnv = [{name: "NEPTUNE_ENDPOINT",value: `${apiName}_neptunedb.neptuneReaderEndpoint`}];
+    lambdaEnv = [
+      {
+        name: "NEPTUNE_ENDPOINT",
+        value: `${apiName}_neptunedb.neptuneReaderEndpoint`,
+      },
+    ];
     vpcSubnets = `ec2.SubnetType.PRIVATE_ISOLATED`;
-    vpcRef = `${apiName}_neptunedb.VPCRef`
-    securityGroupsRef = `${apiName}_neptunedb.SGRef`
+    vpcRef = `${apiName}_neptunedb.VPCRef`;
+    securityGroupsRef = `${apiName}_neptunedb.SGRef`;
   } else if (database === DATABASE.auroraDB) {
     vpcRef = `${apiName}_auroradb.vpcRef`;
     serviceRole = `${apiName}_auroradb.serviceRole`;
-    lambdaEnv = [{name: "SECRET_ARN",value: `${apiName}_auroradb.SECRET_ARN`},
-    {name: "CLUSTER_ARN",value: `${apiName}_auroradb.CLUSTER_ARN`},
-    {name: "DB_NAME",value: `${apiName}_auroradb.DB_NAME`}
-  ]   }
+    lambdaEnv = [
+      { name: "SECRET_ARN", value: `${apiName}_auroradb.SECRET_ARN` },
+      { name: "CLUSTER_ARN", value: `${apiName}_auroradb.CLUSTER_ARN` },
+      { name: "DB_NAME", value: `${apiName}_auroradb.DB_NAME` },
+    ];
+  }
 
-  lambda.initializeLambda(database,apiName,`${key}_consumer`,vpcRef,securityGroupsRef,lambdaEnv,vpcSubnets,serviceRole,microService ? microService : "");
+  lambda.initializeLambda(
+    database,
+    apiName,
+    `${key}_consumer`,
+    vpcRef,
+    securityGroupsRef,
+    lambdaEnv,
+    vpcSubnets,
+    serviceRole,
+    microService ? microService : ""
+  );
   code.line();
   code.line();
 };
@@ -202,7 +290,8 @@ export const lambdaProperiesHandlerForNestedResolver = (model: ApiModel) => {
   let nestedResolverLambdas: string[] = [];
 
   if (nestedResolverFieldsAndLambdas) {
-    nestedResolverLambdas = nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
+    nestedResolverLambdas =
+      nestedResolverFieldsAndLambdas!.nestedResolverLambdas;
   }
   let properties: Property[] = [];
   if (database === DATABASE.dynamoDB) {
@@ -279,7 +368,7 @@ export const lambdaHandlerForAuroradb = (
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!['is_custom']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!["is_custom"]);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       "",
@@ -299,14 +388,70 @@ export const lambdaHandlerForAuroradb = (
     code.line();
   } else {
     if (microServiceFields) {
-      lambdaInitializerForMicroServices(model.api,panacloudConfig,code)
-      
+      lambdaInitializerForMicroServices(model.api, panacloudConfig, code);
     }
 
     if (generalFields) {
-      lambdaInitializerForGeneralFields(model.api,panacloudConfig,code,generalFields)
+      lambdaInitializerForGeneralFields(
+        model.api,
+        panacloudConfig,
+        code,
+        generalFields
+      );
       if (nestedResolver) {
-        lambdaInitializerForNestedResolvers(model.api,panacloudConfig,code)
+        lambdaInitializerForNestedResolvers(model.api, panacloudConfig, code);
+      }
+    }
+  }
+};
+export const lambdaHandlerForRds = (
+  code: CodeMaker,
+  panacloudConfig: PanacloudconfigFile,
+  model: ApiModel
+) => {
+  const {
+    api: {
+      apiName,
+      apiType,
+      generalFields,
+      microServiceFields,
+      nestedResolver,
+    },
+  } = model;
+  const lambda = new Lambda(code, panacloudConfig);
+  lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!["is_custom"]);
+  if (apiType === APITYPE.rest) {
+    lambda.initializeLambda(
+      "",
+      apiName,
+      undefined,
+      `${apiName}_rds.VPCRef`,
+      undefined,
+      [
+        {
+          name: "INSTANCE_CREDENTIALS",
+          value: `${apiName}_rds.SECRET_ARN`,
+        },
+      ],
+      undefined,
+      `${apiName}_rds.serviceRole`
+    );
+    code.line();
+  } else {
+    if (microServiceFields) {
+      lambdaInitializerForMicroServices(model.api, panacloudConfig, code);
+    }
+
+    if (generalFields) {
+      lambdaInitializerForGeneralFields(
+        model.api,
+        panacloudConfig,
+        code,
+        generalFields
+      );
+      if (nestedResolver) {
+        lambdaInitializerForNestedResolvers(model.api, panacloudConfig, code);
       }
     }
   }
@@ -329,7 +474,7 @@ export const lambdaHandlerForNeptunedb = (
 
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!['is_custom']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!["is_custom"]);
   if (apiType === APITYPE.rest) {
     lambda.initializeLambda(
       "",
@@ -348,12 +493,17 @@ export const lambdaHandlerForNeptunedb = (
     code.line();
   } else {
     if (microServiceFields) {
-      lambdaInitializerForMicroServices(model.api,panacloudConfig,code)
+      lambdaInitializerForMicroServices(model.api, panacloudConfig, code);
     }
     if (generalFields) {
-      lambdaInitializerForGeneralFields(model.api,panacloudConfig,code,generalFields)
+      lambdaInitializerForGeneralFields(
+        model.api,
+        panacloudConfig,
+        code,
+        generalFields
+      );
       if (nestedResolver) {
-        lambdaInitializerForNestedResolvers(model.api,panacloudConfig,code)
+        lambdaInitializerForNestedResolvers(model.api, panacloudConfig, code);
       }
     }
   }
@@ -446,15 +596,15 @@ export const lambdaHandlerForDynamodb = (
       apiType,
       generalFields,
       microServiceFields,
-      nestedResolver
-    }
+      nestedResolver,
+    },
   } = model;
   const lambda = new Lambda(code, panacloudConfig);
   lambda.lambdaLayer(apiName, "editable_src/lambdaLayer");
-  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!['is_custom']);
+  lambda.mockLambdaLayer(apiName, panacloudConfig.mockData!["is_custom"]);
 
   if (apiType === APITYPE.rest) {
-    lambda.initializeLambda("",apiName, undefined, undefined, undefined, [
+    lambda.initializeLambda("", apiName, undefined, undefined, undefined, [
       { name: "TableName", value: `${apiName}_table.tableName` },
     ]);
     code.line();
@@ -463,9 +613,14 @@ export const lambdaHandlerForDynamodb = (
       lambdaInitializerForMicroServices(model.api, panacloudConfig, code);
     }
     if (generalFields) {
-      lambdaInitializerForGeneralFields(model.api,panacloudConfig,code,generalFields)
+      lambdaInitializerForGeneralFields(
+        model.api,
+        panacloudConfig,
+        code,
+        generalFields
+      );
       if (nestedResolver) {
-        lambdaInitializerForNestedResolvers(model.api,panacloudConfig,code)
+        lambdaInitializerForNestedResolvers(model.api, panacloudConfig, code);
       }
     }
   }
