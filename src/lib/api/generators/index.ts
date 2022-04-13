@@ -21,6 +21,7 @@ import { eventBridgeConstruct } from "./EventBridge";
 import { TestCollectionType } from "../apiMockDataGenerator";
 import { apiTests } from "./ApiTests";
 import { GremlinSetup } from "./Neptune/gremlinSetup";
+import { rdsConstruct } from "./Rds";
 const fs = require("fs");
 export const generator = async (
   config: ApiModel,
@@ -57,6 +58,10 @@ export const generator = async (
   if (config.api.database === DATABASE.dynamoDB) {
     await dynamoDBConstruct({ config });
     // dynamodbConstructTest({ config });
+  }
+
+  if (config.api.database === DATABASE.rds) {
+    await rdsConstruct({ config });
   }
 
   // Single or Multi

@@ -9,6 +9,7 @@ import {
   lambdaHandlerForAuroradb,
   lambdaHandlerForDynamodb,
   lambdaHandlerForNeptunedb,
+  lambdaHandlerForRds,
   lambdaInitializerForGeneralFields,
   lambdaInitializerForMicroServices,
   lambdaInitializerForNestedResolvers,
@@ -55,5 +56,7 @@ export const LambdaConstructFile = async (
     lambdaHandlerForNeptunedb(code, panacloudConfig, config);
   } else if (database === DATABASE.auroraDB) {
     lambdaHandlerForAuroradb(code, panacloudConfig, config);
+  } else if(database === DATABASE.rds){
+    lambdaHandlerForRds(code, panacloudConfig, config)
   }
 };

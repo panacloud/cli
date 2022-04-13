@@ -28,6 +28,7 @@ export enum DATABASE {
   neptuneDB = "Neptune (Graph)",
   auroraDB = "Aurora Serverless (Relational)",
   documentDB = "DocumentDB (NoSQL MongoDB)",
+  rds = "Relational Database Service",
   none = "None",
 }
 
@@ -42,6 +43,7 @@ export enum CONSTRUCTS {
   lambda = "LambdaConstruct",
   neptuneDB = "VpcNeptuneConstruct",
   auroraDB = "AuroraDBConstruct",
+  rds = "RdsConstruct",
   apigateway = "ApiGatewayConstruct",
   eventBridge = "EventBridgeConstruct",
 }
@@ -73,8 +75,8 @@ export interface Config {
 }
 
 export interface mockApiData {
-  collections: { fields: any; };
-  types: { [x: string]: { fields: { [x: string]: { arguments: any; }[]; }; }; };
+  collections: { fields: any };
+  types: { [x: string]: { fields: { [x: string]: { arguments: any }[] } } };
   imports: string[];
   enumImports: string[];
 }
@@ -120,15 +122,15 @@ export enum ARCHITECTURE {
 }
 
 export type PanacloudconfigFile = {
-  lambdas: Record<string,any>;
-  nestedLambdas?:Record<string,any>;
-  mockData?: Record<string,boolean>;
+  lambdas: Record<string, any>;
+  nestedLambdas?: Record<string, any>;
+  mockData?: Record<string, boolean>;
   stages: string[];
 };
 
 export type PanacloudConfiglambdaParams = {
   // asset_path: string;
-  timeout:number;
-  memory_size:number;
+  timeout: number;
+  memory_size: number;
   is_mock: boolean;
 };

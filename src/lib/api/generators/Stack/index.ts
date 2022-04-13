@@ -5,7 +5,7 @@ import {
   ARCHITECTURE,
   CONSTRUCTS,
   DATABASE,
-  PanacloudconfigFile
+  PanacloudconfigFile,
 } from "../../../../utils/constants";
 import { Appsync } from "../../constructs/Appsync";
 import { AuroraServerless } from "../../constructs/AuroraServerless";
@@ -16,25 +16,26 @@ import { Neptune } from "../../constructs/Neptune";
 import { EventBridge } from "../../constructs/EventBridge";
 import {
   importHandlerForStack,
-  LambdaAccessHandler,
+  DynamoDBLambdaAccessHandler,
+  RdsLambdaAccessHandler,
   propsHandlerForApiGatewayConstruct,
 } from "./functions";
 import { LambdaConstructFile } from "../Lambda";
 import { Imports } from "../../constructs/ConstructsImports";
+import { Rds } from "../../constructs/Rds";
 // import { LambdaConstructFile } from "../Lambda";
 const upperFirst = require("lodash/upperFirst");
 const camelCase = require("lodash/camelCase");
 
 type StackBuilderProps = {
   config: ApiModel;
-  panacloudConfig: PanacloudconfigFile
+  panacloudConfig: PanacloudconfigFile;
 };
 
 interface ConstructPropsType {
   name: string;
   type: string;
 }
-
 
 export class CdkStack {
   outputFile: string = `index.ts`;
@@ -52,11 +53,10 @@ export class CdkStack {
   async CdkStackFile() {
     this.outputFile = `${this.config.workingDir}-stack.ts`;
     this.code.openFile(this.outputFile);
-    const { apiName, database, apiType } =
-      this.config.api;
+    const { apiName, database, apiType } = this.config.api;
     let mutationsAndQueries: string[] = [];
     if (apiType === APITYPE.graphql) {
-      const { queiresFields, mutationFields,asyncFields } = this.config.api;
+      const { queiresFields, mutationFields, asyncFields } = this.config.api;
       mutationsAndQueries = [...queiresFields!, ...mutationFields!];
     }
     const cdk = new Cdk(this.code);
@@ -68,9 +68,15 @@ export class CdkStack {
     const lambda = new Lambda(this.code, this.panacloudConfig);
     const appsync = new Appsync(this.code);
     const eventBridge = new EventBridge(this.code);
-    importHandlerForStack(database, apiType, this.code, this.config.api.asyncFields);
+    const rds = new Rds(this.code);
+    importHandlerForStack(
+      database,
+      apiType,
+      this.code,
+      this.config.api.asyncFields
+    );
     imp.importLambda();
-    database !== DATABASE.dynamoDB && imp.importEc2()
+    database !== DATABASE.dynamoDB && imp.importEc2();
     this.code.line();
 
     let ConstructProps: ConstructPropsType[] = [];
@@ -78,15 +84,14 @@ export class CdkStack {
     ConstructProps.push({
       name: `prod`,
       type: "string",
-    })
-
+    });
 
     cdk.initializeStack(
       `${upperFirst(camelCase(this.config.workingDir))}`,
       "EnvProps",
       () => {
-          // manager.apiManagerInitializer(apiName);
-          this.code.line();
+        // manager.apiManagerInitializer(apiName);
+        this.code.line();
         if (database == DATABASE.dynamoDB) {
           dynamodb.dynmaodbConstructInitializer(apiName, this.code);
           this.code.line();
@@ -96,18 +101,22 @@ export class CdkStack {
         } else if (database == DATABASE.auroraDB) {
           aurora.auroradbConstructInitializer(apiName, this.code);
           this.code.line();
+        } else if (database === DATABASE.rds) {
+          rds.rdsConstructInitializer(apiName, this.code);
+          this.code.line();
         }
 
-        LambdaConstructFile(this.config, this.panacloudConfig, this.code)
+        LambdaConstructFile(this.config, this.panacloudConfig, this.code);
 
-        database === DATABASE.dynamoDB && LambdaAccessHandler(this.code,this.config.api);
-     
+        if (database === DATABASE.dynamoDB) {
+          DynamoDBLambdaAccessHandler(this.code, this.config.api);
+        } else if (database === DATABASE.rds) {
+          RdsLambdaAccessHandler(this.code, this.config.api);
+        }
+        
         if (apiType === APITYPE.graphql) {
-          appsync.appsyncConstructInitializer(
-            this.config.api
-          );
-        }
-        else if (apiType === APITYPE.rest) {
+          appsync.appsyncConstructInitializer(this.config.api);
+        } else if (apiType === APITYPE.rest) {
           this.code.line(
             `const ${apiName} = new ${CONSTRUCTS.apigateway}(this,"${apiName}${CONSTRUCTS.apigateway}",{`
           );
@@ -115,26 +124,30 @@ export class CdkStack {
           this.code.line("})");
         }
 
-
-     
-
-        if (this.config.api.asyncFields &&  this.config.api.asyncFields.length >0) {
-
-          for (let asyncField of this.config.api.asyncFields){
-            lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_END_POINT"',value:`${apiName}.api_url`},apiName)
-            lambda.addLambdaVar(`${asyncField}_consumer`,{name:'"APPSYNC_API_KEY"',value:`${apiName}.api_key`},apiName)
+        if (
+          this.config.api.asyncFields &&
+          this.config.api.asyncFields.length > 0
+        ) {
+          for (let asyncField of this.config.api.asyncFields) {
+            lambda.addLambdaVar(
+              `${asyncField}_consumer`,
+              { name: '"APPSYNC_API_END_POINT"', value: `${apiName}.api_url` },
+              apiName
+            );
+            lambda.addLambdaVar(
+              `${asyncField}_consumer`,
+              { name: '"APPSYNC_API_KEY"', value: `${apiName}.api_key` },
+              apiName
+            );
           }
 
           eventBridge.eventBridgeConstructInitializer(this.config.api);
         }
 
-        this.code.line(`new AspectController(this, props?.prod)`)
-
-
+        this.code.line(`new AspectController(this, props?.prod)`);
       },
-      ConstructProps,
+      ConstructProps
     );
-
 
     this.code.closeFile(this.outputFile);
     await this.code.save(this.outputDir);

@@ -127,6 +127,11 @@ export class Imports {
     ts.writeImports(`./${CONSTRUCTS.auroraDB}`, [CONSTRUCTS.auroraDB]);
   }
 
+  public importForRdsConstruct() {
+    const ts = new TypeScriptWriter(this.code);
+    ts.writeImports(`./${CONSTRUCTS.rds}`, [CONSTRUCTS.rds]);
+  }
+
   public importForAppsyncConstructInTest() {
     const ts = new TypeScriptWriter(this.code);
     ts.writeImports(`../lib/${CONSTRUCTS.appsync}`, [CONSTRUCTS.appsync]);
