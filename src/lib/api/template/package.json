@@ -20,7 +20,7 @@
     "@graphql-codegen/typescript": "^2.2.2",
     "@types/aws-lambda": "^8.10.84",
     "@types/aws-sdk": "^2.7.0",
-    "@types/jest": "^27.0.1",
+    "@types/jest": "^28.1.6",
     "@types/chai": "^4.2.22",
     "@types/fs-extra": "^9.0.13",
     "@types/node": "16.7.5",
