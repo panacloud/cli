@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@aws-cdk/assert": "^2.1.0",
-    "@graphql-codegen/cli": "^2.2.0",
+    "@graphql-codegen/cli": "^2.16.5",
     "@graphql-codegen/typescript": "^2.2.2",
     "@types/aws-lambda": "^8.10.84",
     "@types/aws-sdk": "^2.7.0",
